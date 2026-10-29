@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "visual-response/spec.schema.json",
+  "title": "Visual response view spec",
+  "description": "Portable view spec. Duplicate IDs are also rejected by every validator; JSON Schema cannot express ID uniqueness, so scripts/render.py checks it separately.",
+  "type": "object",
+  "required": ["schemaVersion", "viewId", "view", "title"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "viewId": {"type": "string", "pattern": "\\S"},
+    "view": {"enum": ["table", "cards", "form", "kanban", "flow"]},
+    "title": {"type": "string"},
+    "context": {
+      "type": "object",
+      "properties": {"goal": {"type": "string"}, "next": {"type": "string"}}
+    },
+    "presentation": {"enum": ["auto", "inline", "standalone"]},
+    "appearance": {"enum": ["light", "dark", "system", "host"]},
+    "revision": {"type": "integer", "minimum": 1},
+    "feedbackPrompt": {"type": "string"},
+    "dataFile": {"type": "string"},
+    "rows": {"type": "array", "items": {"$ref": "#/$defs/record"}},
+    "columns": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/column"}},
+    "filterKey": {"$ref": "#/$defs/safeId"},
+    "pageSize": {"type": "integer", "minimum": 1, "maximum": 100},
+    "stages": {"type": "array", "minItems": 1, "maxItems": 8, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "fields": {"type": "array", "items": {"$ref": "#/$defs/field"}},
+    "nodes": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/node"}},
+    "motion": {"type": "boolean"}
+  },
+  "allOf": [
+    {"if": {"properties": {"view": {"const": "table"}}}, "then": {"required": ["columns"], "anyOf": [{"required": ["rows"]}, {"required": ["dataFile"]}]}},
+    {"if": {"properties": {"view": {"const": "cards"}}}, "then": {"anyOf": [{"required": ["rows"]}, {"required": ["dataFile"]}], "properties": {"rows": {"items": {"required": ["title", "summary"]}}}}},
+    {"if": {"properties": {"view": {"const": "kanban"}}}, "then": {"anyOf": [{"required": ["rows"]}, {"required": ["dataFile"]}], "properties": {"rows": {"items": {"required": ["title"]}}}}},
+    {"if": {"properties": {"view": {"const": "form"}}}, "then": {"required": ["fields"]}},
+    {"if": {"properties": {"view": {"const": "flow"}}}, "then": {"required": ["nodes"]}},
+    {
+      "if": {"properties": {"view": {"const": "flow"}, "motion": {"const": true}}, "required": ["motion"]},
+      "then": {"properties": {"nodes": {"minItems": 2, "maxItems": 4, "items": {"properties": {"title": {"maxLength": 28}}}}}}
+    }
+  ],
+  "$defs": {
+    "safeId": {
+      "type": "string",
+      "pattern": "\\S",
+      "not": {"enum": ["__proto__", "prototype", "constructor", "toString", "valueOf", "hasOwnProperty", "isPrototypeOf", "propertyIsEnumerable", "toLocaleString", "__defineGetter__", "__defineSetter__", "__lookupGetter__", "__lookupSetter__"]}
+    },
+    "record": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {"$ref": "#/$defs/safeId"},
+        "title": {"type": "string"},
+        "summary": {"type": "string"},
+        "stage": {"type": "string"},
+        "source": {"type": "string"},
+        "recommended": {"type": "boolean"},
+        "actionLabel": {"type": "string"}
+      }
+    },
+    "column": {
+      "type": "object",
+      "required": ["key", "label"],
+      "properties": {
+        "key": {"$ref": "#/$defs/safeId"},
+        "label": {"type": "string"},
+        "type": {"enum": ["text", "number"]},
+        "editable": {"type": "boolean"}
+      }
+    },
+    "option": {
+      "type": "object",
+      "required": ["id", "label"],
+      "properties": {"id": {"$ref": "#/$defs/safeId"}, "label": {"type": "string"}, "selected": {"type": "boolean"}}
+    },
+    "field": {
+      "type": "object",
+      "required": ["id", "label"],
+      "properties": {
+        "id": {"$ref": "#/$defs/safeId"},
+        "label": {"type": "string"},
+        "type": {"enum": ["text", "textarea", "number", "checkbox", "select", "multiselect"]},
+        "help": {"type": "string"},
+        "options": {"type": "array", "items": {"$ref": "#/$defs/option"}}
+      },
+      "allOf": [
+        {"if": {"properties": {"type": {"enum": ["select", "multiselect"]}}, "required": ["type"]}, "then": {"required": ["options"], "properties": {"options": {"minItems": 1}}}},
+        {"if": {"properties": {"type": {"const": "checkbox"}}, "required": ["type"]}, "then": {"properties": {"value": {"type": "boolean"}}}},
+        {"if": {"properties": {"type": {"const": "number"}}, "required": ["type"]}, "then": {"properties": {"value": {"anyOf": [{"type": "number"}, {"const": ""}]}}}},
+        {"if": {"properties": {"type": {"enum": ["text", "textarea", "select"]}}, "required": ["type"]}, "then": {"properties": {"value": {"type": "string"}}}},
+        {"if": {"not": {"required": ["type"]}}, "then": {"properties": {"value": {"type": "string"}}}}
+      ]
+    },
+    "node": {
+      "type": "object",
+      "required": ["id", "title"],
+      "properties": {"id": {"$ref": "#/$defs/safeId"}, "title": {"type": "string"}, "detail": {"type": "string"}}
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "schemaVersion":1,"viewId":"sample-kanban","view":"kanban","title":"Sample: component review board",
+  "stages":["To review","In progress","Done"],
+  "rows":[{"id":"table","title":"Approve table","stage":"Done"},{"id":"forms","title":"Review forms","stage":"In progress"},{"id":"cards","title":"Review cards","stage":"To review"}]
+}

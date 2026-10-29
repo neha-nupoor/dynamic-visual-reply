@@ -1,0 +1,13 @@
+{
+  "$schema": "../config/schema/harness.schema.json",
+  "id": "static",
+  "label": "Any host without a bridge",
+  "adapter": null,
+  "handoff": "file",
+  "references": "references/harness/static.md",
+  "notes": "Fallback when nothing else matches. The renderer's built-in host offers Prepare message, Copy and Export JSON; the user pastes the message back.",
+  "config": {
+    "delivery": {"mode": "embed"},
+    "output": {"inline": "document", "standalone": "document"}
+  }
+}

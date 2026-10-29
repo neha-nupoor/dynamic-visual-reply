@@ -1,0 +1,15 @@
+{
+  "$schema": "../config/schema/harness.schema.json",
+  "id": "codex",
+  "label": "Codex / ChatGPT widget host",
+  "detect": {"anyEnv": ["CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED", "CODEX_HOME"], "priority": 10},
+  "adapter": "codex.js",
+  "standaloneHarness": "browser-local",
+  "handoff": "contentReference",
+  "references": "references/harness/codex.md",
+  "notes": "Inline views embed the bundle and are shown through contentReference. Send to chat uses window.openai.sendFollowUpMessage; drafts use setWidgetState. Standalone views switch to browser-local (serve.py).",
+  "config": {
+    "delivery": {"mode": "embed"},
+    "output": {"inline": "fragment", "standalone": "document"}
+  }
+}

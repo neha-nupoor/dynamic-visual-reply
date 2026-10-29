@@ -1,0 +1,3 @@
+# Preserve dependency bundles and notices verbatim, including literal CSS whitespace.
+assets/renderer/dist/renderer.js -whitespace
+assets/renderer/dist/THIRD_PARTY_NOTICES.txt -whitespace

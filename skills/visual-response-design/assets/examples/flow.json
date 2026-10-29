@@ -1,0 +1,4 @@
+{
+  "schemaVersion":1,"viewId":"sample-flow","view":"flow","title":"Sample: batch feedback flow","motion":false,
+  "nodes":[{"id":"select","title":"Select","detail":"Choose records by stable IDs."},{"id":"edit","title":"Edit","detail":"Attach instructions to those records."},{"id":"review","title":"Review","detail":"Preview the exact batch scope."},{"id":"send","title":"Send","detail":"Submit deliberately and check the receipt."}]
+}

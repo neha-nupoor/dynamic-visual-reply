@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "visual-response/theme.schema.json",
+  "title": "Visual response theme pack",
+  "description": "A theme pack's theme.json. Keys marked optional fall back to the neutral theme's values, so older token files keep working.",
+  "type": "object",
+  "required": ["name", "fontFamily", "type", "spacingUnit", "radius", "layout", "control", "light", "dark"],
+  "properties": {
+    "$schema": {"type": "string"},
+    "name": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "label": {"type": "string"},
+    "version": {"type": "integer", "minimum": 1},
+    "appearance": {"enum": ["light", "dark", "system"]},
+    "fontFamily": {"type": "string", "minLength": 1},
+    "type": {
+      "type": "object",
+      "required": ["body", "small", "title", "inlineTitle", "lineHeight"],
+      "properties": {
+        "body": {"$ref": "#/$defs/px"},
+        "small": {"$ref": "#/$defs/px"},
+        "meta": {"$ref": "#/$defs/px"},
+        "title": {"$ref": "#/$defs/px"},
+        "titleCompact": {"$ref": "#/$defs/px"},
+        "inlineTitle": {"$ref": "#/$defs/px"},
+        "section": {"$ref": "#/$defs/px"},
+        "lineHeight": {"type": "number", "minimum": 1, "maximum": 2.5},
+        "titleLineHeight": {"type": "number", "minimum": 0.9, "maximum": 2},
+        "titleTracking": {"type": "string"}
+      }
+    },
+    "spacingUnit": {"$ref": "#/$defs/px"},
+    "radius": {
+      "type": "object",
+      "required": ["control", "surface"],
+      "properties": {"control": {"$ref": "#/$defs/size"}, "surface": {"$ref": "#/$defs/size"}, "chip": {"$ref": "#/$defs/size"}}
+    },
+    "layout": {
+      "type": "object",
+      "required": ["maxWidth", "cardMinWidth", "flowMinWidth", "surfacePadding", "contentPadding", "inlinePadding"],
+      "properties": {
+        "maxWidth": {"$ref": "#/$defs/px"},
+        "cardMinWidth": {"$ref": "#/$defs/px"},
+        "flowMinWidth": {"$ref": "#/$defs/px"},
+        "surfacePadding": {"$ref": "#/$defs/size"},
+        "contentPadding": {"$ref": "#/$defs/size"},
+        "contentPaddingCompact": {"$ref": "#/$defs/size"},
+        "inlinePadding": {"$ref": "#/$defs/size"}
+      }
+    },
+    "control": {
+      "type": "object",
+      "required": ["minHeight", "focusWidth", "focusOffset"],
+      "properties": {
+        "minHeight": {"type": "number", "minimum": 24},
+        "inputHeight": {"type": "number", "minimum": 24},
+        "paddingX": {"$ref": "#/$defs/size"},
+        "paddingY": {"$ref": "#/$defs/size"},
+        "inputPadding": {"$ref": "#/$defs/pair"},
+        "focusWidth": {"type": "number", "minimum": 1},
+        "focusOffset": {"$ref": "#/$defs/size"}
+      }
+    },
+    "table": {"type": "object", "properties": {"cellPadding": {"$ref": "#/$defs/pair"}}},
+    "motion": {
+      "type": "object",
+      "properties": {
+        "secondsPerStage": {"type": "number", "minimum": 0.5, "maximum": 20},
+        "fps": {"type": "integer", "minimum": 12, "maximum": 60},
+        "canvas": {"$ref": "#/$defs/pair"},
+        "numberSize": {"$ref": "#/$defs/px"},
+        "labelSize": {"$ref": "#/$defs/px"}
+      }
+    },
+    "light": {"$ref": "#/$defs/palette"},
+    "dark": {"$ref": "#/$defs/palette"}
+  },
+  "$defs": {
+    "px": {"type": "number", "minimum": 1},
+    "size": {"type": "number", "minimum": 0},
+    "pair": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number", "minimum": 0}},
+    "color": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
+    "palette": {
+      "type": "object",
+      "required": ["canvas", "surface", "text", "muted", "divider", "controlBorder", "accent", "onAccent", "selected", "hover", "success", "warning", "error"],
+      "properties": {
+        "canvas": {"$ref": "#/$defs/color"},
+        "surface": {"$ref": "#/$defs/color"},
+        "text": {"$ref": "#/$defs/color"},
+        "muted": {"$ref": "#/$defs/color"},
+        "divider": {"$ref": "#/$defs/color"},
+        "controlBorder": {"$ref": "#/$defs/color"},
+        "accent": {"$ref": "#/$defs/color"},
+        "onAccent": {"$ref": "#/$defs/color"},
+        "selected": {"$ref": "#/$defs/color"},
+        "hover": {"$ref": "#/$defs/color"},
+        "success": {"$ref": "#/$defs/color"},
+        "warning": {"$ref": "#/$defs/color"},
+        "error": {"$ref": "#/$defs/color"}
+      }
+    }
+  }
+}

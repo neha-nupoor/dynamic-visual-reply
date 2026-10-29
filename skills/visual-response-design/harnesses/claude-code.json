@@ -1,0 +1,15 @@
+{
+  "$schema": "../config/schema/harness.schema.json",
+  "id": "claude-code",
+  "label": "Claude Code in a terminal (no inline widget tool)",
+  "detect": {"env": {"CLAUDECODE": "1"}, "priority": 5},
+  "adapter": "browser-local.js",
+  "handoff": "serve",
+  "references": "references/harness/browser-local.md",
+  "notes": "A terminal session cannot draw UI in the conversation, so every view is standalone and served by serve.py. In the Claude desktop app use claude-inline instead.",
+  "config": {
+    "delivery": {"mode": "embed"},
+    "output": {"inline": "document", "standalone": "document"},
+    "placement": {"inlineLimits": {"table": false, "cards": false, "form": false, "flow": false, "kanban": false, "motion": false}}
+  }
+}

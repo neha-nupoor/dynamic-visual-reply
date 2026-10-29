@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "visual-response/harness.schema.json",
+  "title": "Visual response harness profile",
+  "description": "One file per harness in harnesses/<id>.json. Adding a harness needs a profile and, when it has a bridge, an adapter script; no renderer rebuild.",
+  "type": "object",
+  "required": ["id", "label", "handoff"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {"type": "string"},
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "label": {"type": "string"},
+    "detect": {
+      "description": "Environment markers for --harness auto. All of `env` must match (\"*\" means set to anything); any one of `anyEnv` must be set.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "env": {"type": "object", "additionalProperties": {"type": "string"}},
+        "anyEnv": {"type": "array", "items": {"type": "string"}},
+        "priority": {"type": "integer"}
+      }
+    },
+    "adapter": {"description": "Adapter script next to the profile that defines window.visualResponseHost, or null for the renderer's built-in static host.", "type": ["string", "null"]},
+    "standaloneHarness": {"description": "Profile to use instead when placement chooses standalone.", "type": "string"},
+    "inlineHarness": {"description": "Profile to use instead when placement chooses inline.", "type": "string"},
+    "handoff": {"enum": ["contentReference", "show_widget", "artifact", "serve", "file", "module"]},
+    "artifactCapabilities": {"description": "Capabilities an artifact page must declare when published.", "type": "object"},
+    "csp": {"type": "object", "properties": {"scriptHosts": {"type": "array", "items": {"type": "string"}}}},
+    "hostPalette": {"description": "For appearance \"host\": theme palette role → host CSS variable name, read at runtime.", "type": "object", "additionalProperties": {"type": "string", "pattern": "^--"}},
+    "references": {"type": "string"},
+    "notes": {"type": "string"},
+    "config": {"$ref": "config.schema.json"}
+  }
+}

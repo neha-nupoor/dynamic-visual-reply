@@ -1,0 +1,14 @@
+{
+  "version": "1.1.0",
+  "draftVersion": "1.0.0",
+  "sha256": "8ace17698e78f01946b67d95149928da551250ad1d35bcbfe94989af528997b2",
+  "sri": "sha384-bhAPazvHrJMbiJVscd12nuBpsmj69pKoaUU0Hcpaxp1OHTpZLt64Jocbex+6u7Zl",
+  "bytes": 806734,
+  "views": [
+    "table",
+    "cards",
+    "form",
+    "kanban",
+    "flow"
+  ]
+}
