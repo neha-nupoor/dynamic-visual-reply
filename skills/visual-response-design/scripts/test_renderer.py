@@ -8,6 +8,11 @@ import json
 import os
 from pathlib import Path
 import tempfile
+import socket
+import subprocess
+import sys
+import urllib.request
+from urllib.parse import urlparse
 import unittest
 import render
 import visual_config
@@ -74,7 +79,6 @@ class RendererTests(unittest.TestCase):
         spec = self.table(); spec['pageSize'] = 500; broken.append(spec)
         spec = self.table(); spec['view'] = 'chart'; broken.append(spec)
         spec = self.example('form'); spec['fields'][3]['value'] = 'yes'; broken.append(spec)
-        spec = self.example('flow-motion'); spec['nodes'][0]['title'] = 'x' * 40; broken.append(spec)
         spec = self.example('kanban'); spec['stages'] = ['A', 'A']; broken.append(spec)
         spec = self.table(); spec['appearance'] = 'neon'; broken.append(spec)
         for index, spec in enumerate(broken):
@@ -98,15 +102,23 @@ class RendererTests(unittest.TestCase):
             self.assertTrue(first.with_suffix('.spec.json').exists())
             self.assertTrue(result['contentReference'].startswith('visualize'))
 
-    def test_invalid_motion_shape_and_invalid_form_value_rejected(self):
-        flow = self.example('flow-motion')
-        flow['nodes'].append({'id': 'extra', 'title': 'Extra'})
-        with self.assertRaises(ValueError):
-            render.validate(flow)
+    def test_invalid_selected_form_value_rejected(self):
         form = self.example('form')
         form['fields'][0]['value'] = 'not-an-option'
         with self.assertRaises(ValueError):
             render.validate(form)
+
+    def test_spec_schema_is_the_rendering_validator(self):
+        # Regressions for the two validators that previously disagreed.
+        cases = []
+        spec = self.table(); spec['pageSize'] = True; cases.append(spec)
+        spec = self.table(); spec['schemaVersion'] = True; cases.append(spec)
+        spec = self.table(); spec['feedbackPrompt'] = {}; cases.append(spec)
+        cases.append({'schemaVersion': 1, 'viewId': 'x', 'view': 'form', 'title': 'Missing fields'})
+        for spec in cases:
+            with self.subTest(spec=spec):
+                with self.assertRaises(ValueError):
+                    render.validate(spec)
 
     def test_automatic_placement_accounts_for_size_and_component(self):
         table = self.table()
@@ -119,15 +131,11 @@ class RendererTests(unittest.TestCase):
         table['rows'][0]['name'] = 'Long description ' * 100
         self.assertEqual(render.placement(table)['mode'], 'standalone')
 
-    def test_kanban_and_motion_are_sized_like_other_views(self):
+    def test_kanban_is_sized_like_other_views(self):
         board = self.example('kanban')
         self.assertEqual(render.placement(board)['mode'], 'inline')
         board['rows'] = [{'id': f'r{i}', 'title': f'Item {i}', 'stage': 'To review'} for i in range(7)]
         self.assertEqual(render.placement(board)['mode'], 'standalone')
-        self.assertEqual(render.placement(self.example('flow-motion'))['mode'], 'inline')
-        strict = visual_config.resolve({'placement': {'inlineLimits': {'kanban': False, 'motion': False}}}, isolated=True)
-        for name in ('kanban', 'flow-motion'):
-            self.assertEqual(render.placement(self.example(name), config=strict.config, theme=strict.theme)['mode'], 'standalone')
 
     def test_placement_decisions_match_renderer_1_0_snapshot(self):
         expected = {'table': 'standalone', 'cards': 'standalone', 'form': 'standalone', 'flow': 'inline'}
@@ -165,6 +173,16 @@ class RendererTests(unittest.TestCase):
                 visual_config.check_schema(theme, 'theme', name)
                 self.assertEqual(visual_config.contrast_problems(visual_config.complete_theme(theme)), [])
 
+    def test_legacy_theme_uses_its_own_accent_for_optional_roles(self):
+        theme = visual_config.load(ROOT / 'themes/neutral/theme.json')
+        for key in ('accentFill', 'onAccentFill', 'accentBorder', 'onSelected'):
+            theme['dark'].pop(key, None)
+        theme['dark']['accent'] = '#bb99ff'
+        resolved = visual_config.complete_theme(theme)['dark']
+        self.assertEqual(resolved['accentFill'], '#bb99ff')
+        self.assertEqual(resolved['accentBorder'], '#bb99ff')
+        self.assertEqual(resolved['onSelected'], '#bb99ff')
+
     def test_draft_key_is_unchanged_from_renderer_1_0_across_harness_and_theme(self):
         legacy = hashlib.sha256(b'1.0.0:sample-review:table').hexdigest()[:24]
         keys = set()
@@ -191,6 +209,23 @@ class RendererTests(unittest.TestCase):
             else:
                 self.assertIn(context.theme['dark']['canvas'], html)
             self.assertIn('"adapter":"browser-local"', html)
+
+    def test_local_server_handles_an_idle_browser_connection(self):
+        # Browsers can pre-open a socket before sending a request. It must not block other views.
+        with tempfile.TemporaryDirectory() as directory:
+            html = Path(directory) / 'view.html'
+            quiet(render.render, self.table(), html, 'standalone')
+            process = subprocess.Popen([sys.executable, str(ROOT / 'scripts/serve.py'), str(html)],
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            try:
+                address = json.loads(process.stdout.readline())['url']
+                parsed = urlparse(address)
+                with socket.create_connection((parsed.hostname, parsed.port), timeout=2):
+                    with urllib.request.urlopen(address + 'api/feedback', timeout=2) as response:
+                        self.assertEqual(json.load(response), {'feedback': None})
+            finally:
+                process.terminate()
+                process.communicate(timeout=3)
 
     def test_default_theme_pack_is_found_by_name(self):
         found = visual_config.find_theme(DEFAULT_THEME)
@@ -220,11 +255,13 @@ class RendererTests(unittest.TestCase):
             self.assertEqual(context.sources['appearance'], 'command line')
             self.assertEqual(context.sources['copy.badge'], 'user')
             self.assertEqual(context.sources['harness'], 'project')
-            self.assertEqual([name for name, _ in context.layers], ['defaults', 'harness:browser-local', 'user', 'project', 'command line'])
+            self.assertEqual([name for name, _ in context.layers], ['defaults', 'user', 'project', 'command line'])
 
     def test_unknown_config_keys_are_rejected(self):
         with self.assertRaises(ValueError):
             visual_config.resolve({'colour': 'blue'}, isolated=True)
+        with self.assertRaises(ValueError):
+            visual_config.resolve({'placement': {'inlineLimits': {'table': 0}}}, isolated=True)
         with self.assertRaises(ValueError):
             visual_config.resolve({'feedback': {'messageFormat': 'yaml'}}, isolated=True)
 
@@ -248,16 +285,6 @@ class RendererTests(unittest.TestCase):
             with self.subTest(expected=expected):
                 self.assertEqual(visual_config.detect_harness(env)[0], expected)
 
-    def test_every_harness_profile_is_valid_and_has_its_adapter(self):
-        for identifier in visual_config.harness_ids():
-            with self.subTest(harness=identifier):
-                profile = visual_config.load_harness(identifier)
-                for key in ('standaloneHarness', 'inlineHarness'):
-                    if profile.get(key):
-                        visual_config.load_harness(profile[key])
-                if profile.get('references'):
-                    self.assertTrue((ROOT / profile['references']).is_file(), profile['references'])
-
     def test_claude_inline_writes_a_small_loader_without_the_bundle(self):
         with tempfile.TemporaryDirectory() as directory:
             spec = self.example('flow')
@@ -273,7 +300,7 @@ class RendererTests(unittest.TestCase):
             self.assertLess(len(html.encode()), 8000)
 
     def test_public_repository_release_supplies_the_renderer_url(self):
-        delivery = {'repository': 'someone/visual-response', 'repositoryPath': 'skills/visual-response-design', 'tagPrefix': 'v'}
+        delivery = {'repository': 'someone/visual-response'}
         self.assertEqual(visual_config.renderer_url(delivery, '1.1.0'),
                          'https://cdn.jsdelivr.net/gh/someone/visual-response@v1.1.0/skills/visual-response-design/assets/renderer/dist/renderer.js')
         self.assertEqual(visual_config.renderer_url({**delivery, 'rendererUrl': URL}, '1.1.0'), URL)
@@ -288,35 +315,13 @@ class RendererTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 quiet(render.render, self.example('flow'), Path(directory) / 'w.html', 'auto', context=context)
 
-    def test_claude_inline_falls_back_to_browser_when_artifacts_cannot_load_the_url(self):
+    def test_large_claude_views_use_the_same_local_browser_as_codex(self):
         with tempfile.TemporaryDirectory() as directory:
-            context = visual_config.resolve({'delivery': {'repository': 'someone/visual-response'}}, harness='claude-inline', isolated=True)
-            result = quiet(render.render, self.table(), Path(directory) / 'a.html', 'auto', context=context)
+            context = visual_config.resolve(harness='claude-inline', isolated=True)
+            result = quiet(render.render, self.table(), Path(directory) / 'review.html', 'auto', context=context)
             self.assertEqual(result['harness'], 'browser-local')
-            self.assertIn('cannot load the renderer URL', result['placement']['reason'])
-
-    def test_claude_inline_hands_large_views_to_an_artifact_page(self):
-        with tempfile.TemporaryDirectory() as directory:
-            context = visual_config.resolve({'delivery': {'rendererUrl': URL}}, harness='claude-inline', isolated=True)
-            result = quiet(render.render, self.table(), Path(directory) / 'a.html', 'auto', context=context)
-            html = (Path(directory) / 'a.html').read_text()
-            self.assertEqual(result['harness'], 'claude-artifact')
-            self.assertEqual(result['handoff']['type'], 'artifact')
-            self.assertEqual(result['handoff']['capabilities'], {'db': {}, 'user': {}})
-            self.assertTrue(html.startswith('<title>Sample: review response components</title>'))
-            self.assertNotIn('<!doctype', html.lower())
-            self.assertIn('"adapter":"claude-artifact"', html)
-            self.assertIn('padding-left:max(16px,env(safe-area-inset-left,0px))', html)
-
-    def test_module_delivery_returns_data_for_wrappers(self):
-        with tempfile.TemporaryDirectory() as directory:
-            context = visual_config.resolve(harness='module', isolated=True)
-            out = Path(directory) / 'view.json'
-            quiet(render.render, self.example('cards'), out, 'auto', context=context)
-            module = json.loads(out.read_text())
-            self.assertEqual(module['spec']['viewId'], 'sample-cards')
-            self.assertEqual(module['theme']['name'], context.theme['name'])
-            self.assertEqual(module['renderer']['sha256'], render.load(render.MANIFEST)['sha256'])
+            self.assertEqual(result['handoff']['type'], 'serve')
+            self.assertIn('data-visual-response-runtime', (Path(directory) / 'review.html').read_text())
 
     def test_spec_appearance_and_copy_reach_the_page(self):
         with tempfile.TemporaryDirectory() as directory:

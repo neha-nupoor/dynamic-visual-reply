@@ -10,12 +10,12 @@ const draftVersion='1.0.0';
 mkdirSync(join(root,'dist'),{recursive:true});
 await build({absWorkingDir:root,entryPoints:['src/index.jsx'],bundle:true,minify:true,format:'iife',target:'es2022',outfile:'dist/renderer.js',legalComments:'eof',define:{'process.env.NODE_ENV':'"production"','__RENDERER_VERSION__':JSON.stringify(version)}});
 const bytes=readFileSync(join(root,'dist/renderer.js'));
-// Keep in step with the adapter imports in src/index.jsx; render.py skips injecting these.
-const adapters=['codex','claude-inline','claude-artifact','browser-local'];
+// Keep in step with the adapter imports in src/index.jsx; render.py selects the matching adapter by name.
+const adapters=['codex','claude-inline','browser-local'];
 const manifest={version,draftVersion,sha256:createHash('sha256').update(bytes).digest('hex'),sri:'sha384-'+createHash('sha384').update(bytes).digest('base64'),bytes:bytes.length,views:['table','cards','form','kanban','flow'],adapters};
 writeFileSync(join(root,'dist/manifest.json'),JSON.stringify(manifest,null,2)+'\n');
 const notices=[];
-for(const name of ['react','react-dom','@mui/material','@emotion/react','@emotion/styled','remotion','@remotion/player']){
+for(const name of ['react','react-dom','@mui/material','@emotion/react','@emotion/styled']){
   const dir=join(root,'node_modules',name);
   for(const filename of ['LICENSE','LICENSE.md','LICENSE.txt']){
     try{notices.push(`${name}\n${readFileSync(join(dir,filename),'utf8')}\n`);break;}catch{}

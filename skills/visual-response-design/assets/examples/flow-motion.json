@@ -1,4 +1,0 @@
-{
-  "schemaVersion":1,"viewId":"sample-motion","view":"flow","title":"Sample: instruction lifecycle","motion":true,
-  "nodes":[{"id":"input","title":"Input","detail":"User intent enters the system."},{"id":"prepare","title":"Prepare","detail":"The agent prepares structured content."},{"id":"hydrate","title":"Hydrate","detail":"Fixed components hydrate the data."},{"id":"feedback","title":"Feedback","detail":"Selected edits return in one batch."}]
-}

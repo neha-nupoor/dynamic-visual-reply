@@ -9,12 +9,9 @@ from pathlib import Path
 import sys
 
 import visual_config
-from visual_config import ROOT, HARNESS_DIR, load, require
+from visual_config import ROOT, load, require
 
 VIEWS = ('table', 'cards', 'form', 'kanban', 'flow')
-RESERVED = {'__proto__', 'prototype', 'constructor', 'toString', 'valueOf', 'hasOwnProperty',
-            'isPrototypeOf', 'propertyIsEnumerable', 'toLocaleString', '__defineGetter__',
-            '__defineSetter__', '__lookupGetter__', '__lookupSetter__'}
 BUNDLE = ROOT / 'assets/renderer/dist/renderer.js'
 MANIFEST = ROOT / 'assets/renderer/dist/manifest.json'
 
@@ -24,79 +21,35 @@ def identifiers(items, field, kind):
     for item in items:
         require(isinstance(item, dict), f'Each {kind} item must be an object')
         value = item.get(field)
-        require(isinstance(value, str) and value.strip() and value not in RESERVED,
-                f'{kind}.{field} must be a nonempty, safe string')
+        require(isinstance(value, str) and value.strip(),
+                f'{kind}.{field} must be a nonempty string')
         require(value not in seen, f'Duplicate {kind} identifier: {value}')
         seen.add(value)
     return seen
 
 def validate(spec):
-    require(isinstance(spec, dict), 'Spec must be an object')
-    require(spec.get('schemaVersion') == 1, 'schemaVersion must be 1')
-    require(spec.get('view') in VIEWS, f'view must be one of {VIEWS}')
-    require(isinstance(spec.get('viewId'), str) and spec['viewId'].strip(), 'viewId is required')
-    require(isinstance(spec.get('title'), str), 'title must be a string')
-    require(isinstance(spec.get('context', {}), dict), 'context must be an object')
-    require(spec.get('presentation', 'auto') in ('auto', 'inline', 'standalone'), 'presentation must be auto, inline, or standalone')
-    require(spec.get('appearance', 'light') in ('light', 'dark', 'system', 'host'), 'appearance must be light, dark, system, or host')
-    require(isinstance(spec.get('revision', 1), int) and spec.get('revision', 1) > 0, 'revision must be a positive integer')
-    for key in ('goal', 'next'):
-        require(isinstance(spec.get('context', {}).get(key, ''), str), f'context.{key} must be text')
-    if spec['view'] in ('table', 'cards', 'kanban'):
-        identifiers(spec.get('rows', []), 'id', 'rows')
-    if spec['view'] == 'cards':
-        for row in spec['rows']:
-            require(isinstance(row.get('title'), str) and isinstance(row.get('summary'), str), 'Cards need text title and summary')
-            require(isinstance(row.get('details', ''), (str, list, dict, int, float, bool)), 'Card details must be JSON content')
-    if spec['view'] == 'kanban':
-        require(all(isinstance(row.get('title'), str) for row in spec['rows']), 'Kanban rows need text titles')
+    # The schema owns input shape and scalar rules; Python only checks relationships across records.
+    visual_config.check_schema(spec, 'spec', 'Spec')
+    if spec['view'] in ('table', 'cards', 'kanban') and 'rows' in spec:
+        identifiers(spec['rows'], 'id', 'rows')
     if spec['view'] == 'table':
-        cols = spec.get('columns')
-        identifiers(cols, 'key', 'columns')
-        require(bool(cols), 'Table needs at least one column')
-        for col in cols:
-            require(isinstance(col.get('label'), str), 'Column label must be text')
-            require(col.get('type', 'text') in ('text', 'number'), 'Column type must be text or number')
-        require(isinstance(spec.get('pageSize', 20), int) and 1 <= spec.get('pageSize', 20) <= 100,
-                'pageSize must be an integer from 1 through 100')
-        if 'filterKey' in spec:
-            require(isinstance(spec['filterKey'], str) and spec['filterKey'] not in RESERVED, 'Invalid filterKey')
+        identifiers(spec['columns'], 'key', 'columns')
     if spec['view'] == 'kanban':
         stages = spec.get('stages', ['To review', 'In progress', 'Done'])
-        require(isinstance(stages, list) and 1 <= len(stages) <= 8 and all(isinstance(v, str) and v for v in stages), 'stages needs 1–8 nonempty strings')
-        require(len(stages) == len(set(stages)), 'Stages must be unique')
-        for row in spec['rows']:
+        for row in spec.get('rows', []):
             require(row.get('stage', stages[0]) in stages, f'Invalid stage in row {row["id"]}')
     if spec['view'] == 'form':
-        fields = spec.get('fields', [])
-        identifiers(fields, 'id', 'fields')
-        for field in fields:
-            require(isinstance(field.get('label'), str), 'Field label must be text')
-            require(field.get('type', 'text') in ('text', 'textarea', 'number', 'checkbox', 'select', 'multiselect'), 'Invalid field type')
-            kind = field.get('type', 'text')
-            if kind in ('text', 'textarea', 'select'):
-                require(isinstance(field.get('value', ''), str), 'Text and select values must be strings')
-            if kind == 'number':
-                require(isinstance(field.get('value', ''), (int, float)) or field.get('value', '') == '', 'Number field value must be numeric or empty')
-            if kind == 'checkbox':
-                require(isinstance(field.get('value', False), bool), 'Checkbox value must be boolean')
+        identifiers(spec['fields'], 'id', 'fields')
+        for field in spec['fields']:
             if field.get('type') in ('select', 'multiselect'):
-                options = field.get('options', [])
-                option_ids = identifiers(options, 'id', 'options')
-                require(bool(options), 'Select fields need options')
-                require(all(isinstance(o.get('label'), str) for o in options), 'Option labels must be text')
+                option_ids = identifiers(field['options'], 'id', 'options')
                 if field['type'] == 'select':
-                    require(field.get('value', '') in option_ids or field.get('value', '') == '', 'Selected value must be an option ID')
+                    require(field.get('value', '') in option_ids or field.get('value', '') == '',
+                            'Selected value must be an option ID')
     if spec['view'] == 'flow':
-        nodes = spec.get('nodes', [])
-        identifiers(nodes, 'id', 'nodes')
-        require(bool(nodes), 'A flow needs at least one node')
-        require(all(isinstance(n.get('title'), str) and isinstance(n.get('detail', ''), str) for n in nodes), 'Flow title and detail must be text')
-        require(isinstance(spec.get('motion', False), bool), 'motion must be a boolean')
-        if spec.get('motion'):
-            require(2 <= len(nodes) <= 4, 'The reusable motion template supports 2–4 short stages; use a static flow for more')
-            require(all(len(n['title']) <= 28 for n in nodes), 'Motion node titles must be 28 characters or fewer')
+        identifiers(spec['nodes'], 'id', 'nodes')
     return spec
+
 
 def resolve_data(spec, source):
     if 'dataFile' not in spec:
@@ -217,10 +170,9 @@ def placement(spec, width=None, height=None, *, config=None, theme=None):
         detail_lines = max([1] + [math.ceil(len(n.get('detail', '')) / max(25, int(inner / char))) for n in nodes])
         node_height = 4 * unit + 2 * body_line + unit
         estimated_height = base + math.ceil(len(nodes) / across) * node_height + control['minHeight'] + 3 * unit + detail_lines * body_line + feedback_block
-        motion_ok = not spec.get('motion') or (limits.get('motion') and config['views'].get('motion', True))
-        allowed = bool(limit) and motion_ok and len(nodes) <= limit['nodes']
+        allowed = bool(limit) and len(nodes) <= limit['nodes']
         if not allowed:
-            reason = f'Motion or a flow larger than {limit["nodes"]} nodes uses the side panel' if limit else 'Flows are standalone for this harness'
+            reason = f'A flow larger than {limit["nodes"]} nodes uses the side panel' if limit else 'Flows are standalone for this harness'
     else:
         rows = spec.get('rows', [])
         stages = spec.get('stages', ['To review', 'In progress', 'Done'])
@@ -247,14 +199,6 @@ def manifest():
     require(hashlib.sha256(BUNDLE.read_bytes()).hexdigest() == data['sha256'], 'Renderer bundle differs from its manifest; rebuild before use')
     return data
 
-def url_allowed(context, version):
-    """Whether this harness's script allowlist admits the renderer URL it would use."""
-    if context.config['delivery']['mode'] != 'url':
-        return True
-    url = visual_config.renderer_url(context.config['delivery'], version)
-    hosts = context.harness.get('csp', {}).get('scriptHosts')
-    return bool(url) and (not hosts or any(url.startswith('https://' + host) for host in hosts))
-
 def runtime_config(context, appearance):
     """Only what differs from the defaults compiled into the bundle, to keep pages small."""
     defaults = load(ROOT / 'config/defaults.json')
@@ -267,25 +211,19 @@ def runtime_config(context, appearance):
         config['copy'] = copy
     if feedback:
         config['feedback'] = feedback
-    if appearance == 'host' and context.harness.get('hostPalette'):
-        config['hostPalette'] = context.harness['hostPalette']
+    if appearance == 'host' and context.harness['id'] == 'claude-inline':
+        config['hostPalette'] = visual_config.HOST_PALETTE
     return config
 
 def page_theme(context):
     return visual_config.diff(context.theme, load(ROOT / 'themes/neutral/theme.json'))
 
 def fragment(spec, context, appearance, info, delivery):
-    adapter = context.harness.get('adapter')
     parts = ['<div data-visual-response-root></div>',
              '<script type="application/json" data-visual-response-config>' + json_for_html(runtime_config(context, appearance)) + '</script>',
              '<script type="application/json" data-visual-response-theme>' + json_for_html(page_theme(context)) + '</script>',
              '<script type="application/json" data-visual-response-spec>' + json_for_html(spec) + '</script>']
-    # Adapters already in the bundle are selected by name; only others are injected, for hosts that run inline scripts.
-    if adapter and Path(adapter).stem not in info.get('adapters', []):
-        script = (HARNESS_DIR / adapter).read_text(encoding='utf-8')
-        require('</script' not in script.lower(), 'Adapter contains an unsafe closing script tag')
-        parts.append('<script data-visual-response-host>\n' + script.strip() + '\n</script>')
-    if delivery['mode'] == 'url':
+    if context.harness['id'] == 'claude-inline':
         url = visual_config.renderer_url(delivery, info['version'])
         require(url, 'No renderer URL: set delivery.rendererUrl, or delivery.repository for a public GitHub release; run scripts/doctor.py for details.')
         integrity = info.get('sri') if delivery.get('integrity') == 'manifest' else delivery.get('integrity')
@@ -313,30 +251,23 @@ def wrap(body, kind, spec, context, appearance):
     if kind == 'fragment':
         return body
     style = page_style(context, appearance)
-    if kind == 'artifact-page':
-        title = (spec.get('title') or 'Visual response').replace('<', '').replace('>', '')
-        return f'<title>{title}</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n<style>{style}</style>\n{body}'
     return ('<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
             f'<title>Visual response</title><style>{style}</style></head><body>\n{body}</body></html>\n')
 
 def handoff(context, out, kind, size):
-    serve = ROOT / 'scripts/serve.py'
-    kind_of = context.harness['handoff']
-    if kind_of == 'contentReference':
-        if kind == 'fragment':
-            return {'type': 'contentReference', 'value': 'visualize' + json.dumps({'path': str(out)}, ensure_ascii=False)}
-        return {'type': 'serve', 'command': f'python3 "{serve}" "{out}" --port 0'}
-    if kind_of == 'show_widget':
+    identifier = context.harness['id']
+    if identifier == 'codex' and kind == 'fragment':
+        return {'type': 'contentReference', 'value': 'visualize' + json.dumps({'path': str(out)}, ensure_ascii=False)}
+    if identifier == 'claude-inline':
         return {'type': 'show_widget', 'file': str(out), 'bytes': size,
                 'instruction': 'Read this file and pass its full contents unchanged as show_widget widget_code.'}
-    if kind_of == 'artifact':
-        return {'type': 'artifact', 'file': str(out), 'capabilities': context.harness.get('artifactCapabilities', {}),
-                'instruction': 'Publish this file with the Artifact tool and these capabilities. Submitted batches land in the `batches` collection; read them with ArtifactData.'}
-    if kind_of == 'serve':
-        return {'type': 'serve', 'command': f'python3 "{serve}" "{out}" --port 0'}
-    return {'type': kind_of, 'path': str(out)}
+    if identifier in ('browser-local', 'claude-code'):
+        return {'type': 'serve', 'command': f'python3 "{ROOT / "scripts/serve.py"}" "{out}" --port 0'}
+    return {'type': 'file', 'path': str(out)}
+
 
 def render(spec, out, mode='auto', viewport_width=None, viewport_height=None, *, context=None):
+    validate(spec)
     context = context or default_context()
     enabled = context.config['views']['enabled']
     require(spec['view'] in enabled, f'View {spec["view"]!r} is disabled by configuration (views.enabled)')
@@ -347,43 +278,34 @@ def render(spec, out, mode='auto', viewport_width=None, viewport_height=None, *,
     limit = context.config['placement'].get('maxSpecBytes')
     if requested == 'auto' and decision['mode'] == 'inline' and limit and len(json_for_html(spec).encode()) > limit:
         decision.update(mode='standalone', reason=f'Spec exceeds {limit} bytes, the inline size limit for this harness')
-    # A harness can hand one mode to another profile (Codex standalone → browser-local, Claude inline → artifact).
-    switch = context.harness.get('standaloneHarness' if decision['mode'] == 'standalone' else 'inlineHarness')
+    # Larger Codex and Claude inline views use the existing local browser feedback loop.
     info = manifest()
-    if switch and switch != context.harness['id']:
-        fallback = context.harness.get('standaloneFallback') if decision['mode'] == 'standalone' else None
-        switched = context.switch(switch)
-        if fallback and not url_allowed(switched, info['version']):
-            decision['reason'] += f'; {switch} cannot load the renderer URL, so {fallback} is used'
-            switched = context.switch(fallback)
-        context = switched
+    if decision['mode'] == 'standalone' and context.harness['id'] in ('codex', 'claude-inline'):
+        context = context.switch('browser-local')
     spec['resolvedPresentation'] = decision
     # Draft keys follow draftVersion so cosmetic or harness changes never discard saved drafts.
     spec['stateKey'] = hashlib.sha256((info.get('draftVersion', info['version']) + ':' + spec['viewId'] + ':' + spec['view']).encode()).hexdigest()[:24]
     appearance = spec.get('appearance') or context.appearance
     delivery = context.config['delivery']
+    delivery_mode = 'url' if context.harness['id'] == 'claude-inline' else 'embed'
     out.parent.mkdir(parents=True, exist_ok=True)
     snapshot = out.with_suffix('.spec.json')
     snapshot.write_text(json.dumps(spec, ensure_ascii=False, allow_nan=False, indent=2) + '\n', encoding='utf-8')
     data = json_for_html(spec)
     result = {'harness': context.harness['id'], 'theme': context.theme['name'], 'view': spec['view'],
               'rendererVersion': info['version'], 'specBytes': len(data.encode()), 'rendererBytes': info['bytes'],
-              'delivery': delivery['mode'], 'spec': str(snapshot), 'placement': decision}
-    if delivery['mode'] == 'module':
-        module = {'schemaVersion': 1, 'spec': spec, 'theme': context.theme, 'config': runtime_config(context, appearance),
-                  'renderer': {'version': info['version'], 'path': str(BUNDLE), 'sha256': info['sha256'], 'sri': info.get('sri'),
-                               'url': visual_config.renderer_url(delivery, info['version'])}}
-        out.write_text(json.dumps(module, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-        result.update(path=str(out), format=decision['mode'], handoff={'type': 'module', 'path': str(out)})
-        print(json.dumps(result, ensure_ascii=False))
-        return result
-    kind = context.config['output']['inline' if decision['mode'] == 'inline' else 'standalone']
+              'delivery': delivery_mode, 'spec': str(snapshot), 'placement': decision}
+    kind = 'fragment' if decision['mode'] == 'inline' and context.harness['id'] in ('codex', 'claude-inline') else 'document'
     body = fragment(spec, context, appearance, info, delivery)
     size_limit = context.config['placement']['maxInlineBytes']
     if decision['mode'] == 'inline' and len(body.encode()) >= size_limit:
         require(requested == 'auto', f'Inline UI exceeds {size_limit} bytes; reduce the dataset or use standalone')
         decision.update(mode='standalone', reason='Payload exceeds the inline file-size limit')
-        kind = context.config['output']['standalone']
+        if context.harness['id'] in ('codex', 'claude-inline'):
+            context = context.switch('browser-local')
+            delivery = context.config['delivery']
+            result.update(harness='browser-local', delivery='embed')
+        kind = 'document'
         body = fragment(spec, context, appearance, info, delivery)
     output = wrap(body, kind, spec, context, appearance)
     out.write_text(output, encoding='utf-8')
@@ -397,12 +319,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--spec', type=Path, help='JSON specification; dataFile paths resolve relative to this file')
     parser.add_argument('--patch', type=Path, help='Apply row upserts/removals or metadata updates to --spec')
-    parser.add_argument('--out', type=Path, help='Output path (.html, or .json for module delivery)')
+    parser.add_argument('--out', type=Path, help='Output HTML path')
     parser.add_argument('--format', choices=('auto', 'inline', 'standalone'), default='auto')
-    parser.add_argument('--harness', help='Harness profile id (default: config, then environment detection)')
+    parser.add_argument('--harness', help='Supported host (default: config, then environment suggestion)')
     parser.add_argument('--theme', help='Theme pack name, theme.json path, or pack folder')
     parser.add_argument('--appearance', choices=('light', 'dark', 'system', 'host'))
-    parser.add_argument('--delivery', choices=('embed', 'url', 'module'))
     parser.add_argument('--renderer-url', help='Published renderer.js URL for url delivery')
     parser.add_argument('--viewport-width', type=int, help='Expected inline width in pixels')
     parser.add_argument('--viewport-height', type=int, help='Expected viewport height; inline uses the configured fraction, capped')
@@ -416,7 +337,7 @@ def main():
                           'examples': str(ROOT / 'assets/examples')}))
         return
     cli = {'harness': args.harness, 'theme': args.theme, 'appearance': args.appearance}
-    delivery = {k: v for k, v in (('mode', args.delivery), ('rendererUrl', args.renderer_url)) if v}
+    delivery = {'rendererUrl': args.renderer_url} if args.renderer_url else {}
     if delivery:
         cli['delivery'] = delivery
     try:

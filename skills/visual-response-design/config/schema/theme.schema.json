@@ -61,16 +61,6 @@
       }
     },
     "table": {"type": "object", "properties": {"cellPadding": {"$ref": "#/$defs/pair"}}},
-    "motion": {
-      "type": "object",
-      "properties": {
-        "secondsPerStage": {"type": "number", "minimum": 0.5, "maximum": 20},
-        "fps": {"type": "integer", "minimum": 12, "maximum": 60},
-        "canvas": {"$ref": "#/$defs/pair"},
-        "numberSize": {"$ref": "#/$defs/px"},
-        "labelSize": {"$ref": "#/$defs/px"}
-      }
-    },
     "light": {"$ref": "#/$defs/palette"},
     "dark": {"$ref": "#/$defs/palette"}
   },

@@ -1,4 +1,4 @@
 interface:
   display_name: "Visual Response Design"
-  short_description: "Reusable UI for reviews and batch input"
-  default_prompt: "Use the bundled renderer if this task materially benefits from visual structure or interaction. Render with `scripts/render.py --harness codex`, follow the returned handoff, supply only data and configuration, preserve editable feedback, and skip UI for simple replies."
+  short_description: "Shared UI for reviews and batch feedback"
+  default_prompt: "Use $visual-response-design to render an interactive review from a JSON spec, preserving the configured theme and editable batch feedback."

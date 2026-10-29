@@ -11,19 +11,17 @@ Read when building, changing, or reviewing components and feedback delivery. The
 
 ### Forms, choices, cards, and actions
 
-- Every view (tables, cards, Kanban, flows, and forms) must have a primary **Send to chat** button directly below its main content, outside the collapsible feedback section. Submit the structured JSON instruction containing selected records, attached feedback, and current field values without requiring a general instruction or opening feedback. Keep **Send feedback** for optional commentary. Use truthful **Save answers** or **Prepare message** labels when the host cannot start a chat turn; reveal the copy fallback on preparation/failure and keep submission status visible when feedback is collapsed. Labels come from `copy.*` and the harness adapter's `capabilities.submit`, never from checking host globals in the renderer.
+- Every view (tables, cards, Kanban, flows, and forms) must have a primary **Send to chat** button directly below its main content, outside the collapsible feedback section. Submit the structured JSON instruction containing selected records, attached feedback, and current field values without requiring a general instruction or opening feedback. Keep **Send feedback** for optional commentary. Use truthful **Submit answers** or **Prepare message** labels when the host cannot start a chat turn; reveal the copy fallback on preparation/failure and keep submission status visible when feedback is collapsed. Labels come from `copy.*` and the harness adapter's `capabilities.submit`, never from checking host globals in the renderer.
 - Prefill known values. Let the user select multiple answers where appropriate, edit each offered option, and add item-specific or general feedback. Avoid asking them to retype context already supplied.
 - Attach comments to the information they concern. Use one deliberate batch submission for related feedback rather than sending every edit as a new turn.
 - Surface medium- or high-confidence recommendations as editable CTAs with clear action verbs. Explain consequential uncertainty briefly; do not invent numerical confidence scores.
 - Keep recommendation drafts distinct from executed actions. Show what an action will do and support undo for reversible local edits where practical. Preserve existing authorization boundaries for external actions.
 
-### Technical visuals and motion
+### Technical visuals
 
-- Prefer visual explanations for complex technical ideas: labeled nodes, edges, sequence, state changes, and directly associated examples. Keep necessary evidence and precise details available beside or beneath the visual.
-- Reserve motion for explaining complicated concepts or flows where sequence, causality, or state changes are easier to understand through animation. Keep routine reviews, tables, cards, Kanban, and forms static; their interaction controls remain available.
-- Use Remotion when animation meaningfully improves such an explanation and the environment supports it. For inspectable interactive explanations, use the available diagram or visualization workflow.
-- When motion is appropriate, default to manual steps with optional Play. Provide pause, step, replay, and speed controls where relevant. Keep a static overview available and honor reduced-motion preferences.
-- Keep colors and positions stable across updates. Pair color with labels or shapes. Use emphasis to identify the current focal point rather than making every item equally prominent.
+- Use static flows with labeled steps and manually selected detail. Keep necessary evidence beside or beneath the visual.
+- Keep interaction feedback to brief CSS transitions. Honor reduced-motion preferences and avoid autoplay, decorative animation, and animation engines.
+- Keep colors and positions stable across updates. Pair color with labels or shapes.
 
 ## Feedback delivery and state
 

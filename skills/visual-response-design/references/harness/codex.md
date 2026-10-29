@@ -1,6 +1,6 @@
 # Codex / ChatGPT widget host
 
-Profile: `harnesses/codex.json` · adapter: `harnesses/codex.js` · standalone views switch to `browser-local`.
+Adapter: `harnesses/codex.js`. The existing inline rendering and feedback bridge are preserved; standalone views use the local browser.
 
 ## Render and hand off
 

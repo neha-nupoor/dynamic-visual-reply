@@ -1,9 +1,9 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.0",
   "draftVersion": "1.0.0",
-  "sha256": "1150a8db0133be9a510b78aed4c278e3ca76cbdf75062d71b6ca37de9e96e03d",
-  "sri": "sha384-S+xJGVtNHt5SHi/nVK0iTADLGsT3GO1qv3hoRwewpKNqy7ps1aqVLJoVQkaNwA3n",
-  "bytes": 811328,
+  "sha256": "629a4a31cc0faa1063144dc6fb9ffed9883741183bc4550950560a4600a12efe",
+  "sri": "sha384-STCO6PSgpAGo9N1oLdAkpJ36oOTR0EniXWLyGuR1GoDR0+nBjo1bY9SEPrni6JuC",
+  "bytes": 461913,
   "views": [
     "table",
     "cards",
@@ -14,7 +14,6 @@
   "adapters": [
     "codex",
     "claude-inline",
-    "claude-artifact",
     "browser-local"
   ]
 }
