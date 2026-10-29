@@ -2,7 +2,8 @@
 (function () {
   var storagePrefix = 'visual-response:';
   var served = /^https?:$/.test(location.protocol) && (location.hostname === '127.0.0.1' || location.hostname === 'localhost');
-  window.visualResponseHost = {
+  // Registered by id so the renderer bundle can carry this adapter; a page may still set window.visualResponseHost to override.
+  (window.visualResponseHosts = window.visualResponseHosts || {})['browser-local'] = {
     id: 'browser-local',
     capabilities: { submit: served ? 'save' : 'none', persist: true, restore: true },
     submit: function (m) {

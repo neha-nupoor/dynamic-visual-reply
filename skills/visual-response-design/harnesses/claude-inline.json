@@ -5,6 +5,7 @@
   "detect": {"env": {"CLAUDECODE": "1", "CLAUDE_CODE_DESKTOP_APP_VERSION": "*"}, "priority": 20},
   "adapter": "claude-inline.js",
   "standaloneHarness": "claude-artifact",
+  "standaloneFallback": "browser-local",
   "handoff": "show_widget",
   "references": "references/harness/claude-inline.md",
   "csp": {"scriptHosts": ["cdnjs.cloudflare.com", "esm.sh", "cdn.jsdelivr.net", "unpkg.com"]},

@@ -72,9 +72,10 @@ Keys added after theme v2 (`type.meta`, `type.titleCompact`, `type.titleLineHeig
 | Cards | 2 cards |
 | Form | 3 compact control units; textarea counts as 2, each editable multi-select option as 1 |
 | Static flow | 4 nodes |
-| Kanban / motion | Standalone |
+| Kanban | 6 cards, if the stage columns fit the width |
+| Motion flow | Same as a static flow |
 
-Ceilings come from `placement.inlineLimits`. Estimated heights are computed from the active theme's sizes (title, line height, control and input heights, padding, cell padding), so changing a theme changes the estimate without code edits. Counts are eligibility limits, not a guarantee; width, text wrapping and height can still push a view standalone. Small datasets are not made inline merely by paginating a larger dataset. Inline feedback actions and extra controls begin collapsed to reduce height; row instructions remain accessible.
+Ceilings come from `placement.inlineLimits` (`false` makes a view always standalone). The agent may override any decision with `presentation`. Estimated heights are computed from the active theme's sizes (title, line height, control and input heights, padding, cell padding), so changing a theme changes the estimate without code edits. Counts are eligibility limits, not a guarantee; width, text wrapping and height can still push a view standalone. Small datasets are not made inline merely by paginating a larger dataset. Inline feedback actions and extra controls begin collapsed to reduce height; row instructions remain accessible.
 
 The default viewport is 736 × 900 px, with a height budget of `min(640, 0.75 × viewportHeight)`. A harness profile may change both (for example `claude-inline` uses 680 px). When placement picks a mode the harness handles elsewhere, `standaloneHarness`/`inlineHarness` in the profile switches the profile before output. Codex standalone becomes `browser-local`; Claude inline standalone becomes `claude-artifact`.
 
@@ -143,7 +144,7 @@ Selected items and items with edits or comments are included. Users can preview 
 
 ### Harness adapters
 
-The renderer never checks for host globals itself. A harness adapter script, placed by `render.py` before the bundle, defines:
+The renderer never checks for host globals itself. Adapters register themselves in `window.visualResponseHosts[<adapter id>]`. The bundle includes `codex`, `claude-inline`, `claude-artifact` and `browser-local` (listed in `manifest.json` `adapters`), and picks one by the page config's `adapter`, because some hosts (such as Claude's inline widget) don't run a page's inline scripts. `render.py` injects only adapters that aren't in the bundle. A page or wrapper may set `window.visualResponseHost` to override. Each adapter has this shape:
 
 ```ts
 window.visualResponseHost = {

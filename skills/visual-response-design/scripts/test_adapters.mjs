@@ -24,7 +24,7 @@ function load(file,extra={}){
   };
   window.window=window;
   vm.runInNewContext(readFileSync(join(harnesses,file),'utf8'),Object.assign(window,{localStorage:window.localStorage,location:window.location}));
-  return {host:window.visualResponseHost,window,store};
+  return {host:window.visualResponseHosts[file.replace(/\.js$/,'')],window,store};
 }
 
 const draft={key:'k1',selected:['a']};

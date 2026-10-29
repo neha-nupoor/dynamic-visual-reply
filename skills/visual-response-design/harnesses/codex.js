@@ -4,7 +4,8 @@
   var stateLimitBytes = 15000;
   function openai() { return window.openai; }
   function savedDraft(state) { return state && ((state.privateContent && state.privateContent.draft) || state.draft); }
-  window.visualResponseHost = {
+  // Registered by id so the renderer bundle can carry this adapter; a page may still set window.visualResponseHost to override.
+  (window.visualResponseHosts = window.visualResponseHosts || {})['codex'] = {
     id: 'codex',
     get capabilities() {
       var o = openai();

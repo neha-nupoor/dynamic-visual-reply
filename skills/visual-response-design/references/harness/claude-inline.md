@@ -28,6 +28,7 @@ python3 <skill-dir>/scripts/render.py --spec <spec.json> --out <view.html> --har
 
 - **Inline** (`handoff.type: "show_widget"`): read the output file and pass its full contents, unchanged, as `widget_code`. Follow your host's own widget rules, such as reading its guide before the first widget. Put any explanation in your message text, not in the widget.
 - **Standalone** (`handoff.type: "artifact"`): the script already switched to the artifact profile. Follow [claude-artifact.md](claude-artifact.md).
+- **Standalone without an artifact-loadable URL** (`handoff.type: "serve"`): artifacts only accept npm-hosted scripts, so with only a GitHub release configured the script falls back to `browser-local`. Follow [browser-local.md](browser-local.md).
 
 Specs above `placement.maxSpecBytes` (24 KB by default) go standalone automatically, because every inline byte is model output.
 
@@ -37,4 +38,4 @@ Specs above `placement.maxSpecBytes` (24 KB by default) go standalone automatica
 
 ## Appearance
 
-The theme's own appearance applies; for example, a theme set to `light` stays light even on a dark host. To follow the Claude host's colors instead, set `"appearance": "host"`. The page then reads the host CSS variables listed in the profile's `hostPalette` at runtime, and falls back to the theme for any that are missing.
+The theme's own appearance applies. A `system` theme switches between its light and dark palettes with the Claude host (it reads the host's `data-mode`/`data-theme`, then the OS setting); a `light` theme stays light even on a dark host. To use the Claude host's own colors instead of the theme's, set `"appearance": "host"`. The page then reads the host CSS variables listed in the profile's `hostPalette` at runtime, and falls back to the theme for any that are missing.

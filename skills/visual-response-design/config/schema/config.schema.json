@@ -56,6 +56,7 @@
         "mode": {"enum": ["embed", "url", "module"]},
         "rendererUrl": {"type": ["string", "null"], "pattern": "^https://"},
         "repository": {"description": "Public GitHub \"owner/name\" this skill is released from. When rendererUrl is null, the renderer loads from jsDelivr at the release tag (tagPrefix + bundle version).", "type": ["string", "null"], "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "npmPackage": {"description": "Published npm package that contains this repository layout. When rendererUrl is null, the renderer loads from jsDelivr's npm path at the bundle version, which both inline widgets and artifacts accept.", "type": ["string", "null"], "pattern": "^(@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*$"},
         "repositoryPath": {"description": "This skill's folder inside the repository.", "type": "string"},
         "tagPrefix": {"type": "string"},
         "integrity": {"description": "\"manifest\" computes SRI from the local bundle, a literal sha384-… value pins one, null omits it.", "type": ["string", "null"]}

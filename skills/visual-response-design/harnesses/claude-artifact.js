@@ -12,7 +12,8 @@
   function draftDoc(key) {
     return Promise.all([db(), uid()]).then(function (r) { return r[0] && r[1] ? r[0].collection('data/users/' + r[1]).doc('vr-' + key) : null; });
   }
-  window.visualResponseHost = {
+  // Registered by id so the renderer bundle can carry this adapter; a page may still set window.visualResponseHost to override.
+  (window.visualResponseHosts = window.visualResponseHosts || {})['claude-artifact'] = {
     id: 'claude-artifact',
     capabilities: { submit: 'save', persist: true, restore: true },
     submit: function (m) {

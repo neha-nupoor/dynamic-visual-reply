@@ -37,8 +37,10 @@
       "flow": {
         "nodes": 4
       },
-      "kanban": false,
-      "motion": false
+      "kanban": {
+        "items": 6
+      },
+      "motion": true
     },
     "maxInlineBytes": 1000000,
     "maxSpecBytes": null
@@ -46,6 +48,7 @@
   "delivery": {
     "mode": "embed",
     "rendererUrl": null,
+    "npmPackage": null,
     "repository": "neha-nupoor/reply-ui",
     "repositoryPath": "skills/visual-response-design",
     "tagPrefix": "v",

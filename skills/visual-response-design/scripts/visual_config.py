@@ -228,13 +228,15 @@ def css_variables(theme, appearance=None):
 
 
 def renderer_url(delivery, version):
-    """The configured URL, or the jsDelivr GitHub URL for this skill's release tag when only `repository` is set."""
+    """rendererUrl, else jsDelivr's npm path for `npmPackage` (inline and artifacts), else its GitHub path for `repository` (inline only)."""
     if delivery.get('rendererUrl'):
         return delivery['rendererUrl']
+    path = delivery.get('repositoryPath', 'skills/visual-response-design').strip('/') + '/assets/renderer/dist/renderer.js'
+    if delivery.get('npmPackage'):
+        return f'https://cdn.jsdelivr.net/npm/{delivery["npmPackage"]}@{version}/{path}'
     if delivery.get('repository'):
         tag = delivery.get('tagPrefix', 'v') + version
-        path = delivery.get('repositoryPath', 'skills/visual-response-design').strip('/')
-        return f'https://cdn.jsdelivr.net/gh/{delivery["repository"]}@{tag}/{path}/assets/renderer/dist/renderer.js'
+        return f'https://cdn.jsdelivr.net/gh/{delivery["repository"]}@{tag}/{path}'
     return None
 
 

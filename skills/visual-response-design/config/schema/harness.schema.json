@@ -23,6 +23,7 @@
     "adapter": {"description": "Adapter script next to the profile that defines window.visualResponseHost, or null for the renderer's built-in static host.", "type": ["string", "null"]},
     "standaloneHarness": {"description": "Profile to use instead when placement chooses standalone.", "type": "string"},
     "inlineHarness": {"description": "Profile to use instead when placement chooses inline.", "type": "string"},
+    "standaloneFallback": {"description": "Profile to use when standaloneHarness can't load the configured renderer URL (its csp.scriptHosts would block it).", "type": "string"},
     "handoff": {"enum": ["contentReference", "show_widget", "artifact", "serve", "file", "module"]},
     "artifactCapabilities": {"description": "Capabilities an artifact page must declare when published.", "type": "object"},
     "csp": {"type": "object", "properties": {"scriptHosts": {"type": "array", "items": {"type": "string"}}}},

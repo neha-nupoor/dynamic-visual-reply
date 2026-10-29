@@ -94,7 +94,7 @@ class RendererTests(unittest.TestCase):
             self.assertEqual(extract(first), extract(second))
             self.assertLess(first.stat().st_size, 1_000_000)
             self.assertNotIn('<script src=', first.read_text())
-            self.assertIn("id: 'codex'", first.read_text())
+            self.assertIn('"adapter":"codex"', first.read_text())
             self.assertTrue(first.with_suffix('.spec.json').exists())
             self.assertTrue(result['contentReference'].startswith('visualize'))
 
@@ -118,12 +118,19 @@ class RendererTests(unittest.TestCase):
         self.assertEqual(render.placement(table, width=360)['mode'], 'standalone')
         table['rows'][0]['name'] = 'Long description ' * 100
         self.assertEqual(render.placement(table)['mode'], 'standalone')
+
+    def test_kanban_and_motion_are_sized_like_other_views(self):
+        board = self.example('kanban')
+        self.assertEqual(render.placement(board)['mode'], 'inline')
+        board['rows'] = [{'id': f'r{i}', 'title': f'Item {i}', 'stage': 'To review'} for i in range(7)]
+        self.assertEqual(render.placement(board)['mode'], 'standalone')
+        self.assertEqual(render.placement(self.example('flow-motion'))['mode'], 'inline')
+        strict = visual_config.resolve({'placement': {'inlineLimits': {'kanban': False, 'motion': False}}}, isolated=True)
         for name in ('kanban', 'flow-motion'):
-            self.assertEqual(render.placement(self.example(name))['mode'], 'standalone')
+            self.assertEqual(render.placement(self.example(name), config=strict.config, theme=strict.theme)['mode'], 'standalone')
 
     def test_placement_decisions_match_renderer_1_0_snapshot(self):
-        expected = {'table': 'standalone', 'cards': 'standalone', 'form': 'standalone', 'flow': 'inline',
-                    'flow-motion': 'standalone', 'kanban': 'standalone'}
+        expected = {'table': 'standalone', 'cards': 'standalone', 'form': 'standalone', 'flow': 'inline'}
         for name, mode in expected.items():
             with self.subTest(name=name):
                 self.assertEqual(render.placement(self.example(name))['mode'], mode)
@@ -183,7 +190,7 @@ class RendererTests(unittest.TestCase):
                 self.assertIn('color-scheme:light}', html)
             else:
                 self.assertIn(context.theme['dark']['canvas'], html)
-            self.assertIn("id: 'browser-local'", html)
+            self.assertIn('"adapter":"browser-local"', html)
 
     def test_default_theme_pack_is_found_by_name(self):
         found = visual_config.find_theme(DEFAULT_THEME)
@@ -260,7 +267,8 @@ class RendererTests(unittest.TestCase):
             manifest = render.load(render.MANIFEST)
             self.assertEqual(result['handoff']['type'], 'show_widget')
             self.assertIn(f'<script src="{URL}" integrity="{manifest["sri"]}" crossorigin="anonymous">', html)
-            self.assertIn('window.sendPrompt', html)
+            self.assertIn('"adapter":"claude-inline"', html)
+            self.assertNotIn('data-visual-response-host', html)
             self.assertNotIn('data-visual-response-runtime', html)
             self.assertLess(len(html.encode()), 8000)
 
@@ -280,6 +288,13 @@ class RendererTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 quiet(render.render, self.example('flow'), Path(directory) / 'w.html', 'auto', context=context)
 
+    def test_claude_inline_falls_back_to_browser_when_artifacts_cannot_load_the_url(self):
+        with tempfile.TemporaryDirectory() as directory:
+            context = visual_config.resolve({'delivery': {'repository': 'someone/visual-response'}}, harness='claude-inline', isolated=True)
+            result = quiet(render.render, self.table(), Path(directory) / 'a.html', 'auto', context=context)
+            self.assertEqual(result['harness'], 'browser-local')
+            self.assertIn('cannot load the renderer URL', result['placement']['reason'])
+
     def test_claude_inline_hands_large_views_to_an_artifact_page(self):
         with tempfile.TemporaryDirectory() as directory:
             context = visual_config.resolve({'delivery': {'rendererUrl': URL}}, harness='claude-inline', isolated=True)
@@ -290,7 +305,7 @@ class RendererTests(unittest.TestCase):
             self.assertEqual(result['handoff']['capabilities'], {'db': {}, 'user': {}})
             self.assertTrue(html.startswith('<title>Sample: review response components</title>'))
             self.assertNotIn('<!doctype', html.lower())
-            self.assertIn("collection('batches')", html)
+            self.assertIn('"adapter":"claude-artifact"', html)
             self.assertIn('padding-left:max(16px,env(safe-area-inset-left,0px))', html)
 
     def test_module_delivery_returns_data_for_wrappers(self):

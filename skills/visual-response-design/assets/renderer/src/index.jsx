@@ -6,6 +6,11 @@ import {cssVariables,merge,neutral,readJson,resolvePalette,responseTheme} from '
 import {copy as defaultCopy,feedback as defaultFeedback} from '../../../config/defaults.json';
 import {Player} from '@remotion/player';
 import {useCurrentFrame,interpolate} from 'remotion';
+// Built-in adapters register themselves by id. Some hosts don't run a page's inline scripts, so they can't rely on injection.
+import '../../../harnesses/codex.js';
+import '../../../harnesses/claude-inline.js';
+import '../../../harnesses/claude-artifact.js';
+import '../../../harnesses/browser-local.js';
 
 const mount=document.querySelector('[data-visual-response-root]');
 const spec=JSON.parse(document.querySelector('[data-visual-response-spec]').textContent);
@@ -19,11 +24,11 @@ const key=spec.stateKey;
 const safeUrl=value=>typeof value==='string'&&/^https?:\/\//i.test(value)?value:undefined;
 const t=(path,vars={})=>String(path.split('.').reduce((value,part)=>value?.[part],copy)??path).replace(/\{(\w+)\}/g,(_,name)=>vars[name]??'');
 const storageKey='visual-response:'+key;
-// Harness adapters define window.visualResponseHost before this bundle runs; without one, copy/export still work.
+// An explicit window.visualResponseHost wins, then the built-in adapter the page config names; without either, copy/export still work.
 const staticHost={id:'static',capabilities:{submit:'none',persist:true,restore:true},
   saveDraft(_,draft){try{localStorage.setItem(storageKey,JSON.stringify(draft))}catch{}},
   loadDraft(){try{return JSON.parse(localStorage.getItem(storageKey))}catch{return null}}};
-const host=window.visualResponseHost||staticHost;
+const host=window.visualResponseHost||(config.adapter&&window.visualResponseHosts?.[config.adapter])||staticHost;
 const submitMode=()=>host.capabilities?.submit||'none';
 const frameCount=Math.round(tokens.motion.secondsPerStage*tokens.motion.fps);
 const loaded=(()=>{try{return host.loadDraft?.(key)}catch{return null}})();

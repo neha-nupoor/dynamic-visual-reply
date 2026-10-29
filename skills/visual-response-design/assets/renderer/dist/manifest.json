@@ -1,14 +1,20 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "draftVersion": "1.0.0",
-  "sha256": "8ace17698e78f01946b67d95149928da551250ad1d35bcbfe94989af528997b2",
-  "sri": "sha384-bhAPazvHrJMbiJVscd12nuBpsmj69pKoaUU0Hcpaxp1OHTpZLt64Jocbex+6u7Zl",
-  "bytes": 806734,
+  "sha256": "6bf7a65bb863514075342cda4b894c8e8fb5552ddd4302c6715353bb22d632fd",
+  "sri": "sha384-wmbh6O2AkL85H75hVeh6AVrwMiBBAi9SqpzNkTBR7Qp9fhXgRpl/XpZEpnimOAFs",
+  "bytes": 810911,
   "views": [
     "table",
     "cards",
     "form",
     "kanban",
     "flow"
+  ],
+  "adapters": [
+    "codex",
+    "claude-inline",
+    "claude-artifact",
+    "browser-local"
   ]
 }

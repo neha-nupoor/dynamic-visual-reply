@@ -46,7 +46,7 @@ Use task-owned output paths. Preserve `viewId` for compatible updates; use a new
 
 Working examples are in `assets/examples/`. Run `scripts/render.py --catalog` to list views, harnesses and examples without reading source. The runtime supplies selection/deselection, drafts, reviewed state, undo, feedback previews, host submission, and copy/export fallback for every view.
 
-Inline candidates by default: at most 3 table rows and 3 data columns, 2 cards, 3 compact form control units, or 4 static flow nodes, and they must fit the estimated width and height. Kanban and motion default to standalone. Limits, viewport and height budget come from configuration and the harness profile; use `--format inline`/`standalone` or spec `presentation` for a deliberate override.
+Inline candidates by default: at most 3 table rows and 3 data columns, 2 cards, 3 compact form control units, 4 flow nodes (static or motion), or a board of up to 6 cards, and they must fit the estimated width and height. Treat the result as advice: you decide where a view belongs for this conversation, especially for boards and animated flows, and say so with spec `presentation` or `--format inline`/`standalone`. Limits, viewport and height budget come from configuration and the harness profile.
 
 ## Design system and configuration
 

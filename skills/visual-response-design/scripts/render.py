@@ -224,8 +224,11 @@ def placement(spec, width=None, height=None, *, config=None, theme=None):
     else:
         rows = spec.get('rows', [])
         stages = spec.get('stages', ['To review', 'In progress', 'Done'])
-        tallest = max([sum(1 for r in rows if r.get('stage', stages[0]) == s) for s in stages] + [0])
-        estimated_height = base + body_line + tallest * (2 * layout['surfacePadding'] + body_line + control['inputHeight'] + feedback_block)
+        counts = [sum(1 for r in rows if r.get('stage', stages[0]) == s) for s in stages]
+        across = max(1, int(inner // (layout['cardMinWidth'] + 12)))
+        card = 2 * layout['surfacePadding'] + body_line + control['inputHeight'] + feedback_block
+        # Stage columns wrap onto further rows when the width can't fit them side by side.
+        estimated_height = base + sum(body_line + 3 * unit + max(counts[i:i + across]) * card for i in range(0, len(counts), across))
         allowed = bool(limit) and len(rows) <= limit.get('items', 0)
         if not allowed:
             reason = 'Kanban uses the side panel'
@@ -244,10 +247,20 @@ def manifest():
     require(hashlib.sha256(BUNDLE.read_bytes()).hexdigest() == data['sha256'], 'Renderer bundle differs from its manifest; rebuild before use')
     return data
 
+def url_allowed(context, version):
+    """Whether this harness's script allowlist admits the renderer URL it would use."""
+    if context.config['delivery']['mode'] != 'url':
+        return True
+    url = visual_config.renderer_url(context.config['delivery'], version)
+    hosts = context.harness.get('csp', {}).get('scriptHosts')
+    return bool(url) and (not hosts or any(url.startswith('https://' + host) for host in hosts))
+
 def runtime_config(context, appearance):
     """Only what differs from the defaults compiled into the bundle, to keep pages small."""
     defaults = load(ROOT / 'config/defaults.json')
     config = {'harness': context.harness['id'], 'appearance': appearance}
+    if context.harness.get('adapter'):
+        config['adapter'] = Path(context.harness['adapter']).stem
     copy = visual_config.diff(context.config.get('copy', {}), defaults['copy'])
     feedback = visual_config.diff(context.config.get('feedback', {}), defaults['feedback'])
     if copy:
@@ -267,7 +280,8 @@ def fragment(spec, context, appearance, info, delivery):
              '<script type="application/json" data-visual-response-config>' + json_for_html(runtime_config(context, appearance)) + '</script>',
              '<script type="application/json" data-visual-response-theme>' + json_for_html(page_theme(context)) + '</script>',
              '<script type="application/json" data-visual-response-spec>' + json_for_html(spec) + '</script>']
-    if adapter:
+    # Adapters already in the bundle are selected by name; only others are injected, for hosts that run inline scripts.
+    if adapter and Path(adapter).stem not in info.get('adapters', []):
         script = (HARNESS_DIR / adapter).read_text(encoding='utf-8')
         require('</script' not in script.lower(), 'Adapter contains an unsafe closing script tag')
         parts.append('<script data-visual-response-host>\n' + script.strip() + '\n</script>')
@@ -335,9 +349,14 @@ def render(spec, out, mode='auto', viewport_width=None, viewport_height=None, *,
         decision.update(mode='standalone', reason=f'Spec exceeds {limit} bytes, the inline size limit for this harness')
     # A harness can hand one mode to another profile (Codex standalone → browser-local, Claude inline → artifact).
     switch = context.harness.get('standaloneHarness' if decision['mode'] == 'standalone' else 'inlineHarness')
-    if switch and switch != context.harness['id']:
-        context = context.switch(switch)
     info = manifest()
+    if switch and switch != context.harness['id']:
+        fallback = context.harness.get('standaloneFallback') if decision['mode'] == 'standalone' else None
+        switched = context.switch(switch)
+        if fallback and not url_allowed(switched, info['version']):
+            decision['reason'] += f'; {switch} cannot load the renderer URL, so {fallback} is used'
+            switched = context.switch(fallback)
+        context = switched
     spec['resolvedPresentation'] = decision
     # Draft keys follow draftVersion so cosmetic or harness changes never discard saved drafts.
     spec['stateKey'] = hashlib.sha256((info.get('draftVersion', info['version']) + ':' + spec['viewId'] + ':' + spec['view']).encode()).hexdigest()[:24]
