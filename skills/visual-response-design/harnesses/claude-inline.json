@@ -24,11 +24,16 @@
     "warning": "--text-warning",
     "error": "--text-danger"
   },
-  "notes": "show_widget takes the widget's code as model-written text, so the bundle is loaded from rendererUrl and only the spec, theme and this adapter are written per view. Send to chat calls the widget's global sendPrompt().",
+  "notes": "show_widget takes the widget's code as model-written text, so the bundle is loaded from rendererUrl and only the spec, theme and this adapter are written per view. The primary button calls the widget's global sendPrompt(), which in the Claude desktop app places the message in the user's message box; the user presses Enter to send it.",
   "config": {
     "delivery": {"mode": "url"},
     "output": {"inline": "fragment"},
     "placement": {"viewport": {"width": 680, "height": 900}, "maxSpecBytes": 24000},
-    "copy": {"status": {"submitted": "Sent to chat."}}
+    "feedback": {"messageFormat": "summary"},
+    "copy": {
+      "submit": {"message": "Add to chat"},
+      "feedbackSubmit": {"message": "Add feedback to chat"},
+      "status": {"submitted": "Added to your message box. Press Enter to send it."}
+    }
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "dynamic-agent-ux",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Prebuilt renderer for the visual-response-design agent skill: interactive UI in Codex, Claude and other agent responses.",
   "license": "MIT",
   "repository": {"type": "git", "url": "git+https://github.com/neha-nupoor/reply-ui.git"},

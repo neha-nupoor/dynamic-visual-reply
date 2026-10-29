@@ -198,12 +198,23 @@ def contrast(first, second):
     return (values[1] + .05) / (values[0] + .05)
 
 
+def complete_palette(palette):
+    """Fill the optional accent roles the way the renderer does: from `accent` and `onAccent`."""
+    return {**palette, 'accentFill': palette.get('accentFill', palette['accent']),
+            'onAccentFill': palette.get('onAccentFill', palette['onAccent']),
+            'accentBorder': palette.get('accentBorder', palette['accent']),
+            'onSelected': palette.get('onSelected', palette['accent'])}
+
+
 def contrast_problems(theme):
     problems = []
     for mode in ('light', 'dark'):
-        palette = theme[mode]
-        pairs = [(fg, bg, 4.5) for bg in ('canvas', 'surface', 'selected', 'hover') for fg in ('text', 'muted', 'accent')]
-        pairs += [('onAccent', 'accent', 4.5), ('controlBorder', 'surface', 3), ('accent', 'surface', 3)]
+        palette = complete_palette(theme[mode])
+        pairs = [(fg, bg, 4.5) for bg in ('canvas', 'surface', 'selected', 'hover') for fg in ('text', 'muted')]
+        # Accent text never sits on the selected tint; `onSelected` does.
+        pairs += [('accent', bg, 4.5) for bg in ('canvas', 'surface', 'hover')] + [('onSelected', 'selected', 4.5)]
+        pairs += [('onAccent', 'accent', 4.5), ('onAccentFill', 'accentFill', 4.5),
+                  ('controlBorder', 'surface', 3), ('accentBorder', 'surface', 3)]
         for fg, bg, minimum in pairs:
             ratio = contrast(palette[fg], palette[bg])
             if ratio < minimum:
@@ -220,10 +231,11 @@ def css_variables(theme, appearance=None):
               f'  --vr-radius-surface: {theme["radius"]["surface"]}px;\n  --vr-control-height: {theme["control"]["minHeight"]}px;')
     appearance = appearance or theme.get('appearance', 'light')
     first = 'dark' if appearance == 'dark' else 'light'
-    css = f':root {{\n{shared}\n{block(theme[first])}\n}}\n'
+    css = f':root {{\n{shared}\n{block(complete_palette(theme[first]))}\n}}\n'
     if appearance in ('system', 'host'):
-        css += (f'@media (prefers-color-scheme: dark) {{ :root:not([data-theme="light"]) {{\n{block(theme["dark"])}\n}} }}\n'
-                f':root[data-theme="dark"] {{\n{block(theme["dark"])}\n}}\n')
+        dark = block(complete_palette(theme['dark']))
+        css += (f'@media (prefers-color-scheme: dark) {{ :root:not([data-theme="light"]) {{\n{dark}\n}} }}\n'
+                f':root[data-theme="dark"] {{\n{dark}\n}}\n')
     return css
 
 

@@ -60,7 +60,7 @@ A theme pack is a folder with `theme.json` (or `assets/theme.json`), validated b
 - sibling skills
 - `~/.agents/skills`, `~/.claude/skills`, `~/.codex/skills` and `~/.cursor/skills`
 
-Keys added after theme v2 (`type.meta`, `type.titleCompact`, `type.titleLineHeight`, `type.titleTracking`, `radius.chip`, `layout.contentPaddingCompact`, `control.inputHeight`, `control.paddingX`, `control.paddingY`, `control.inputPadding`, `table.cellPadding`, `motion.*`) fall back to the neutral theme's values. Every pack must pass the contrast checks in `scripts/test_renderer.py`. The renderer exposes the active palette as `--vr-*` CSS variables on its root element. `--theme-css` writes the same variables for hand-written views.
+Keys added after theme v2 (`type.meta`, `type.titleCompact`, `type.titleLineHeight`, `type.titleTracking`, `radius.chip`, `layout.contentPaddingCompact`, `control.inputHeight`, `control.paddingX`, `control.paddingY`, `control.inputPadding`, `table.cellPadding`, `motion.*`) fall back to the neutral theme's values. A palette may also set `accentFill`/`onAccentFill` (primary button), `accentBorder` (selected outline) and `onSelected` (accent text on the selected tint) when one accent can't serve as both fill and text, as in Base Web's dark theme; each defaults to `accent`/`onAccent`. Every pack must pass the contrast checks in `scripts/test_renderer.py`. The renderer exposes the active palette as `--vr-*` CSS variables on its root element. `--theme-css` writes the same variables for hand-written views.
 
 ### Automatic placement
 

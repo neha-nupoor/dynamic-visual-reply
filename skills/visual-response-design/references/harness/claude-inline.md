@@ -34,7 +34,7 @@ Specs above `placement.maxSpecBytes` (24 KB by default) go standalone automatica
 
 ## Feedback
 
-**Send to chat** calls the widget's global `sendPrompt()` with the JSON feedback envelope, which arrives as the user's next message. Acknowledge the values you actually received. Drafts are kept in the widget's local storage only when the sandbox allows it.
+**Add to chat** calls the widget's global `sendPrompt()`. In the Claude desktop app, that puts the message in the user's message box and does not send it; the user presses Enter. The widget can't send on its own, so the label and status say exactly that. Because the user sees the text before sending it, this profile uses `feedback.messageFormat: "summary"`: a readable line, then the one-line JSON envelope. Acknowledge the values you actually received. Drafts are kept in the widget's local storage only when the sandbox allows it.
 
 ## Appearance
 

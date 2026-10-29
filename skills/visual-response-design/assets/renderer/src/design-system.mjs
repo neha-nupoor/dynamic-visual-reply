@@ -18,17 +18,25 @@ export function readJson(selector){
 }
 
 const colorPattern=/^(#[0-9a-f]{3,8}|rgba?\(|hsla?\()/i;
+// Optional accent roles, as in Base Web's dark theme: a fill dark enough for white labels, an outline, and text on the
+// selected tint. A palette that omits them uses `accent` (and `onAccent`) for every job.
+const accentRoles=['accentFill','onAccentFill','accentBorder','onSelected'];
+function completePalette(c){
+  return {...c,accentFill:c.accentFill??c.accent,onAccentFill:c.onAccentFill??c.onAccent,accentBorder:c.accentBorder??c.accent,onSelected:c.onSelected??c.accent};
+}
 export function resolvePalette(tokens,appearance,hostPalette,element,prefersDark){
   const dark=appearance==='dark'||((appearance==='system'||appearance==='host')&&prefersDark);
   const base=tokens[dark?'dark':'light'];
-  if(appearance!=='host'||!hostPalette)return {dark,c:base};
+  if(appearance!=='host'||!hostPalette)return {dark,c:completePalette(base)};
   const style=getComputedStyle(element);
   const c={...base};
+  // A host accent replaces the theme's whole accent family, so the theme's split roles don't mix with host colors.
+  if(hostPalette.accent)accentRoles.forEach(role=>{delete c[role]});
   for(const [role,variable] of Object.entries(hostPalette)){
     const value=style.getPropertyValue(variable).trim();
     if(colorPattern.test(value))c[role]=value;
   }
-  return {dark,c};
+  return {dark,c:completePalette(c)};
 }
 
 export function cssVariables(tokens,c){
@@ -52,14 +60,14 @@ export function responseTheme(tokens,c,dark){
     typography:{fontFamily:tokens.fontFamily,fontSize:type.body,h6:{fontSize:type.title,fontWeight:700,lineHeight:type.titleLineHeight,letterSpacing:type.titleTracking},body1:{fontSize:type.body,lineHeight:type.lineHeight},body2:{fontSize:type.small,lineHeight:type.lineHeight},button:{fontSize:type.small,fontWeight:600,textTransform:'none'},caption:{fontSize:type.small,lineHeight:type.lineHeight}},
     components:{
       MuiButtonBase:{styleOverrides:{root:{'&.Mui-focusVisible':focus}}},
-      MuiButton:{defaultProps:{size:'small',disableElevation:true},styleOverrides:{root:{minHeight:control.minHeight,borderRadius:radius.control,padding:`${control.paddingY}px ${control.paddingX}px`},outlined:{borderColor:c.controlBorder,color:c.text},text:{color:c.text}}},
+      MuiButton:{defaultProps:{size:'small',disableElevation:true},styleOverrides:{root:{minHeight:control.minHeight,borderRadius:radius.control,padding:`${control.paddingY}px ${control.paddingX}px`},outlined:{borderColor:c.controlBorder,color:c.text},text:{color:c.text},contained:{backgroundColor:c.accentFill,color:c.onAccentFill,'&:hover':{backgroundColor:c.accentFill,filter:'brightness(1.08)'}}}},
       MuiTextField:{defaultProps:{size:'small',variant:'outlined'}},
       MuiOutlinedInput:{styleOverrides:{root:{backgroundColor:c.surface,'& .MuiOutlinedInput-notchedOutline':{borderColor:c.controlBorder},'&:hover .MuiOutlinedInput-notchedOutline':{borderColor:c.text},'&.Mui-focused .MuiOutlinedInput-notchedOutline':{borderColor:c.accent,borderWidth:2}},input:{padding:`${inputY}px ${inputX}px`,fontSize:type.body}}},
       MuiInputLabel:{styleOverrides:{root:{color:c.muted}}},
       MuiFormHelperText:{styleOverrides:{root:{marginLeft:0,color:c.muted}}},
       MuiCard:{defaultProps:{variant:'outlined'},styleOverrides:{root:{borderRadius:radius.surface,boxShadow:'none'}}},
       MuiCardContent:{styleOverrides:{root:{padding:layout.surfacePadding,'&:last-child':{paddingBottom:layout.surfacePadding}}}},
-      MuiChip:{styleOverrides:{root:{fontWeight:600,fontSize:type.meta,borderRadius:radius.chip,backgroundColor:c.hover,color:c.muted},colorPrimary:{backgroundColor:c.selected,color:c.accent}}},
+      MuiChip:{styleOverrides:{root:{fontWeight:600,fontSize:type.meta,borderRadius:radius.chip,backgroundColor:c.hover,color:c.muted},colorPrimary:{backgroundColor:c.selected,color:c.onSelected}}},
       MuiTableCell:{styleOverrides:{root:{fontSize:type.small,borderColor:c.divider,verticalAlign:'top',padding:`${cellY}px ${cellX}px`},head:{color:c.muted,fontWeight:600,backgroundColor:c.hover},body:{'&:has(input[type="number"])':{fontVariantNumeric:'tabular-nums'}}}},
       MuiTableRow:{styleOverrides:{root:{'&.Mui-selected, &.Mui-selected:hover':{backgroundColor:c.selected}}}},
       MuiFormControlLabel:{styleOverrides:{label:{fontSize:type.small},root:{minHeight:control.minHeight}}},
