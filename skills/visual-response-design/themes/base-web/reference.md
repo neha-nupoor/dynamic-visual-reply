@@ -10,3 +10,5 @@ Reference checked October 29, 2026 against the live Base Web 18.2.0 form example
 - [Input styles](https://github.com/uber/baseweb/blob/main/src/input/styled-components.ts): filled fields, 2 px boundary, distinct focus state. The live dark example showed a #6C6C6C idle input boundary; this preset follows that visible example.
 
 This reference updates the component treatment beyond a palette swap. The collection layout, state, feedback contract and host adapters remain the shared renderer's implementation. Selected surface tint and semantic outcome colors are renderer choices; this is not a claim of pixel-identical Base Web coverage.
+
+Light-mode adaptation requested during review: a #F2F3F5 panel on #E9EBEE canvas, a visible #B8BEC6 panel/divider border, and white inputs with #8A9099 boundaries. These are deliberate departures from Base Web’s default white surface to soften the contrast against the chat background. Dark-mode tokens are unchanged.

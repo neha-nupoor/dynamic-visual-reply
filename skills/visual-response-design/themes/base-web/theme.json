@@ -50,22 +50,22 @@
     ]
   },
   "light": {
-    "canvas": "#ffffff",
-    "surface": "#ffffff",
+    "canvas": "#e9ebee",
+    "surface": "#f2f3f5",
     "text": "#000000",
     "muted": "#4b4b4b",
-    "divider": "#e8e8e8",
+    "divider": "#b8bec6",
     "controlBorder": "#727272",
     "accent": "#000000",
     "onAccent": "#ffffff",
-    "selected": "#e8e8e8",
-    "hover": "#f3f3f3",
+    "selected": "#e0e3e7",
+    "hover": "#e5e7eb",
     "success": "#25703f",
     "warning": "#805700",
     "error": "#b02c34",
-    "inputFill": "#f3f3f3",
+    "inputFill": "#ffffff",
     "inputFillActive": "#ffffff",
-    "inputBorder": "#f3f3f3"
+    "inputBorder": "#8a9099"
   },
   "dark": {
     "canvas": "#161616",
