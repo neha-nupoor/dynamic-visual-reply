@@ -128,7 +128,7 @@ def placement(spec, width=None, height=None, *, config=None, theme=None):
     action_row = control['minHeight'] + 2 * unit
     # Padding, title, primary action, collapsed feedback summary, status line, then wrapped extras.
     base = 2 * pad + title_line + 2 * unit + action_row + control['minHeight'] + small_line + context_lines * small_line + (title_lines - 1) * title_line
-    feedback_block = control['inputHeight'] + control['minHeight']
+    feedback_block = small_line + unit + control['inputHeight'] + control['minHeight']
     view = spec['view']
     estimated_width = 320
     reason = 'Small view fits the estimated inline budget'

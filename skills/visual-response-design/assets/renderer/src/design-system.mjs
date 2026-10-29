@@ -1,3 +1,4 @@
+import {createElement} from 'react';
 import {createTheme} from '@mui/material';
 import neutral from '../../../themes/neutral/theme.json';
 
@@ -53,17 +54,18 @@ export function responseTheme(tokens,c,dark){
   const {type,control,radius,layout}=tokens;
   const focus={outline:`${control.focusWidth}px solid ${c.accent}`,outlineOffset:control.focusOffset};
   const [inputY,inputX]=control.inputPadding,[cellY,cellX]=tokens.table.cellPadding;
+  const checkIcon=checked=>createElement('svg',{width:24,height:24,viewBox:'0 0 24 24','aria-hidden':true},createElement('rect',{x:4,y:4,width:16,height:16,fill:checked?'currentColor':'none',stroke:'currentColor',strokeWidth:2}),checked&&createElement('path',{d:'M7.5 12l3 3 6-6',fill:'none',stroke:c.onAccent,strokeWidth:2}));
   return createTheme({
     palette:{mode:dark?'dark':'light',primary:{main:c.accent,contrastText:c.onAccent},background:{default:c.canvas,paper:c.surface},text:{primary:c.text,secondary:c.muted},divider:c.divider,action:{hover:c.hover,selected:c.selected},success:{main:c.success},warning:{main:c.warning},error:{main:c.error}},
     spacing:tokens.spacingUnit,
     shape:{borderRadius:radius.control},
-    typography:{fontFamily:tokens.fontFamily,fontSize:type.body,h6:{fontSize:type.title,fontWeight:700,lineHeight:type.titleLineHeight,letterSpacing:type.titleTracking},body1:{fontSize:type.body,lineHeight:type.lineHeight},body2:{fontSize:type.small,lineHeight:type.lineHeight},button:{fontSize:type.small,fontWeight:600,textTransform:'none'},caption:{fontSize:type.small,lineHeight:type.lineHeight}},
+    typography:{fontFamily:tokens.fontFamily,fontSize:type.body,h6:{fontSize:type.title,fontWeight:700,lineHeight:type.titleLineHeight,letterSpacing:type.titleTracking},body1:{fontSize:type.body,lineHeight:type.lineHeight},body2:{fontSize:type.small,lineHeight:type.lineHeight},button:{fontSize:type.body,fontWeight:500,textTransform:'none'},caption:{fontSize:type.small,lineHeight:type.lineHeight}},
     components:{
       MuiButtonBase:{styleOverrides:{root:{'&.Mui-focusVisible':focus}}},
-      MuiButton:{defaultProps:{size:'small',disableElevation:true},styleOverrides:{root:{minHeight:control.minHeight,borderRadius:radius.control,padding:`${control.paddingY}px ${control.paddingX}px`},outlined:{borderColor:c.controlBorder,color:c.text},text:{color:c.text},contained:{backgroundColor:c.accentFill,color:c.onAccentFill,'&:hover':{backgroundColor:c.accentFill,filter:'brightness(1.08)'}}}},
+      MuiButton:{defaultProps:{size:'small',disableElevation:true,disableRipple:true},styleOverrides:{root:{minHeight:control.minHeight,borderRadius:radius.control,padding:`${control.paddingY}px ${control.paddingX}px`},outlined:{border:0,backgroundColor:c.inputFill||c.hover,color:c.text,'&:hover':{border:0,backgroundColor:c.hover}},text:{color:c.text},contained:{backgroundColor:c.accentFill,color:c.onAccentFill,'&:hover':{backgroundColor:c.accentFill,filter:'brightness(1.08)'}}}},
       MuiTextField:{defaultProps:{size:'small',variant:'outlined'}},
-      MuiOutlinedInput:{styleOverrides:{root:{backgroundColor:c.surface,'& .MuiOutlinedInput-notchedOutline':{borderColor:c.controlBorder},'&:hover .MuiOutlinedInput-notchedOutline':{borderColor:c.text},'&.Mui-focused .MuiOutlinedInput-notchedOutline':{borderColor:c.accent,borderWidth:2}},input:{padding:`${inputY}px ${inputX}px`,fontSize:type.body}}},
-      MuiInputLabel:{styleOverrides:{root:{color:c.muted}}},
+      MuiOutlinedInput:{styleOverrides:{root:{backgroundColor:c.inputFill||c.surface,minHeight:control.inputHeight,borderRadius:radius.control,'& .MuiOutlinedInput-notchedOutline':{borderColor:c.inputBorder||c.controlBorder,borderWidth:2},'&:hover .MuiOutlinedInput-notchedOutline':{borderColor:c.inputBorder||c.text},'&.Mui-focused':{backgroundColor:c.inputFillActive||c.surface},'&.Mui-focused .MuiOutlinedInput-notchedOutline':{borderColor:c.accentBorder,borderWidth:2},'&.MuiInputBase-multiline':{padding:`${inputY}px ${inputX}px`}},input:{padding:`${inputY}px ${inputX}px`,fontSize:type.body,'&.MuiInputBase-inputMultiline':{padding:0}}}},
+      MuiInputLabel:{styleOverrides:{root:{color:c.text}}},
       MuiFormHelperText:{styleOverrides:{root:{marginLeft:0,color:c.muted}}},
       MuiCard:{defaultProps:{variant:'outlined'},styleOverrides:{root:{borderRadius:radius.surface,boxShadow:'none'}}},
       MuiCardContent:{styleOverrides:{root:{padding:layout.surfacePadding,'&:last-child':{paddingBottom:layout.surfacePadding}}}},
@@ -71,7 +73,7 @@ export function responseTheme(tokens,c,dark){
       MuiTableCell:{styleOverrides:{root:{fontSize:type.small,borderColor:c.divider,verticalAlign:'top',padding:`${cellY}px ${cellX}px`},head:{color:c.muted,fontWeight:600,backgroundColor:c.hover},body:{'&:has(input[type="number"])':{fontVariantNumeric:'tabular-nums'}}}},
       MuiTableRow:{styleOverrides:{root:{'&.Mui-selected, &.Mui-selected:hover':{backgroundColor:c.selected}}}},
       MuiFormControlLabel:{styleOverrides:{label:{fontSize:type.small},root:{minHeight:control.minHeight}}},
-      MuiCheckbox:{defaultProps:{size:'small'},styleOverrides:{root:{color:c.controlBorder}}},
+      MuiCheckbox:{defaultProps:{size:'small',disableRipple:true,icon:checkIcon(false),checkedIcon:checkIcon(true)},styleOverrides:{root:{color:c.controlBorder}}},
     },
   });
 }

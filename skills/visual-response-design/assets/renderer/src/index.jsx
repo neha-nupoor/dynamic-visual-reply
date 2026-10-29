@@ -1,4 +1,4 @@
-import React, {useEffect,useRef,useState} from 'react';
+import React, {useEffect,useId,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {ThemeProvider,GlobalStyles,Box,Button,Card,CardContent,Checkbox,Chip,FormControlLabel,MenuItem,Table,TableBody,TableCell,TableHead,TableRow,TableSortLabel,TextField,Typography} from '@mui/material';
 import {cssVariables,merge,neutral,readJson,resolvePalette,responseTheme} from './design-system.mjs';
@@ -41,6 +41,15 @@ const text=value=>value==null?'':typeof value==='object'?JSON.stringify(value):S
 // An explicit data-theme or data-mode on the page root (set by widget hosts) wins over the OS preference.
 const prefersDark=()=>{const root=document.documentElement.dataset,chosen=root.theme||root.mode;return chosen==='dark'||(chosen!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)};
 
+// Persistent labels stay above the control; they do not shrink into a notched border.
+function Field({label,value,onChange,sx,helperText,hideLabel=false,slotProps={},...props}){
+  const id=useId(),labelId=id+'-label';
+  return <Box sx={[{minWidth:0,...(props.fullWidth?{flex:1}:{})},sx]}>
+    <Box component="label" id={labelId} htmlFor={id} sx={hideLabel?{position:'absolute',width:1,height:1,overflow:'hidden',clip:'rect(0,0,0,0)',whiteSpace:'nowrap'}:{display:'block',fontSize:tokens.type.small,fontWeight:500,lineHeight:tokens.type.lineHeight,color:'text.primary',mb:1}}>{label}</Box>
+    <TextField {...props} id={id} value={value} onChange={e=>onChange(e.target.value)} helperText={helperText} fullWidth slotProps={{...slotProps,input:{...slotProps.input,notched:false},...(props.select?{select:{displayEmpty:true,...slotProps.select,labelId}}:{})}}/>
+  </Box>;
+}
+
 function App(){
   const [draft,setDraft]=useState(()=>initial(pendingDraft?null:loaded)),[query,setQuery]=useState(''),[filter,setFilter]=useState(''),[sort,setSort]=useState({key:spec.columns?.[0]?.key||'id',ascending:true}),[page,setPage]=useState(0),[bulk,setBulk]=useState(''),[receipt,setReceipt]=useState(t('status.draft')),[customMessage,setCustomMessage]=useState(null),[preview,setPreview]=useState(false),[showColumns,setShowColumns]=useState(false),[columns,setColumns]=useState(spec.columns?.map(c=>c.key)||[]),[schemeDark,setSchemeDark]=useState(prefersDark),[frame,setFrame]=useState(0),[busy,setBusy]=useState(false);
   const inlineCompact=spec.resolvedPresentation?.mode==='inline';
@@ -78,7 +87,7 @@ function App(){
   function toggle(id){update({...draft,selected:draft.selected.includes(id)?draft.selected.filter(x=>x!==id):[...draft.selected,id]})}
   function mark(id){update({...draft,reviewed:draft.reviewed.includes(id)?draft.reviewed.filter(x=>x!==id):[...draft.reviewed,id]})}
   function undo(){const prior=history.current.pop();if(prior)update(prior,false)}
-  const field=(label,value,onChange,props={})=><TextField label={label} value={value} onChange={e=>onChange(e.target.value)} {...props} slotProps={{inputLabel:{shrink:true},...(props.select?{select:{displayEmpty:true}}:{}),...props.slotProps}}/>;
+  const field=(label,value,onChange,props={})=><Field label={label} value={value} onChange={onChange} {...props}/>;
   function itemFeedback(id){return <Box sx={{display:'grid',gap:inlineCompact?.5:1,mt:inlineCompact?0:1}}>{field(t('instruction'),draft.notes[id]||'',value=>assign('notes',id,value),{multiline:true,minRows:inlineCompact?1:2,fullWidth:true,slotProps:{htmlInput:{'aria-label':t('instruction')+' for '+id}}})}<FormControlLabel label={t('reviewed')} control={<Checkbox size="small" sx={inlineCompact?{py:0}:undefined} checked={draft.reviewed.includes(id)} onChange={()=>mark(id)}/>}/></Box>}
   function showPreview(){setPreview(true);if(feedbackRef.current)feedbackRef.current.open=true;}
   async function submit(){
@@ -116,7 +125,7 @@ function App(){
     content=<Box sx={{display:'grid',gap:2}}>{(spec.fields||[]).map(f=>{
       const value=draft.fields[f.id]??f.value??'';
       if(f.type==='checkbox')return <FormControlLabel key={f.id} label={f.label} control={<Checkbox checked={!!value} onChange={(_,v)=>assign('fields',f.id,v)}/>}/>;
-      if(f.type==='multiselect'){const options=draft.options[f.id]||f.options;return <Box key={f.id}><Typography fontWeight={600} sx={{mb:1}}>{f.label}</Typography>{options.map(o=><Box key={o.id} sx={{display:'flex',gap:1,alignItems:'center',mb:1}}><Checkbox checked={!!o.selected} onChange={(_,selected)=>assign('options',f.id,options.map(x=>x.id===o.id?{...x,selected}:x))} slotProps={{input:{'aria-label':'Include '+o.id}}}/>{field(t('form.editableOption'),o.label,label=>assign('options',f.id,options.map(x=>x.id===o.id?{...x,label}:x)),{fullWidth:true,slotProps:{htmlInput:{'aria-label':'Option '+o.id}}})}</Box>)}</Box>}
+      if(f.type==='multiselect'){const options=draft.options[f.id]||f.options;return <Box key={f.id}><Typography fontWeight={600} sx={{mb:1}}>{f.label}</Typography>{options.map(o=><Box key={o.id} sx={{display:'flex',gap:1,alignItems:'center',mb:1}}><Checkbox checked={!!o.selected} onChange={(_,selected)=>assign('options',f.id,options.map(x=>x.id===o.id?{...x,selected}:x))} slotProps={{input:{'aria-label':'Include '+o.id}}}/>{field(t('form.editableOption'),o.label,label=>assign('options',f.id,options.map(x=>x.id===o.id?{...x,label}:x)),{fullWidth:true,hideLabel:true,slotProps:{htmlInput:{'aria-label':'Option '+o.id}}})}</Box>)}</Box>}
       return field(f.label,value,v=>assign('fields',f.id,f.type==='number'&&v!==''?Number(v):v),{key:f.id,fullWidth:true,type:f.type==='number'?'number':'text',multiline:f.type==='textarea',minRows:f.type==='textarea'?3:undefined,select:f.type==='select',children:f.type==='select'?f.options.map(o=><MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>):undefined,helperText:f.help});
     })}</Box>;
   }else if(spec.view==='flow'){

@@ -1,0 +1,89 @@
+{
+  "$schema": "../../config/schema/theme.schema.json",
+  "name": "base-web",
+  "version": 1,
+  "appearance": "light",
+  "fontFamily": "system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+  "type": {
+    "body": 16,
+    "small": 14,
+    "meta": 12,
+    "title": 32,
+    "titleCompact": 28,
+    "inlineTitle": 24,
+    "section": 18,
+    "lineHeight": 1.5,
+    "titleLineHeight": 1.25,
+    "titleTracking": "0"
+  },
+  "spacingUnit": 8,
+  "radius": {
+    "control": 8,
+    "surface": 0,
+    "chip": 4
+  },
+  "layout": {
+    "maxWidth": 1100,
+    "cardMinWidth": 220,
+    "flowMinWidth": 150,
+    "surfacePadding": 24,
+    "contentPadding": 32,
+    "contentPaddingCompact": 16,
+    "inlinePadding": 16
+  },
+  "control": {
+    "minHeight": 48,
+    "inputHeight": 48,
+    "paddingX": 16,
+    "paddingY": 12,
+    "inputPadding": [
+      10,
+      14
+    ],
+    "focusWidth": 2,
+    "focusOffset": 2
+  },
+  "table": {
+    "cellPadding": [
+      10,
+      10
+    ]
+  },
+  "light": {
+    "canvas": "#ffffff",
+    "surface": "#ffffff",
+    "text": "#000000",
+    "muted": "#4b4b4b",
+    "divider": "#e8e8e8",
+    "controlBorder": "#727272",
+    "accent": "#000000",
+    "onAccent": "#ffffff",
+    "selected": "#e8e8e8",
+    "hover": "#f3f3f3",
+    "success": "#25703f",
+    "warning": "#805700",
+    "error": "#b02c34",
+    "inputFill": "#f3f3f3",
+    "inputFillActive": "#ffffff",
+    "inputBorder": "#f3f3f3"
+  },
+  "dark": {
+    "canvas": "#161616",
+    "surface": "#161616",
+    "text": "#dedede",
+    "muted": "#c4c4c4",
+    "divider": "#383838",
+    "controlBorder": "#8c8c8c",
+    "accent": "#dedede",
+    "onAccent": "#161616",
+    "selected": "#383838",
+    "hover": "#292929",
+    "success": "#86d3a0",
+    "warning": "#efc56c",
+    "error": "#ffa9ae",
+    "inputFill": "#292929",
+    "inputFillActive": "#161616",
+    "inputBorder": "#6c6c6c"
+  },
+  "label": "Base Web reference preview"
+}

@@ -44,6 +44,8 @@ Settings merge: shipped defaults → small built-in host defaults → user confi
 
 Settings cover theme/fallback, appearance, harness, enabled views, placement, feedback prompts/message format, copy, and the pinned Claude renderer URL. `feedback.messageFormat` is `json`, `compact`, or `summary` (a readable line followed by JSON). `copy` can override selected labels/status messages. Claude's default button is **Add to chat**, with a status asking the user to press Enter.
 
+The opt-in `--theme base-web` preset uses monochrome actions, square card surfaces, 8 px controls, and labels above filled fields; see [its reference notes](../themes/base-web/reference.md).
+
 A theme pack has `theme.json` or `assets/theme.json`, validated by `config/schema/theme.schema.json`. Packs can be supplied as a path, inline theme object, or name. Names are looked up in the bundled themes, sibling skills, `$VISUAL_RESPONSE_THEME_PATH`, and the common installed skill directories. Missing optional tokens inherit neutral values. Old motion tokens are ignored. The split accent roles `accentFill`, `onAccentFill`, `accentBorder`, and `onSelected` are preserved. CSS variables use the `--vr-` prefix.
 
 `appearance: host` reads available Claude CSS variables, with theme fallbacks. `system` follows the host's `data-theme`/`data-mode` or OS preference. Explicit light/dark settings stay fixed.

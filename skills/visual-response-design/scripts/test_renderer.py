@@ -122,7 +122,7 @@ class RendererTests(unittest.TestCase):
 
     def test_automatic_placement_accounts_for_size_and_component(self):
         table = self.table()
-        table['rows'] = table['rows'][:2]
+        table['rows'] = table['rows'][:1]
         self.assertEqual(render.placement(table)['mode'], 'inline')
         table['rows'].append({'id':'extra','name':'Extra'})
         self.assertEqual(render.placement(table)['mode'], 'standalone')
@@ -164,7 +164,7 @@ class RendererTests(unittest.TestCase):
             self.assertEqual(table['resolvedPresentation']['reason'], 'Explicit presentation override')
 
     def test_theme_packs_keep_readable_text_and_visible_controls(self):
-        packs = {'neutral': visual_config.load(ROOT / 'themes/neutral/theme.json')}
+        packs = {path.parent.name: visual_config.load(path) for path in (ROOT / 'themes').glob('*/theme.json')}
         found = visual_config.find_theme(DEFAULT_THEME)
         if found:
             packs[DEFAULT_THEME] = found[0]
