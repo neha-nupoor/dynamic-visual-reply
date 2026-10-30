@@ -20,13 +20,61 @@ Use a widget when several items need different responses. Keep short answers, pr
 
 Selections and edits stay drafts until you submit them. Submitting sends instructions to the agent; it does not directly change your tasks or source data.
 
+## Widget previews
+
+### Inside Codex
+
+Recorded in a real Codex chat: enter instructions for individual steps and use **Send to chat**. The clip shows the native widget and its button; the complete feedback receipt was verified separately in the same chat.
+
+![Native Codex widget interaction](docs/media/codex-inline-demo.gif)
+
+The demo agent received instructions for `onboarding`, `shortcuts`, and `export` with their IDs intact. This verifies the Codex route; Claude's native route remains unverified.
+
+### Component gallery
+
+These screenshots show all five views using fictional release tasks. They use the shared renderer in a local preview with a labeled simulated chat bridge.
+
+### Table
+
+Select records and attach an instruction to each one.
+
+![Table with per-record feedback](docs/media/table-light.png)
+
+### Cards
+
+Compare alternatives and respond to each card.
+
+![Cards with feedback controls](docs/media/cards-light.png)
+
+### Form
+
+Collect several answers before submitting one message.
+
+![Form in light mode](docs/media/form-light.png)
+
+### Board
+
+Review items by stage and prepare changes as a draft.
+
+![Board with stage controls](docs/media/kanban-light.png)
+
+### Flow
+
+Review one step at a time and give feedback on individual steps.
+
+![Flow with step controls](docs/media/flow-light.png)
+
+Both themes use the same controls and layout:
+
+![Form in dark mode](docs/media/form-dark.png)
+
 ## Requirements
 
 - **An agent with file access and command execution** to read the skill and run its helpers.
-- **Python 3.9+** on the machine where the agent runs. Python validates JSON specs and generates HTML; the browser workflow also uses it to serve the page and save feedback. No Python packages need installing.
-- **A browser or a supported inline widget tool** to display the result. The widget itself runs JavaScript, not Python.
+- **Node.js 22.20+** on the machine where the agent runs. The helpers validate JSON specs, generate HTML, and run the local feedback server using Node built-ins. No Python or runtime npm packages are required.
+- **A browser or a supported inline widget tool** to display the result. The widget uses the same prebuilt JavaScript renderer in every harness.
 
-The renderer is prebuilt, so normal use needs no Node.js or build step. The optional installer below uses Git and Node.js 22.20+; manual installation avoids the Node.js requirement.
+The renderer is prebuilt, so normal use needs no npm install or build step. The optional installer below also requires Git; manual installation uses the same Node runtime.
 
 ## Install
 
@@ -93,17 +141,17 @@ reply_skill_dir="$PWD/.agents/skills/dynamic-visual-reply"
 reply_preview_dir="$PWD/dynamic-visual-reply-preview"
 mkdir -p "$reply_preview_dir"
 
-python3 "$reply_skill_dir/scripts/doctor.py" --harness browser-local
-python3 "$reply_skill_dir/scripts/render.py" \
+node "$reply_skill_dir/scripts/doctor.mjs" --harness browser-local
+node "$reply_skill_dir/scripts/render.mjs" \
   --spec "$reply_skill_dir/assets/examples/form.json" \
   --out "$reply_preview_dir/form.html" \
   --harness browser-local
-python3 "$reply_skill_dir/scripts/serve.py" "$reply_preview_dir/form.html" --port 0
+node "$reply_skill_dir/scripts/serve.mjs" "$reply_preview_dir/form.html" --port 0
 ```
 
-Open the local URL printed by the server. Keep it running while reviewing, submit your answers, then ask the agent to read the printed feedback file. Stop the server when finished. On Windows, use the equivalent shell paths and `py -3` if `python3` is unavailable.
+Open the local URL printed by the server. Keep it running while reviewing, submit your answers, then ask the agent to read the printed feedback file. Stop the server when finished. On Windows, use the equivalent paths and variables for your shell.
 
-`doctor.py` checks local files, configuration, bundle hashes, and theme contrast. It cannot establish that an inline host tool or submission bridge exists.
+`doctor.mjs` checks local files, configuration, bundle hashes, and theme contrast. It cannot establish that an inline host tool or submission bridge exists.
 
 ## Appearance
 
@@ -122,10 +170,26 @@ Use `"light"` for light mode, or `null` to restore the harness default. Preserve
 ## Troubleshooting
 
 - **Skill is not discovered:** check its installation path and restart the agent session. Verify the complete skill folder was installed.
-- **Python is missing:** install Python 3.9+ where the agent executes commands. A prebuilt renderer removes the build requirement, but the current helpers still need Python.
+- **Node is missing:** install Node.js 22.20+ where the agent executes commands. The prebuilt renderer needs no npm install.
 - **Widget does not appear:** check actual tool availability and payload limits. Use the browser route when available, or continue in normal chat.
 - **Browser feedback does not arrive:** use the server's HTTP URL rather than opening the file directly. Submit, then ask the agent to read the feedback file; local submission does not wake the agent.
 - **Settings fail after updating:** older installations may contain an obsolete `delivery` object or use the former `visual-response-design` skill name. See [migration guidance](skills/dynamic-visual-reply/references/renderer-contract.md#migrating-older-installations). Disable the old skill after checking the new installation to avoid duplicate discovery.
+
+## Token size benchmark
+
+The agent writes a JSON spec; the Node helper supplies the existing UI. The table below estimates the tokens in each bundled example's spec, without optional JSON whitespace.
+
+| Widget | Example size | Estimated spec tokens |
+| --- | --- | ---: |
+| [Table](skills/dynamic-visual-reply/assets/examples/table.json) | 4 records, 3 columns | 169 |
+| [Cards](skills/dynamic-visual-reply/assets/examples/cards.json) | 3 cards | 131 |
+| [Form](skills/dynamic-visual-reply/assets/examples/form.json) | 4 fields | 175 |
+| [Board](skills/dynamic-visual-reply/assets/examples/kanban.json) | 3 items | 83 |
+| [Flow](skills/dynamic-visual-reply/assets/examples/flow.json) | 4 steps | 97 |
+
+Counted on October 30, 2026, with [js-tiktoken](https://github.com/dqbd/tiktoken/tree/main/js) 1.0.21 and the `o200k_base` encoding. These are **spec-text estimates, not measured total tokens per widget**. They exclude chat context, skill instructions, reasoning, tool calls, captions, and feedback replies. Model tokenizers, formatting, and content length can change the counts. No usability or percentage token-savings comparison was measured.
+
+Running the Node renderer uses **zero model tokens**. Codex and local browser routes use generated files directly. Claude's inline route also passes the complete generated HTML through model context, so the spec counts alone do not describe that route's cost. No token-counting package is required to install or use the skill.
 
 ## For contributors
 

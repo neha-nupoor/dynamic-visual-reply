@@ -1,6 +1,8 @@
 [data-dynamic-visual-reply-root] {min-width:0}
 [data-dynamic-visual-reply-root] .vr-app {font:var(--vr-body)/var(--vr-leading) var(--vr-font);color:var(--vr-text);background:var(--vr-surface);padding:var(--vr-padding-compact);max-width:var(--vr-max-width);margin-inline:auto;border:1px solid var(--vr-divider);border-radius:var(--vr-radius-surface)}
 [data-dynamic-visual-reply-root] .vr-app * {min-width:0;box-sizing:border-box;overflow-wrap:anywhere;animation:none}
+/* Host styles can set text colors directly, bypassing the app's inherited color. */
+[data-dynamic-visual-reply-root] :where(.vr-app) :is(h2,h3,p,td,label,legend) {color:var(--vr-text)}
 [data-dynamic-visual-reply-root] .vr-header {display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
 [data-dynamic-visual-reply-root] h2 {font-size:var(--vr-title-compact);line-height:var(--vr-title-leading);letter-spacing:var(--vr-title-tracking);font-weight:700;margin:0}
 [data-dynamic-visual-reply-root] h3 {font-size:var(--vr-section);font-weight:600;line-height:1.4;margin:0}

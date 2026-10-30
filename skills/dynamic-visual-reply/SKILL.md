@@ -25,9 +25,9 @@ Choose the view by the response you expect: `table` for many comparable records,
 
 ## Render from a spec
 
-One prebuilt Oat/Preact renderer serves every host, with native HTML controls and scoped CSS inside the same bundle. Write content as JSON. Codex and browser handoffs use the generated file directly; Claude's string-based handoff is described below. Normal use requires Python 3.9+ and no package installation. Paths below are relative to this skill.
+One prebuilt Oat/Preact renderer serves every host, with native HTML controls and scoped CSS inside the same bundle. Write content as JSON. Codex and browser handoffs use the generated file directly; Claude's string-based handoff is described below. Normal use requires Node.js 22.20+ and no package installation. Paths below are relative to this skill.
 
-1. Inspect the current session's available tools before choosing a surface. Use inline rendering only when the actual widget tool is available; a model name, app name, or environment variable is not proof. Read that tool's current instructions and check its HTML/JavaScript support and payload limits. If inline rendering is unavailable, use the browser route when interaction is useful and local commands plus a browser are available; otherwise answer in normal Markdown. Run `python3 <skill-dir>/scripts/doctor.py --harness <id>` once when setup is uncertain. Its checks cover files and settings, not a live host bridge. Read only the relevant host reference:
+1. Inspect the current session's available tools before choosing a surface. Use inline rendering only when the actual widget tool is available; a model name, app name, or environment variable is not proof. Read that tool's current instructions and check its HTML/JavaScript support and payload limits. If inline rendering is unavailable, use the browser route when interaction is useful and local commands plus a browser are available; otherwise answer in normal Markdown. Run `node <skill-dir>/scripts/doctor.mjs --harness <id>` once when setup is uncertain. Its checks cover files and settings, not a live host bridge. Read only the relevant host reference:
 
    | Surface | Harness | Reference |
    | --- | --- | --- |
@@ -46,9 +46,9 @@ One prebuilt Oat/Preact renderer serves every host, with native HTML controls an
    | `kanban` | `rows:[{id,title,stage}]`, optional `stages` |
    | `flow` | `nodes:[{id,title,detail}]`; manually selected steps |
 
-3. Run `python3 <skill-dir>/scripts/render.py --spec <spec.json> --out <view.html> --harness <id>`. Every output embeds the same renderer and CSS; no public URL is needed. Follow the returned `handoff`: display the Codex `contentReference`, pass the complete generated Claude fragment unchanged to its widget tool, or run the local server command. Claude's string-based handoff includes the full bundle; use the browser route if the tool's payload limit cannot accommodate it. Larger Codex/Claude views use the same local browser. If rendering fails, return the intended answer in normal Markdown; other agents need no custom integration.
+3. Run `node <skill-dir>/scripts/render.mjs --spec <spec.json> --out <view.html> --harness <id>`. Every output embeds the same renderer and CSS; no public URL is needed. Follow the returned `handoff`: display the Codex `contentReference`, pass the complete generated Claude fragment unchanged to its widget tool, or run the local server command. Claude's string-based handoff includes the full bundle; use the browser route if the tool's payload limit cannot accommodate it. Larger Codex/Claude views use the same local browser. If rendering fails, return the intended answer in normal Markdown; other agents need no custom integration.
 
-Examples are in `assets/examples/`; `--catalog` lists them. Read [renderer-contract.md](references/renderer-contract.md) for extra fields, existing datasets, patches, configuration, or maintenance. The schema defines valid input; Python adds cross-record checks such as unique IDs.
+Examples are in `assets/examples/`; `--catalog` lists them. Read [renderer-contract.md](references/renderer-contract.md) for extra fields, existing datasets, patches, configuration, or maintenance. The schema defines valid input; the helper adds cross-record checks such as unique IDs.
 
 ## Preserve the interaction
 
@@ -62,4 +62,4 @@ By default, follow the harness appearance: Claude inline uses `host`; other surf
 
 Author only the spec; scripts assemble the prebuilt renderer. Do not regenerate or edit the bundle in a tool call. Claude's widget tool takes HTML as a string, so reading and passing its generated fragment uses model context; use a local browser when that cost or the tool limit makes inline delivery unsuitable. Browser interactions cost no model turn. Flows stay static with manual steps. Keep CSS transitions brief and honor reduced motion; no animation engine is included.
 
-For code changes, read [ui-behavior.md](references/ui-behavior.md), rebuild the bundle, run `scripts/test_renderer.py` and `node --test scripts/test_adapters.mjs`, and inspect the changed interactions in a browser. Do not claim live host submission is verified by mocked adapter tests.
+For code changes, read [ui-behavior.md](references/ui-behavior.md), rebuild the bundle, run `node --test scripts/test_renderer.mjs scripts/test_adapters.mjs`, and inspect the changed interactions in a browser. Do not claim live host submission is verified by mocked adapter tests.

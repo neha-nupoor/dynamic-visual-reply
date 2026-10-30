@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dynamic-visual-reply/spec.schema.json",
   "title": "Dynamic visual reply view spec",
-  "description": "Portable view spec. Duplicate IDs are also rejected by every validator; JSON Schema cannot express ID uniqueness, so scripts/render.py checks it separately.",
+  "description": "Portable view spec. Duplicate IDs are also rejected by every validator; JSON Schema cannot express ID uniqueness, so scripts/render.mjs checks it separately.",
   "type": "object",
   "required": ["schemaVersion", "viewId", "view", "title"],
   "properties": {
