@@ -270,17 +270,6 @@ def css_variables(theme, appearance=None):
     return css
 
 
-def renderer_url(delivery):
-    """Claude inline loads the same pinned renderer from a URL; other hosts embed it."""
-    if delivery.get('rendererUrl'):
-        return delivery['rendererUrl']
-    repository = delivery.get('repository')
-    commit = delivery.get('commit')
-    if repository and commit:
-        return f'https://cdn.jsdelivr.net/gh/{repository}@{commit}/skills/dynamic-visual-reply/assets/renderer/dist/renderer.js'
-    return None
-
-
 def harness_ids():
     return list(HARNESSES)
 

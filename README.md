@@ -100,20 +100,20 @@ Ask the agent, for example:
 
 > Use the dynamic-visual-reply skill to show these five proposals as a review table. Let me select proposals and add a separate instruction to each, then submit one batch. Use the local-browser fallback if inline rendering is unavailable.
 
-The agent reads the installed `SKILL.md`, writes a small JSON spec, runs `scripts/render.py`, and follows the returned `handoff`. It should not read the bundled JavaScript into model context or regenerate the UI implementation.
+The agent reads the installed `SKILL.md`, writes a small JSON spec, runs `scripts/render.py`, and follows the returned `handoff`. Codex and browser routes use the generated file directly. Claude's string-based widget tool requires passing the complete generated fragment, including the bundle; the agent should preserve it rather than regenerate the UI implementation.
 
 - **Codex with an inline widget tool:** use `--harness codex`. Display the returned `contentReference` for an inline view; for `handoff.type: serve`, run the returned command and open the local URL. Native **Send to chat** uses the existing bridge. Codex CLI or a host without that inline tool uses `browser-local`.
 - **Claude Code:** use `--harness claude-code`. Both the terminal and desktop Code tab use the same local-browser workflow. The desktop Browser pane can display the local server. Environment detection suggests this route, but an explicit flag avoids ambiguity.
 - **Cursor, Windsurf, Gemini CLI, Copilot, and other agents:** use `--harness browser-local` and follow the returned server command. No custom native integration is needed. When choosing a harness, check actual available tools rather than the model's name.
 - **No local server available:** render with `--harness static`. Open the returned HTML file and use **Prepare message**, **Copy feedback**, or **Export JSON** to return feedback manually.
 
-### Optional Claude inline widget route
+### Claude inline widget route
 
-Use `--harness claude-inline` only when the actual `show_widget` tool is available **and** its matching bundle URL is verified. Claude accepts HTML fragments with inline JavaScript. This skill's optional URL loader keeps the tool payload small instead of passing the whole prebuilt renderer through model context.
+Choose `--harness claude-inline` only when the current session exposes an actual widget tool accepting inline HTML and JavaScript. Read that tool's current instructions and payload limits first. Run `python3 "$reply_skill_dir/scripts/doctor.py" --harness claude-inline` to verify local files and settings, then render and pass the complete generated fragment to the tool as instructed by the returned handoff. **Add to chat** fills the message box; the user presses Enter.
 
-Run `python3 "$reply_skill_dir/scripts/doctor.py" --harness claude-inline --check-url` before choosing this route. Then render with `--harness claude-inline` and pass the small output file to `show_widget` as instructed by its returned handoff and current host guide. **Add to chat** fills the message box; the user presses Enter.
+Claude, Codex, and the browser all embed the same renderer and CSS. No external script, CDN, or public URL is needed. Claude's string-based handoff includes about 82 KB of bundle plus the spec, consuming model context; use the local browser if the payload is unsuitable for the tool. See the [Claude guide](skills/dynamic-visual-reply/references/harness/claude-inline.md).
 
-The optional loader uses a pushed Git commit containing the identical bundle. Set `delivery.commit` to its full 40-character SHA with `delivery.repository`, or supply an immutable URL through `delivery.rendererUrl` / `--renderer-url`. No commit is selected by default. Verify that the URL matches the local bundle before using it. If it is unavailable, mismatched, or blocked by the host, use `browser-local`. A CDN and public renderer URL are optional for using the skill. See the [Claude guide](skills/dynamic-visual-reply/references/harness/claude-inline.md).
+Check capabilities before attempting any inline call; the model/app name and environment detection are insufficient. If rendering is unavailable or fails, the agent should provide the intended answer in ordinary Markdown. The browser route remains available when interaction is useful; no second HTML renderer is used for failure handling.
 
 ## Appearance and settings
 
@@ -140,7 +140,7 @@ python3 "$reply_skill_dir/scripts/render.py" --print-config --harness browser-lo
 - **Skill is not discovered:** inspect `npx skills list --agent <installer-id>` (with `--global` for a global installation), verify the full skill directory exists, and start a new session/reload discovery. A custom skills directory may differ from the CLI defaults above.
 - **Unknown harness error:** use a rendering harness from this README, not an installer ID such as `cursor` or `gemini-cli`.
 - **Feedback is not reaching the agent:** open the server's HTTP URL, submit deliberately, then ask the agent to read the printed feedback file. A plain `file://` page uses copy/export instead of the server endpoint.
-- **Claude loader URL fails:** switch to `browser-local`; do not disable integrity checking or substitute an older bundle.
+- **Inline tool is missing or rejects the payload:** use `browser-local` when interaction is useful and a browser is available. If rendering fails or no suitable surface exists, provide the intended answer directly in Markdown.
 - **Update:** use `npx skills update dynamic-visual-reply` for a project install, or add `--global` for a global install. Manual copies need the skill directory refreshed from an updated clone.
 
 See [SKILL.md](skills/dynamic-visual-reply/SKILL.md) for invocation rules and the [renderer contract](skills/dynamic-visual-reply/references/renderer-contract.md) for specs, datasets, patches, settings, and supported behavior.
@@ -149,8 +149,8 @@ See [SKILL.md](skills/dynamic-visual-reply/SKILL.md) for invocation rules and th
 
 1. In `skills/dynamic-visual-reply/assets/renderer`, run `npm ci --ignore-scripts` and `npm run build`.
 2. Run `python3 skills/dynamic-visual-reply/scripts/test_renderer.py` and `node --test skills/dynamic-visual-reply/scripts/test_adapters.mjs`.
-3. For browser regression checks, run `python3 tests/browser_fixtures.py <output-directory>` and serve that directory on loopback. The fixtures exercise the built renderer with local Codex/Claude bridge doubles; the Claude fixture deliberately blocks inline JavaScript and checks SRI. That conservative test policy is not a claim about Claude's actual sandbox. No real chat message is sent by these fixtures.
-4. Commit and push the reviewed source, bundle, and manifest together. For the optional Claude URL loader, configure a full pushed commit SHA containing that bundle and run `doctor.py --harness claude-inline --check-url` before handing it off. The local browser path embeds the bundle and works offline.
+3. For browser regression checks, run `python3 tests/browser_fixtures.py <output-directory>` and serve that directory on loopback. The fixtures exercise the embedded renderer with local Codex/Claude bridge doubles. Their test policy allows inline scripts and blocks external origins; it is not a claim about Claude's actual sandbox. No real chat message is sent by these fixtures.
+4. Commit and push the reviewed source, bundle, and manifest together. All outputs embed the bundle and work without a CDN; no separate renderer publication is needed.
 
 Git commits identify skill revisions; the manifest's SHA-256 and SHA-384 SRI identify and verify the renderer bytes. There is no skill release number, routine version bump, or tag-publishing step. Dependency versions and the lockfile remain pinned. Compatibility markers (`schemaVersion: 1`, theme format `version: 1`, and `draftVersion: "1.0.0"`) change only when their data formats become incompatible; ordinary updates preserve saved drafts.
 
@@ -166,6 +166,6 @@ Old `base-web` and `neutral` theme names resolve to the single `generic` theme. 
 
 Theme-pack `appearance` remains accepted for compatibility but no longer selects the mode of rendered views. Harness appearance is now the fallback. To preserve a personal pack's fixed light/dark preference, move it to top-level settings: for example, set `"appearance": "dark"` in `~/.config/dynamic-visual-reply/config.json` or the project's `.dynamic-visual-reply.json`. Explicit spec/flag/config choices still take priority over the harness default.
 
-Remove `output` and obsolete `delivery.mode`, `delivery.npmPackage`, `delivery.repositoryPath`, and `delivery.tagPrefix` settings. Artifact database output, module wrappers, custom harness profiles, and public export tooling have been removed. Replace `claude-artifact`, `module`, or custom harness names with a supported host from the table above. Invalid old settings produce a schema error; user configuration is never silently rewritten. Legacy motion flags are ignored. Feedback schemaVersion 1 and draftVersion 1.0.0 are preserved.
+Remove `output` and the obsolete `delivery` settings object, including renderer URL, repository, commit, and integrity settings. The `--renderer-url` and `--check-url` flags are removed; all outputs embed the bundle. Artifact database output, module wrappers, custom harness profiles, and public export tooling have been removed. Replace `claude-artifact`, `module`, or custom harness names with a supported host from the table above. Invalid old settings produce a schema error; user configuration is never silently rewritten. Legacy motion flags are ignored. Feedback schemaVersion 1 and draftVersion 1.0.0 are preserved.
 
 MIT. Bundled dependencies are Oat CSS and Preact; third-party notices are included with the renderer. Oat's optional JavaScript is not loaded. Normal rendering needs Python 3.9+ and no npm installation.

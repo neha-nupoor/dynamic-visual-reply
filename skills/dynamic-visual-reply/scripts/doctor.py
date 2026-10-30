@@ -1,25 +1,13 @@
 #!/usr/bin/env python3
 """Report which harness, theme, delivery and feedback path this environment will use; standard library only."""
 import argparse
-import base64
 import hashlib
 import json
 import os
 import sys
-import urllib.request
 
 import visual_config
 from visual_config import ROOT, load
-
-def check_url(url, expected_sri):
-    try:
-        request = urllib.request.Request(url, headers={'User-Agent': 'dynamic-visual-reply-doctor'})
-        with urllib.request.urlopen(request, timeout=10) as response:
-            body = response.read()
-    except Exception as error:  # Network errors are reported, not raised.
-        return {'reachable': False, 'error': str(error)}
-    sri = 'sha384-' + base64.b64encode(hashlib.sha384(body).digest()).decode()
-    return {'reachable': True, 'bytes': len(body), 'matchesLocalBundle': sri == expected_sri}
 
 def report(args, env=os.environ):
     cli = {'harness': args.harness, 'theme': args.theme}
@@ -36,18 +24,6 @@ def report(args, env=os.environ):
     if isinstance(config['theme'], str) and config['theme'] not in ('generic', 'base-web', 'neutral') and context.theme['name'] != config['theme']:
         notes.append(f'Theme {config["theme"]!r} was not found; using fallback {context.theme["name"]!r}. '
                      'Install that theme pack beside this skill or point `theme` at its folder.')
-    delivery = config['delivery']
-    url_check = None
-    if harness['id'] == 'claude-inline':
-        url = visual_config.renderer_url(delivery)
-        if not url:
-            problems.append('Claude inline needs delivery.rendererUrl or both delivery.repository and delivery.commit; otherwise use browser-local.')
-        elif args.check_url:
-            url_check = check_url(url, manifest.get('sri'))
-            if not url_check['reachable']:
-                problems.append(f'Renderer URL is not reachable: {url_check["error"]}')
-            elif not url_check['matchesLocalBundle']:
-                problems.append('Renderer URL differs from this build; use a pushed commit containing the matching bundle.')
     submit = {'codex': 'Inline uses window.openai.sendFollowUpMessage; larger views save feedback through serve.py.',
               'claude-inline': 'Inline adds feedback to the message box; press Enter to send. Larger views use serve.py.',
               'browser-local': 'serve.py saves <view>.feedback.json; ask the agent to read it.',
@@ -61,7 +37,7 @@ def report(args, env=os.environ):
                     'feedback': submit.get(harness['id'], 'Choose a supported harness explicitly')},
         'theme': {'name': context.theme['name'], 'source': context.theme_source, 'appearance': context.appearance,
                   'contrastOk': not contrast},
-        'delivery': {**delivery, 'bundleHash': manifest['sha256'], 'bundleBytes': manifest['bytes'], 'urlCheck': url_check},
+        'delivery': {'mode': 'embed', 'bundleHash': manifest['sha256'], 'bundleBytes': manifest['bytes']},
         'configLayers': context.layers,
         'userConfig': str(visual_config.user_config_path(env)),
         'availableHarnesses': {h: p['label'] for h, p in visual_config.HARNESSES.items()},
@@ -73,7 +49,6 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--harness', help='Check a supported host instead of the suggested one')
     parser.add_argument('--theme', help='Check a specific theme pack')
-    parser.add_argument('--check-url', action='store_true', help='Download rendererUrl and compare it with the local bundle')
     args = parser.parse_args()
     try:
         result = report(args)

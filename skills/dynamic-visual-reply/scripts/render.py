@@ -218,21 +218,14 @@ def runtime_config(context, appearance, renderer_hash):
 def page_theme(context):
     return visual_config.diff(context.theme, load(visual_config.THEME_FILE))
 
-def fragment(spec, context, appearance, info, delivery):
+def fragment(spec, context, appearance, info):
     parts = ['<div data-dynamic-visual-reply-root></div>',
              '<script type="application/json" data-dynamic-visual-reply-config>' + json_for_html(runtime_config(context, appearance, info['sha256'])) + '</script>',
              '<script type="application/json" data-dynamic-visual-reply-theme>' + json_for_html(page_theme(context)) + '</script>',
              '<script type="application/json" data-dynamic-visual-reply-spec>' + json_for_html(spec) + '</script>']
-    if context.harness['id'] == 'claude-inline':
-        url = visual_config.renderer_url(delivery)
-        require(url, 'No renderer URL: set delivery.rendererUrl, or delivery.repository and delivery.commit for a matching pushed Git commit; run scripts/doctor.py for details, or use browser-local.')
-        integrity = info.get('sri') if delivery.get('integrity') == 'manifest' else delivery.get('integrity')
-        attributes = f' integrity="{integrity}" crossorigin="anonymous"' if integrity else ''
-        parts.append(f'<script src="{url}"{attributes}></script>')
-    else:
-        bundle = BUNDLE.read_text(encoding='utf-8')
-        require('</script' not in bundle.lower(), 'Bundle contains an unsafe closing script tag')
-        parts.append('<script data-dynamic-visual-reply-runtime>\n' + bundle + '\n</script>')
+    bundle = BUNDLE.read_text(encoding='utf-8')
+    require('</script' not in bundle.lower(), 'Bundle contains an unsafe closing script tag')
+    parts.append('<script data-dynamic-visual-reply-runtime>\n' + bundle + '\n</script>')
     return '\n'.join(parts) + '\n'
 
 def page_style(context, appearance):
@@ -286,27 +279,24 @@ def render(spec, out, mode='auto', viewport_width=None, viewport_height=None, *,
     # Draft keys follow draftVersion so cosmetic or harness changes never discard saved drafts.
     spec['stateKey'] = hashlib.sha256((info['draftVersion'] + ':' + spec['viewId'] + ':' + spec['view']).encode()).hexdigest()[:24]
     appearance = spec.get('appearance') or context.appearance
-    delivery = context.config['delivery']
-    delivery_mode = 'url' if context.harness['id'] == 'claude-inline' else 'embed'
     out.parent.mkdir(parents=True, exist_ok=True)
     snapshot = out.with_suffix('.spec.json')
     snapshot.write_text(json.dumps(spec, ensure_ascii=False, allow_nan=False, indent=2) + '\n', encoding='utf-8')
     data = json_for_html(spec)
     result = {'harness': context.harness['id'], 'theme': context.theme['name'], 'view': spec['view'],
               'rendererHash': info['sha256'], 'specBytes': len(data.encode()), 'rendererBytes': info['bytes'],
-              'delivery': delivery_mode, 'spec': str(snapshot), 'placement': decision}
+              'delivery': 'embed', 'spec': str(snapshot), 'placement': decision}
     kind = 'fragment' if decision['mode'] == 'inline' and context.harness['id'] in ('codex', 'claude-inline') else 'document'
-    body = fragment(spec, context, appearance, info, delivery)
+    body = fragment(spec, context, appearance, info)
     size_limit = context.config['placement']['maxInlineBytes']
     if decision['mode'] == 'inline' and len(body.encode()) >= size_limit:
         require(requested == 'auto', f'Inline UI exceeds {size_limit} bytes; reduce the dataset or use standalone')
         decision.update(mode='standalone', reason='Payload exceeds the inline file-size limit')
         if context.harness['id'] in ('codex', 'claude-inline'):
             context = context.switch('browser-local')
-            delivery = context.config['delivery']
             result.update(harness='browser-local', delivery='embed')
         kind = 'document'
-        body = fragment(spec, context, appearance, info, delivery)
+        body = fragment(spec, context, appearance, info)
     output = wrap(body, kind, spec, context, appearance)
     out.write_text(output, encoding='utf-8')
     result.update(path=str(out), format=decision['mode'], output=kind, handoff=handoff(context, out, kind, len(output.encode())))
@@ -324,7 +314,6 @@ def main():
     parser.add_argument('--harness', help='Supported host (default: config, then environment suggestion)')
     parser.add_argument('--theme', help='Theme pack name, theme.json path, or pack folder')
     parser.add_argument('--appearance', choices=('light', 'dark', 'system', 'host'))
-    parser.add_argument('--renderer-url', help='Published renderer.js URL for url delivery')
     parser.add_argument('--viewport-width', type=int, help='Expected inline width in pixels')
     parser.add_argument('--viewport-height', type=int, help='Expected viewport height; inline uses the configured fraction, capped')
     parser.add_argument('--print-config', action='store_true', help='Print the merged configuration with the layer each value came from')
@@ -337,9 +326,6 @@ def main():
                           'examples': str(ROOT / 'assets/examples')}))
         return
     cli = {'harness': args.harness, 'theme': args.theme, 'appearance': args.appearance}
-    delivery = {'rendererUrl': args.renderer_url} if args.renderer_url else {}
-    if delivery:
-        cli['delivery'] = delivery
     try:
         context = visual_config.resolve(cli)
         if args.print_config or args.theme_css:

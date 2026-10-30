@@ -1,34 +1,18 @@
-# Claude inline widget (optional URL loader)
+# Claude inline widget
 
-Claude's widget tool accepts HTML fragments with inline JavaScript. It does not inherently require a public renderer URL. This skill's `claude-inline` implementation uses a small external-script loader so the agent does not read or pass the entire shared bundle through model context. The URL is required by that loader, not by the skill or by every Claude surface.
-
-Use this route only when the actual `show_widget` tool is available and a matching bundle URL is verified:
+Use this route only when the current session actually exposes a widget tool such as `show_widget` that accepts inline HTML and JavaScript. Inspect its current instructions and payload limits first. A Claude model or app name alone does not establish that the tool exists.
 
 ```sh
-python3 <skill-dir>/scripts/doctor.py --harness claude-inline --check-url
+python3 <skill-dir>/scripts/doctor.py --harness claude-inline
 python3 <skill-dir>/scripts/render.py --spec <spec.json> --out <view.html> --harness claude-inline
 ```
 
-Configure `delivery.repository` and `delivery.commit` (the full 40-character SHA of a pushed Git commit containing the matching bundle). No commit is selected by default. For example, set these keys in the project's `.dynamic-visual-reply.json`, replacing the placeholder with the actual commit:
+The generated fragment embeds the identical Oat/Preact renderer and CSS used by Codex and the local browser. No external script, CDN, public URL, or delivery configuration is used. Local manifest hashes verify the bundle before rendering. File checks do not prove execution in the native host.
 
-```json
-{"delivery":{"repository":"neha-nupoor/dynamic-visual-reply","commit":"<full-40-character-commit-sha>"}}
-```
+For `handoff.type: show_widget`, read the generated output file and pass its complete contents unchanged as `widget_code`, following the tool's current instructions. The shared bundle is about 82 KB before spec data; this string-based handoff consumes model context. Do not rewrite, truncate, or regenerate it. If the tool cannot accommodate or run it, use the local browser when interaction remains useful; otherwise provide the intended content in ordinary Markdown. For `handoff.type: serve`, follow [browser-local.md](browser-local.md).
 
-Alternatively, set `delivery.rendererUrl` or pass `--renderer-url` for an immutable URL to the identical bundle. A URL override takes priority over repository/commit settings. The URL must be reachable and byte-identical to the local bundle; never use an older bundle with the current manifest's SRI. Run the doctor check above with the same configuration used for rendering. External scripts must also be permitted by the widget's current sandbox; follow its guide. These file/URL checks do not verify live host execution.
+Claude Code (including its desktop Code tab) auto-detects as `claude-code` and uses the browser path. Larger views use it too. When no widget tool is available, do not attempt an inline call. If rendering fails or no suitable browser is available, answer in normal Markdown instead of creating a second HTML fallback.
 
-For `handoff.type: show_widget`, read the small output file and pass its contents unchanged as `widget_code`. Do not paste the renderer bundle into the tool call. For `handoff.type: serve`, follow [browser-local.md](browser-local.md).
+**Add to chat** fills the user's message box through `sendPrompt`; the user presses Enter. The message contains a readable summary and JSON feedback. Saving drafts uses localStorage only when the sandbox permits it. Acknowledge the feedback actually received. If the host lacks the submission bridge, use the widget's copy/export controls or the browser route.
 
-## Without a URL or widget tool
-
-Use the same renderer in the [local browser](browser-local.md); no public URL or additional integration is needed:
-
-```sh
-python3 <skill-dir>/scripts/render.py --spec <spec.json> --out <view.html> --harness browser-local
-```
-
-Claude Code (including its desktop Code tab) auto-detects as `claude-code` and uses this browser path. Larger views use it too. Only select `claude-inline` when both prerequisites above are available; it is not a general Claude requirement.
-
-**Add to chat** fills the user's message box through `sendPrompt`; the user presses Enter. The message contains a readable summary and JSON feedback. Saving drafts uses localStorage only when the sandbox permits it. Acknowledge the feedback actually received.
-
-The configured theme applies. Appearance defaults to `host`, using Claude's available CSS colors and light/dark markers with theme/OS fallbacks. Explicit appearance choices from the spec, flags, project, or user configuration take priority; omit extra flags when following the default. Explicit light/dark stays fixed. The bundle includes all Oat CSS, so the loader makes no separate stylesheet request.
+The configured theme applies. Appearance defaults to `host`, using Claude's available CSS colors and light/dark markers with theme/OS fallbacks. Explicit appearance choices from the spec, flags, project, or user configuration take priority; omit extra flags when following the default. Explicit light/dark stays fixed. All Oat CSS is included in the bundle.

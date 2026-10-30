@@ -43,12 +43,6 @@
     "maxInlineBytes": 1000000,
     "maxSpecBytes": null
   },
-  "delivery": {
-    "rendererUrl": null,
-    "repository": "neha-nupoor/dynamic-visual-reply",
-    "integrity": "manifest",
-    "commit": null
-  },
   "feedback": {
     "defaultPrompt": "Review my batch feedback and continue the task.",
     "formPrompt": "Use my form answers and continue the task.",

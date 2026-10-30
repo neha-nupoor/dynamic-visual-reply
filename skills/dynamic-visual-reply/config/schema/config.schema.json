@@ -47,16 +47,6 @@
         "maxSpecBytes": {"type": ["integer", "null"], "minimum": 200}
       }
     },
-    "delivery": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "rendererUrl": {"type": ["string", "null"], "pattern": "^https://"},
-        "repository": {"description": "Public GitHub \"owner/name\". When rendererUrl is null, use this repository and delivery.commit for the optional jsDelivr loader.", "type": ["string", "null"], "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
-        "commit": {"description": "Full pushed Git commit containing the identical renderer bundle. Required with repository when rendererUrl is null; branches and tags are not accepted here.", "type": ["string", "null"], "pattern": "^[0-9a-fA-F]{40}$"},
-        "integrity": {"description": "\"manifest\" computes SRI from the local bundle, a literal sha384-… value pins one, null omits it.", "type": ["string", "null"]}
-      }
-    },
     "feedback": {
       "type": "object",
       "additionalProperties": false,

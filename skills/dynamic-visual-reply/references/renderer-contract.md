@@ -1,6 +1,6 @@
 # Renderer contract
 
-Use Python's standard library to hydrate the prebuilt bundle. Do not read or paste the bundled JavaScript into normal model turns.
+Use Python's standard library to hydrate the prebuilt bundle. Author specs rather than regenerating the bundle. Codex and browser delivery use the generated file directly; Claude's widget tool requires passing its complete HTML fragment as a string.
 
 ## Commands and delivery
 
@@ -9,14 +9,14 @@ python3 <skill-dir>/scripts/render.py --spec <input.json> --out <view.html> --ha
 python3 <skill-dir>/scripts/render.py --spec <previous.spec.json> --patch <changes.json> --out <view.html> --harness codex
 python3 <skill-dir>/scripts/render.py --print-config --harness codex
 python3 <skill-dir>/scripts/render.py --theme-css <theme.css>
-python3 <skill-dir>/scripts/doctor.py --harness claude-inline --check-url
+python3 <skill-dir>/scripts/doctor.py --harness claude-inline
 ```
 
 The result JSON reports output `path`, resolved `spec` snapshot, `format`, `placement`, `harness`, `theme`, bundle/spec byte counts, and `handoff`. Byte counts are not model token counts.
 
-Codex inline embeds the Oat/Preact bundle and returns the existing `contentReference`. The optional Claude inline route references the identical bundle, including all CSS, by a commit-pinned URL and returns a small loader for `show_widget`. Claude accepts inline HTML/JavaScript; the loader avoids passing the prebuilt bundle through model context. A public URL is a prerequisite for this particular loader, not for using the skill: choose `browser-local` whenever the widget tool or a verified matching URL is unavailable. Larger views in either host use `serve.py` and save feedback locally. Cursor, Windsurf, Gemini CLI, and other terminal/IDE agents use the same `browser-local` fallback; Claude Code uses `claude-code`; `static` produces an offline HTML file with copy/export. Claude Code's desktop markers do not establish that `show_widget` exists, so auto-detection uses the local browser. Host routing is fixed; no configurable backend graph is used.
+Every output embeds the same Oat/Preact bundle and CSS. Codex inline returns the existing `contentReference`; Claude inline returns a generated fragment for `show_widget`, with no external script or public URL. Claude's string-based handoff includes the full bundle and uses model context. Check the actual native tool, its current HTML/JavaScript support, and payload limits before selecting inline delivery. Environment detection is only a suggestion. Larger views use `serve.py` and save feedback locally. Cursor, Windsurf, Gemini CLI, and other terminal/IDE agents use `browser-local`; Claude Code uses `claude-code`; `static` produces an offline HTML file with copy/export. If rendering is unavailable or fails, provide the intended content in normal Markdown. Use the browser route when interaction remains useful and that route is available; do not add a second HTML renderer as a fallback. Host routing is fixed.
 
-Other flags: `--format auto|inline|standalone`, `--theme`, `--appearance light|dark|system|host`, `--renderer-url`, `--viewport-width`, `--viewport-height`, and `--catalog`.
+Other flags: `--format auto|inline|standalone`, `--theme`, `--appearance light|dark|system|host`, `--viewport-width`, `--viewport-height`, and `--catalog`.
 
 ## Specs and datasets
 
@@ -42,7 +42,7 @@ Each render writes `<output-stem>.spec.json`. Patches support `upsert` (merge ro
 
 Settings merge: shipped defaults → small built-in host defaults → user config → project config → flags. The spec can override appearance. Appearance defaults to `host` for Claude inline and `system` elsewhere; an explicit fixed mode at a higher-priority layer wins. A null config appearance resets to the harness default, rather than the theme pack's fixed mode. Agents should omit appearance flags unless the user requests an override. User config is `$DYNAMIC_VISUAL_REPLY_CONFIG`, otherwise `$XDG_CONFIG_HOME/dynamic-visual-reply/config.json` or `~/.config/dynamic-visual-reply/config.json`. Project config is `.dynamic-visual-reply.json`, searched up to the repository root. `--print-config` shows the effective values and their sources.
 
-Settings cover theme/fallback, appearance, harness, enabled views, placement, feedback prompts/message format, copy, and an optional pinned Claude renderer URL. `feedback.messageFormat` is `json`, `compact`, or `summary` (a readable line followed by JSON). `copy` can override selected labels/status messages. Claude's default button is **Add to chat**, with a status asking the user to press Enter.
+Settings cover theme/fallback, appearance, harness, enabled views, placement, feedback prompts/message format, and copy. `feedback.messageFormat` is `json`, `compact`, or `summary` (a readable line followed by JSON). `copy` can override selected labels/status messages. Claude's default button is **Add to chat**, with a status asking the user to press Enter.
 
 The single bundled theme is `config/theme.json`, named `generic`. It provides the approved spacious neutral appearance: monochrome actions, soft light backgrounds, visible borders, square content surfaces, 2 px controls, and labels above fields. Oat/native controls use the same tokens in both appearances. See [theme.md](theme.md).
 
@@ -80,7 +80,7 @@ node --test ../../scripts/test_adapters.mjs
 
 Git commits identify skill revisions. The manifest records SHA-256, SRI, bytes, adapters, and draftVersion; builds have no separate release number. Rebuild after renderer/default changes, then commit and push the reviewed source, bundle, and manifest together. Keep exact dependency pins and the lockfile. Change compatibility markers (schemaVersion, theme format version, draftVersion) only for incompatible data changes; ordinary updates preserve saved drafts.
 
-For the optional Claude URL loader, set `delivery.repository` and `delivery.commit` to a full pushed commit SHA containing the identical bundle, or override `delivery.rendererUrl` with a matching immutable URL. Verify it with `doctor.py --harness claude-inline --check-url`. No commit is configured by default; repository alone does not select a bundle. The local browser path embeds the bundle and needs no public URL. Keep third-party notices with the bundle. Mocked tests do not prove live host APIs; verify actual submission separately when available.
+All hosts use the checked-in bundle directly. No CDN publication or URL verification step is needed. Keep third-party notices with the bundle. Mocked tests do not prove live host APIs; verify actual submission separately when available.
 
 Oat CSS is namespaced and scoped to the widget before being embedded in the bundle, preserving host palette variables. The renderer uses Preact directly; Oat JavaScript, MUI, Emotion, ReactDOM, and animation engines are not included. Native labels, selects, checkboxes, text inputs, and textareas retain their browser semantics. Host color changes are sampled after style updates and do not discard drafts.
 
@@ -88,7 +88,7 @@ Oat CSS is namespaced and scoped to the widget before being embedded in the bund
 
 Theme-pack `appearance` remains accepted for compatibility but no longer selects the mode of rendered views. Harness appearance is now the fallback. To preserve a personal pack's fixed light/dark preference, move it to top-level settings: for example, set `"appearance": "dark"` in `~/.config/dynamic-visual-reply/config.json` or the project's `.dynamic-visual-reply.json`. Explicit spec/flag/config choices still take priority over the harness default.
 
-Remove `output` and obsolete `delivery.mode`, `delivery.npmPackage`, `delivery.repositoryPath`, and `delivery.tagPrefix` keys. Use a supported host instead of `claude-artifact`, `module`, or a custom harness profile. The config schema rejects removed settings; it does not silently drop them or edit user files. Artifact database persistence, module wrapper output, and public-repository export tooling are removed. Legacy motion flags are accepted but ignored. Spec schemaVersion 1, feedback schemaVersion 1, and draftVersion 1.0.0 remain compatible.
+Remove `output` and the obsolete `delivery` configuration object, including renderer URL, repository, commit, and integrity settings. The `--renderer-url` and `--check-url` flags are removed; all outputs embed the bundle. Use a supported host instead of `claude-artifact`, `module`, or a custom harness profile. The config schema rejects removed settings; it does not silently drop them or edit user files. Artifact database persistence, module wrapper output, and public-repository export tooling are removed. Legacy motion flags are accepted but ignored. Spec schemaVersion 1, feedback schemaVersion 1, and draftVersion 1.0.0 remain compatible.
 
 ### Skill rename and theme consolidation
 

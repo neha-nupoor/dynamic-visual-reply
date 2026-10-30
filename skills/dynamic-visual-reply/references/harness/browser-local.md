@@ -2,7 +2,7 @@
 
 Harnesses: `browser-local` (any agent that can run Python and open a browser) and `claude-code` (Claude Code in a terminal, detected from `CLAUDECODE`). Adapter: `scripts/adapters/browser.js`.
 
-Use this fallback for Claude without its widget tool or a verified loader URL, and for Cursor, Windsurf, Gemini CLI, or any other agent that can run Python and open a browser. Every view is a standalone page with the same bundle embedded; no native integration or public URL is required. It works offline. Appearance defaults to `system`; a standalone browser page follows OS preference unless host light/dark markers are exposed. Explicit user/project appearance choices and requested overrides take priority.
+Use this route for Claude without its widget tool, or when inline payload limits make it unsuitable, and for Cursor, Windsurf, Gemini CLI, or any other agent that can run Python and open a browser. Every view is a standalone page with the same bundle embedded; no native integration or public URL is required. It works offline. Appearance defaults to `system`; a standalone browser page follows OS preference unless host light/dark markers are exposed. Explicit user/project appearance choices and requested overrides take priority.
 
 ## Render and serve
 
