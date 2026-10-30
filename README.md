@@ -20,6 +20,22 @@ Use a widget when several items need different responses. Keep short answers, pr
 
 Selections and edits stay drafts until you submit them. Submitting sends instructions to the agent; it does not directly change your tasks or source data.
 
+## Token size benchmark
+
+The agent writes a JSON spec; the Node helper supplies the existing UI. The table below estimates the tokens in each bundled example's spec, without optional JSON whitespace.
+
+| Widget | Example size | Estimated spec tokens |
+| --- | --- | ---: |
+| [Table](skills/dynamic-visual-reply/assets/examples/table.json) | 4 records, 3 columns | 169 |
+| [Cards](skills/dynamic-visual-reply/assets/examples/cards.json) | 3 cards | 131 |
+| [Form](skills/dynamic-visual-reply/assets/examples/form.json) | 4 fields | 175 |
+| [Board](skills/dynamic-visual-reply/assets/examples/kanban.json) | 3 items | 83 |
+| [Flow](skills/dynamic-visual-reply/assets/examples/flow.json) | 4 steps | 97 |
+
+Counted on October 30, 2026, with [js-tiktoken](https://github.com/dqbd/tiktoken/tree/main/js) 1.0.21 and the `o200k_base` encoding. These are **spec-text estimates, not measured total tokens per widget**. They exclude chat context, skill instructions, reasoning, tool calls, captions, and feedback replies. Model tokenizers, formatting, and content length can change the counts. No usability or percentage token-savings comparison was measured.
+
+Running the Node renderer uses **zero model tokens**. Codex and local browser routes use generated files directly. Claude's inline route also passes the complete generated HTML through model context, so the spec counts alone do not describe that route's cost. No token-counting package is required to install or use the skill.
+
 ## Widget previews
 
 ### Inside Codex
@@ -174,22 +190,6 @@ Use `"light"` for light mode, or `null` to restore the harness default. Preserve
 - **Widget does not appear:** check actual tool availability and payload limits. Use the browser route when available, or continue in normal chat.
 - **Browser feedback does not arrive:** use the server's HTTP URL rather than opening the file directly. Submit, then ask the agent to read the feedback file; local submission does not wake the agent.
 - **Settings fail after updating:** older installations may contain an obsolete `delivery` object or use the former `visual-response-design` skill name. See [migration guidance](skills/dynamic-visual-reply/references/renderer-contract.md#migrating-older-installations). Disable the old skill after checking the new installation to avoid duplicate discovery.
-
-## Token size benchmark
-
-The agent writes a JSON spec; the Node helper supplies the existing UI. The table below estimates the tokens in each bundled example's spec, without optional JSON whitespace.
-
-| Widget | Example size | Estimated spec tokens |
-| --- | --- | ---: |
-| [Table](skills/dynamic-visual-reply/assets/examples/table.json) | 4 records, 3 columns | 169 |
-| [Cards](skills/dynamic-visual-reply/assets/examples/cards.json) | 3 cards | 131 |
-| [Form](skills/dynamic-visual-reply/assets/examples/form.json) | 4 fields | 175 |
-| [Board](skills/dynamic-visual-reply/assets/examples/kanban.json) | 3 items | 83 |
-| [Flow](skills/dynamic-visual-reply/assets/examples/flow.json) | 4 steps | 97 |
-
-Counted on October 30, 2026, with [js-tiktoken](https://github.com/dqbd/tiktoken/tree/main/js) 1.0.21 and the `o200k_base` encoding. These are **spec-text estimates, not measured total tokens per widget**. They exclude chat context, skill instructions, reasoning, tool calls, captions, and feedback replies. Model tokenizers, formatting, and content length can change the counts. No usability or percentage token-savings comparison was measured.
-
-Running the Node renderer uses **zero model tokens**. Codex and local browser routes use generated files directly. Claude's inline route also passes the complete generated HTML through model context, so the spec counts alone do not describe that route's cost. No token-counting package is required to install or use the skill.
 
 ## For contributors
 
