@@ -1,141 +1,150 @@
-# reply-ui
+# Dynamic Visual Reply
 
-An installable agent skill for reviewing several items and sending one batch of feedback tied to stable IDs. It provides tables, cards, forms, boards, and manual flows through one prebuilt Oat/Preact renderer. Keep simple answers and overall feedback in chat; use a view when separate items need separate responses, or when the user explicitly requests one.
+**Review several items. Reply once.**
+
+Dynamic Visual Reply is an agent skill that turns multi-item reviews into interactive tables, cards, forms, boards, and step views. Select items, edit values, and attach instructions to individual records, then send one batch of feedback to your agent.
+
+One shared renderer, built with [Oat](https://github.com/knadh/oat) and [Preact](https://preactjs.com/), provides light and dark themes, neutral controls, 2 px corners, and brief CSS motion. The renderer is bundled with the skill—no CDN, API key, or separate service is needed.
+
+## When to use it
+
+Use a widget when several items need different responses. Keep short answers, prose, and overall feedback in chat.
+
+| View | Useful for |
+| --- | --- |
+| Table | Compare records, select a batch, and edit individual values |
+| Cards | Review alternatives and add an instruction to each |
+| Form | Answer several questions in one submission |
+| Board | Move items between stages and explain changes |
+| Flow | Review a sequence and respond to individual steps |
+
+Selections and edits stay drafts until you submit them. Submitting sends instructions to the agent; it does not directly change your tasks or source data.
 
 ## Requirements
 
-- Python 3.9+ to render and serve views, plus a browser or browser panel.
-- An agent that can read skill files and run local commands. A chat-only host without those capabilities cannot run this skill by installation alone.
-- For the skills CLI installer: Git and Node.js 22.20+. Normal rendering needs no Node.js, npm packages, build step, API key, or separately installed service. A manual installation is available below.
+- **An agent with file access and command execution** to read the skill and run its helpers.
+- **Python 3.9+** on the machine where the agent runs. Python validates JSON specs and generates HTML; the browser workflow also uses it to serve the page and save feedback. No Python packages need installing.
+- **A browser or a supported inline widget tool** to display the result. The widget itself runs JavaScript, not Python.
 
-## 1. Install the skill
+The renderer is prebuilt, so normal use needs no Node.js or build step. The optional installer below uses Git and Node.js 22.20+; manual installation avoids the Node.js requirement.
 
-Run from the project where you want to use it:
+## Install
+
+From the project where you want to use the skill:
 
 ```sh
-npx skills add neha-nupoor/reply-ui --skill visual-response-design
+npx skills add neha-nupoor/dynamic-visual-reply --skill dynamic-visual-reply
 ```
 
-Select your agent when prompted. For an unattended installation, specify its installer ID:
+Choose your agent when prompted. To select one directly:
 
 ```sh
-npx skills add neha-nupoor/reply-ui --skill visual-response-design --agent codex --yes
+npx skills add neha-nupoor/dynamic-visual-reply --skill dynamic-visual-reply --agent codex --yes
 ```
 
-Replace `codex` with an ID from the table below. Add `--global` to install for all projects instead of only the current project. Multiple IDs can follow `--agent`. Start a new agent session or reload its skill discovery after installing.
+Replace `codex` with `claude-code`, `cursor`, `windsurf`, `gemini-cli`, or `github-copilot`. Add `--global` for an installation shared across projects. Restart your agent session or reload skill discovery after installation. See the installer's [supported agents](https://github.com/vercel-labs/skills/blob/main/docs/agents.md) and [commands](https://github.com/vercel-labs/skills/blob/main/docs/commands.md) for other options.
 
-The installer ID and rendering harness are different: `cursor` is an installer ID, while Cursor renders through `browser-local`.
-
-| Agent | Installer ID | Project skill parent | Global skill parent | Rendering harness |
-| --- | --- | --- | --- | --- |
-| Codex | `codex` | `.agents/skills/` | `~/.agents/skills/` | `codex` when an inline widget tool exists; otherwise `browser-local` |
-| Claude Code | `claude-code` | `.claude/skills/` | `~/.claude/skills/` | `claude-code` |
-| Cursor | `cursor` | `.agents/skills/` | `~/.cursor/skills/` | `browser-local` |
-| Windsurf | `windsurf` | `.windsurf/skills/` | `~/.codeium/windsurf/skills/` | `browser-local` |
-| Gemini CLI | `gemini-cli` | `.agents/skills/` | `~/.gemini/skills/` | `browser-local` |
-| GitHub Copilot | `github-copilot` | `.agents/skills/` | `~/.copilot/skills/` | `browser-local` |
-
-Each parent contains a `visual-response-design` directory. The CLI can share the underlying files or install copies. Inspect the actual location with `npx skills list --agent <installer-id>`; add `--global` for a global install. CLI options and directories are documented in the [installer reference](https://github.com/vercel-labs/skills/blob/main/docs/commands.md) and [supported-agent list](https://github.com/vercel-labs/skills/blob/main/docs/agents.md).
-
-### Manual installation / another agent
-
-If Node.js is unavailable, clone the repository:
+### Manual installation
 
 ```sh
-git clone https://github.com/neha-nupoor/reply-ui.git
+git clone https://github.com/neha-nupoor/dynamic-visual-reply.git
 ```
 
-Copy the **entire** `reply-ui/skills/visual-response-design` directory into your harness's skill directory, preserving `scripts/`, `config/`, `themes/`, `references/`, `harnesses/`, and `assets/`. Follow that harness's skill-discovery rules. If it has no skills loader, ask the agent to read the cloned `skills/visual-response-design/SKILL.md` explicitly and use the local-browser workflow below. Copying only `SKILL.md` is insufficient.
+Copy the entire `skills/dynamic-visual-reply` directory from the clone into your agent's skill directory. Include its scripts, configuration, references, and assets; copying only `SKILL.md` is insufficient. If your agent has no skill loader, ask it to read that `SKILL.md` explicitly.
 
-## 2. Verify setup and render a first view
+## Use it
 
-Set `reply_skill_dir` to the installed directory containing `SKILL.md`. For example, after the project-local Codex/Cursor installation above:
+Ask your agent:
+
+> Use dynamic-visual-reply to show these five proposals as a review table. Let me select proposals and add an instruction to each, then submit one batch.
+
+The agent chooses a view, writes a JSON spec, and runs the bundled helper. You review the widget and submit when ready. Stable record IDs keep your feedback attached to the right items across sorting, filtering, and compatible updates.
+
+Your agent checks the tools available in the current session before choosing where to display a view:
+
+| Environment | Display route |
+| --- | --- |
+| Codex with an inline widget tool | Inline for small views; local browser for larger ones |
+| Claude with a suitable inline widget tool | Embedded HTML fragment; local browser if the payload is unsuitable |
+| Claude Code, Cursor, Windsurf, Gemini CLI, GitHub Copilot | Local browser or browser panel |
+| Browser without a feedback bridge | Offline HTML with copy/export |
+
+Installing a skill does not add a widget tool to a harness. Claude Code installation and Claude chat widget availability are separate capabilities. A chat-only session without file access and command execution cannot run these helpers by installation alone.
+
+All routes embed the same renderer and CSS. Claude's inline tool takes the complete HTML as a string, including about 82 KB of renderer plus view data, so it uses more model context than a file-based handoff. Its native rendering and feedback path have not yet been verified; browser fixtures use simulated host bridges. Follow the current host tool's instructions and limits.
+
+If rendering is unavailable or fails, the agent provides the intended answer as normal Markdown. The browser route remains an option when interaction is useful.
+
+### How feedback reaches the agent
+
+- **Codex inline:** **Send to chat** uses the native bridge when available.
+- **Claude inline:** **Add to chat** prepares the message through the host bridge; press Enter to send it.
+- **Local browser:** **Submit answers** or **Submit instructions** saves feedback locally. Return to chat and ask the agent to continue; the agent reads the saved feedback. Submission does not start an agent turn by itself.
+- **Offline file:** copy the prepared feedback or export JSON, then return it to the agent in chat.
+
+Drafts, preview, copy/export, and undo support deliberate submission. The agent should acknowledge the feedback it actually receives.
+
+## Try a sample locally
+
+Set `reply_skill_dir` to your installed skill directory—the folder containing `SKILL.md`. For example, a project-local Codex installation commonly uses `.agents/skills/dynamic-visual-reply`. Find the actual path with `npx skills list --agent codex`, or use the directory you copied manually.
 
 ```sh
-reply_skill_dir="$PWD/.agents/skills/visual-response-design"
-python3 "$reply_skill_dir/scripts/doctor.py" --harness browser-local
-python3 "$reply_skill_dir/scripts/render.py" --catalog
-```
-
-For a manual clone, use `reply_skill_dir="$PWD/reply-ui/skills/visual-response-design"`. For another installation, use its actual path from the table or CLI listing. On Windows, use the equivalent path/variable syntax in your shell and `py -3` if `python3` is unavailable.
-
-Render the bundled sample form with the universal browser fallback:
-
-```sh
-reply_preview_dir="$PWD/reply-ui-preview"
+reply_skill_dir="$PWD/.agents/skills/dynamic-visual-reply"
+reply_preview_dir="$PWD/dynamic-visual-reply-preview"
 mkdir -p "$reply_preview_dir"
-python3 "$reply_skill_dir/scripts/render.py" --spec "$reply_skill_dir/assets/examples/form.json" --out "$reply_preview_dir/form.html" --harness browser-local
+
+python3 "$reply_skill_dir/scripts/doctor.py" --harness browser-local
+python3 "$reply_skill_dir/scripts/render.py" \
+  --spec "$reply_skill_dir/assets/examples/form.json" \
+  --out "$reply_preview_dir/form.html" \
+  --harness browser-local
 python3 "$reply_skill_dir/scripts/serve.py" "$reply_preview_dir/form.html" --port 0
 ```
 
-The server prints a local `url` and a `feedback` file path. Open that URL in the harness's browser panel or system browser. Keep the server running while the user reviews; stop it when finished. No public URL is needed, and the renderer works offline after installation.
+Open the local URL printed by the server. Keep it running while reviewing, submit your answers, then ask the agent to read the printed feedback file. Stop the server when finished. On Windows, use the equivalent shell paths and `py -3` if `python3` is unavailable.
 
-Click **Submit answers** or **Submit instructions**, then return to the agent and ask it to continue. The agent reads the printed `.feedback.json` file; a browser submission does not itself start an agent turn. Selections and edits remain drafts until the agent applies them.
+`doctor.py` checks local files, configuration, bundle hashes, and theme contrast. It cannot establish that an inline host tool or submission bridge exists.
 
-`doctor.py` checks files, configuration, hashes, and contrast. It does not prove a native widget or chat bridge exists. A server-rendered first view and saved feedback verify the local path; test any native bridge in its real host separately.
+## Appearance
 
-## 3. Use it in your harness
+Appearance follows the host where supported, with OS preference as a fallback. Explicit choices take priority:
 
-Ask the agent, for example:
+`spec → command-line flag → project settings → user settings → harness default`
 
-> Use the visual-response-design skill to show these five proposals as a review table. Let me select proposals and add a separate instruction to each, then submit one batch. Use the local-browser fallback if inline rendering is unavailable.
-
-The agent reads the installed `SKILL.md`, writes a small JSON spec, runs `scripts/render.py`, and follows the returned `handoff`. It should not read the bundled JavaScript into model context or regenerate the UI implementation.
-
-- **Codex with an inline widget tool:** use `--harness codex`. Display the returned `contentReference` for an inline view; for `handoff.type: serve`, run the returned command and open the local URL. Native **Send to chat** uses the existing bridge. Codex CLI or a host without that inline tool uses `browser-local`.
-- **Claude Code:** use `--harness claude-code`. Both the terminal and desktop Code tab use the same local-browser workflow. The desktop Browser pane can display the local server. Environment detection suggests this route, but an explicit flag avoids ambiguity.
-- **Cursor, Windsurf, Gemini CLI, Copilot, and other agents:** use `--harness browser-local` and follow the returned server command. No custom native integration is needed. When choosing a harness, check actual available tools rather than the model's name.
-- **No local server available:** render with `--harness static`. Open the returned HTML file and use **Prepare message**, **Copy feedback**, or **Export JSON** to return feedback manually.
-
-### Optional Claude inline widget route
-
-Use `--harness claude-inline` only when the actual `show_widget` tool is available **and** its matching bundle URL is verified. Claude accepts HTML fragments with inline JavaScript. This skill's optional URL loader keeps the tool payload small instead of passing the whole prebuilt renderer through model context.
-
-Run `python3 "$reply_skill_dir/scripts/doctor.py" --harness claude-inline --check-url` before choosing this route. Then render with `--harness claude-inline` and pass the small output file to `show_widget` as instructed by its returned handoff and current host guide. **Add to chat** fills the message box; the user presses Enter.
-
-The default loader URL uses the renderer's release tag. An unreleased build can instead use an identical published commit via `delivery.rendererUrl` / `--renderer-url`, with matching integrity. If the URL is unavailable, mismatched, or blocked by the host, use `browser-local`. A release tag, CDN, and public renderer URL are optional for using the skill. See the [Claude guide](skills/visual-response-design/references/harness/claude-inline.md).
-
-## Appearance and settings
-
-Appearance follows the harness by default: Claude inline uses available host colors and light/dark mode; other surfaces follow exposed host light/dark markers, otherwise OS preference. Explicit choices win in this order:
-
-`spec → command-line flag → project config → user config → harness default`
-
-A null config appearance resets to the harness default. Do not add appearance flags just to force automatic behavior. To request a fixed mode for one render, pass `--appearance light` or `--appearance dark`.
-
-User settings live in `~/.config/visual-response/config.json` (or `$VISUAL_RESPONSE_CONFIG`); project settings live in `.visual-response.json`. For example, add `"appearance": "dark"` to an existing config, or create a new config with:
+To choose a fixed appearance, add this to your project's `.dynamic-visual-reply.json` or your user settings at `~/.config/dynamic-visual-reply/config.json`:
 
 ```json
 {"appearance":"dark"}
 ```
 
-Preserve other existing settings. The configured theme pack remains supported. Both palettes use the same renderer, with 2 px control/badge corners, square content surfaces, visible borders, and brief CSS transitions that honor reduced motion. To inspect effective settings, run:
+Use `"light"` for light mode, or `null` to restore the harness default. Preserve any other settings already in the file. A single generic theme supplies both palettes; custom theme packs and wording overrides are supported. See the [theme guide](skills/dynamic-visual-reply/references/theme.md) and [renderer contract](skills/dynamic-visual-reply/references/renderer-contract.md).
 
-```sh
-python3 "$reply_skill_dir/scripts/render.py" --print-config --harness browser-local
+## Troubleshooting
+
+- **Skill is not discovered:** check its installation path and restart the agent session. Verify the complete skill folder was installed.
+- **Python is missing:** install Python 3.9+ where the agent executes commands. A prebuilt renderer removes the build requirement, but the current helpers still need Python.
+- **Widget does not appear:** check actual tool availability and payload limits. Use the browser route when available, or continue in normal chat.
+- **Browser feedback does not arrive:** use the server's HTTP URL rather than opening the file directly. Submit, then ask the agent to read the feedback file; local submission does not wake the agent.
+- **Settings fail after updating:** older installations may contain an obsolete `delivery` object or use the former `visual-response-design` skill name. See [migration guidance](skills/dynamic-visual-reply/references/renderer-contract.md#migrating-older-installations). Disable the old skill after checking the new installation to avoid duplicate discovery.
+
+## For contributors
+
+The skill entrypoint is [SKILL.md](skills/dynamic-visual-reply/SKILL.md). Supporting files follow the standard skill layout:
+
+```text
+skills/dynamic-visual-reply/
+├── SKILL.md
+├── agents/openai.yaml       # Optional OpenAI display metadata
+├── scripts/                 # Render, serve, checks, and host adapters
+├── config/                  # Defaults, one generic theme, and schemas
+├── references/              # Detailed contracts and host guides
+└── assets/                  # JSON examples and the shared renderer
 ```
 
-## Troubleshooting and updates
+Normal users do not need to build the renderer. For implementation changes, follow the [renderer contract](skills/dynamic-visual-reply/references/renderer-contract.md#maintenance) and [UI behavior guide](skills/dynamic-visual-reply/references/ui-behavior.md).
 
-- **Skill is not discovered:** inspect `npx skills list --agent <installer-id>` (with `--global` for a global installation), verify the full skill directory exists, and start a new session/reload discovery. A custom skills directory may differ from the CLI defaults above.
-- **Unknown harness error:** use a rendering harness from this README, not an installer ID such as `cursor` or `gemini-cli`.
-- **Feedback is not reaching the agent:** open the server's HTTP URL, submit deliberately, then ask the agent to read the printed feedback file. A plain `file://` page uses copy/export instead of the server endpoint.
-- **Claude loader URL fails:** switch to `browser-local`; do not disable integrity checking or substitute an older bundle.
-- **Update:** use `npx skills update visual-response-design` for a project install, or add `--global` for a global install. Manual copies need the skill directory refreshed from an updated clone.
+Git commits identify skill revisions; bundle hashes identify renderer bytes. Dependency pins and compatibility markers are retained. There is no routine skill version bump or tag-publishing workflow.
 
-See [SKILL.md](skills/visual-response-design/SKILL.md) for invocation rules and the [renderer contract](skills/visual-response-design/references/renderer-contract.md) for specs, datasets, patches, settings, and supported behavior.
+## License
 
-## Build and release
-
-1. In `skills/visual-response-design/assets/renderer`, run `npm ci --ignore-scripts` and `npm run build`.
-2. Run `python3 skills/visual-response-design/scripts/test_renderer.py` and `node --test skills/visual-response-design/scripts/test_adapters.mjs`.
-3. For browser regression checks, run `python3 tests/browser_fixtures.py <output-directory>` and serve that directory on loopback. The fixtures exercise the built renderer with local Codex/Claude bridge doubles; the Claude fixture deliberately blocks inline JavaScript and checks SRI. That conservative test policy is not a claim about Claude's actual sandbox. No real chat message is sent by these fixtures.
-4. If distributing the optional Claude URL loader, publish the matching reviewed `v<version>` tag and run `doctor.py --harness claude-inline --check-url` before handing it off. During PR review, use `--renderer-url` pointing to the identical bundle at a published commit. The local browser path needs no release tag or CDN URL. Do not overwrite an old tag or claim that bridge doubles prove live host submission.
-
-## Migrating to 1.4
-
-Theme-pack `appearance` remains accepted for compatibility but no longer selects the mode of rendered views. Harness appearance is now the fallback. To preserve a personal pack's fixed light/dark preference, move it to top-level settings: for example, set `"appearance": "dark"` in `~/.config/visual-response/config.json` or the project's `.visual-response.json`. Explicit spec/flag/config choices still take priority over the harness default.
-
-Remove `output` and obsolete `delivery.mode`, `delivery.npmPackage`, `delivery.repositoryPath`, and `delivery.tagPrefix` settings. Artifact database output, module wrappers, custom harness profiles, and public export tooling have been removed. Replace `claude-artifact`, `module`, or custom harness names with a supported host from the table above. Invalid old settings produce a schema error; user configuration is never silently rewritten. Legacy motion flags are ignored. Feedback schemaVersion 1 and draftVersion 1.0.0 are preserved.
-
-MIT. Bundled dependencies are Oat CSS and Preact; third-party notices are included with the renderer. Oat's optional JavaScript is not loaded. Normal rendering needs Python 3.9+ and no npm installation.
+MIT. Bundled Oat and Preact notices are included with the renderer.

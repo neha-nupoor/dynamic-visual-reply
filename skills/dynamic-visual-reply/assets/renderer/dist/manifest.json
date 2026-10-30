@@ -1,0 +1,18 @@
+{
+  "draftVersion": "1.0.0",
+  "sha256": "9001207eb9da76398a9d4ad475d34aad64cbeb7eb67ee683b3d7d5573620d733",
+  "sri": "sha384-dO4NG24G37CSNmDNhy48G8Ky56DcPYkz2D3FsWXjKJWvJSy8MvlbOLfog+3zbKEY",
+  "bytes": 82012,
+  "views": [
+    "table",
+    "cards",
+    "form",
+    "kanban",
+    "flow"
+  ],
+  "adapters": [
+    "codex",
+    "claude-inline",
+    "browser-local"
+  ]
+}

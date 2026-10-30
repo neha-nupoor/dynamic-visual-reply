@@ -1,8 +1,8 @@
 /* Local host doubles for the browser fixtures. These never contact a real agent. */
-const fixtureSpec=JSON.parse(document.querySelector('[data-visual-response-spec]').textContent);
-const fixtureConfig=JSON.parse(document.querySelector('[data-visual-response-config]').textContent);
+const fixtureSpec=JSON.parse(document.querySelector('[data-dynamic-visual-reply-spec]').textContent);
+const fixtureConfig=JSON.parse(document.querySelector('[data-dynamic-visual-reply-config]').textContent);
 const fixtureKey='fixture-codex:'+fixtureSpec.stateKey;
-const storageKey='visual-response:'+fixtureSpec.stateKey;
+const storageKey='dynamic-visual-reply:'+fixtureSpec.stateKey;
 const write=(id,value)=>{document.getElementById(id).textContent=JSON.stringify(value,null,2)};
 const read=key=>{try{return JSON.parse(localStorage.getItem(key))}catch{return null}};
 const legacy={key:fixtureSpec.stateKey,selected:(fixtureSpec.rows||[]).slice(0,1).map(row=>row.id),reviewed:[],notes:{},edits:{},stages:{},fields:{},options:{},comment:'Legacy draft'};

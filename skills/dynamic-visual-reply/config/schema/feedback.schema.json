@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dynamic-visual-reply/feedback.schema.json",
+  "title": "Dynamic visual reply feedback envelope",
+  "description": "What every harness's submit path delivers. `source` metadata is optional and additive. New feedback identifies the bundle by SHA-256; legacy rendererVersion is still accepted.",
+  "type": "object",
+  "required": ["schemaVersion", "viewId", "view", "revision", "selectedIds", "items", "reviewedIds", "fields", "comment"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "viewId": {"type": "string"},
+    "view": {"enum": ["table", "cards", "form", "kanban", "flow"]},
+    "revision": {"type": "integer", "minimum": 1},
+    "selectedIds": {"type": "array", "items": {"type": "string"}},
+    "reviewedIds": {"type": "array", "items": {"type": "string"}},
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "selected", "instruction", "changes"],
+        "properties": {
+          "id": {"type": "string"},
+          "label": {"type": "string"},
+          "selected": {"type": "boolean"},
+          "instruction": {"type": "string"},
+          "changes": {"type": "object"},
+          "stage": {"type": "string"}
+        }
+      }
+    },
+    "fields": {"type": "array", "items": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}, "options": {"type": "array"}}}},
+    "comment": {"type": "string"},
+    "source": {
+      "type": "object",
+      "properties": {"harness": {"type": "string"}, "theme": {"type": "string"}, "rendererHash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "rendererVersion": {"description": "Legacy metadata, accepted when reading older feedback.", "type": "string"}}
+    }
+  }
+}

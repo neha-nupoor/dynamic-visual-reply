@@ -1,0 +1,134 @@
+{
+  "$schema": "./schema/config.schema.json",
+  "theme": "generic",
+  "themeFallback": "generic",
+  "appearance": "system",
+  "harness": "auto",
+  "views": {
+    "enabled": [
+      "table",
+      "cards",
+      "form",
+      "kanban",
+      "flow"
+    ]
+  },
+  "placement": {
+    "viewport": {
+      "width": 736,
+      "height": 900
+    },
+    "heightBudget": {
+      "maxPx": 640,
+      "fraction": 0.75
+    },
+    "inlineLimits": {
+      "table": {
+        "rows": 3,
+        "columns": 3
+      },
+      "cards": {
+        "items": 2
+      },
+      "form": {
+        "units": 3
+      },
+      "flow": {
+        "nodes": 4
+      },
+      "kanban": {
+        "items": 6
+      }
+    },
+    "maxInlineBytes": 1000000,
+    "maxSpecBytes": null
+  },
+  "feedback": {
+    "defaultPrompt": "Review my batch feedback and continue the task.",
+    "formPrompt": "Use my form answers and continue the task.",
+    "messageFormat": "json"
+  },
+  "copy": {
+    "badge": "Draft → preview → feedback",
+    "goal": "Goal:",
+    "next": "Next:",
+    "submit": {
+      "message": "Send to chat",
+      "save": "Submit instructions",
+      "saveForm": "Submit answers",
+      "none": "Prepare message",
+      "busy": "Sending…"
+    },
+    "feedbackSubmit": {
+      "message": "Send feedback",
+      "save": "Submit instructions",
+      "none": "Prepare feedback"
+    },
+    "feedbackSection": "Feedback and actions",
+    "generalInstruction": "General instruction",
+    "instruction": "Instruction",
+    "reviewed": "Reviewed",
+    "select": "Select",
+    "selected": "Selected",
+    "recommended": "Recommended",
+    "moreDetail": "More detail",
+    "source": "Source",
+    "preview": "Preview batch",
+    "hidePreview": "Hide preview",
+    "copy": "Copy feedback",
+    "export": "Export JSON",
+    "undo": "Undo edit",
+    "previewNote": "Includes selected items and items with edits or comments. No real task state changes until the agent acts.",
+    "editableMessage": "Editable message to the agent",
+    "selectMessage": "Select message text",
+    "status": {
+      "draft": "Draft · nothing submitted",
+      "edited": "Draft updated · nothing submitted",
+      "submitted": "Submission requested · the agent will confirm receipt.",
+      "saved": "Instructions submitted locally. Return to chat to continue.",
+      "savedTo": "Instructions submitted locally. Return to chat to continue.",
+      "unavailable": "Direct submission unavailable. Copy the editable message below.",
+      "failed": "Submission failed. Your edits are retained; use Copy feedback.",
+      "copied": "Copied · paste into chat to send.",
+      "copyUnavailable": "Copy unavailable. Select the message text, then press ⌘C / Ctrl+C.",
+      "exported": "Feedback export requested · no agent message sent.",
+      "selectedText": "Text selected · press ⌘C / Ctrl+C, then paste into chat.",
+      "draftTooLarge": "Large draft retained in this view. Export feedback before leaving."
+    },
+    "table": {
+      "search": "Search",
+      "filter": "Filter",
+      "all": "All",
+      "columns": "Columns",
+      "selectedCount": "selected",
+      "selectVisible": "Select visible",
+      "deselectVisible": "Deselect visible",
+      "selectAllMatches": "Select all {count} matches",
+      "selectColumn": "Select",
+      "feedbackColumn": "Feedback",
+      "empty": "No matching records.",
+      "page": "Page {page} / {pages} · {count} matches",
+      "previous": "Previous page",
+      "next": "Next page",
+      "sharedInstruction": "Shared instruction for selected rows",
+      "applyToSelected": "Apply to selected"
+    },
+    "summary": {
+      "selected": "Selected: {labels}",
+      "more": "+{count} more",
+      "instructions": "{count} with instructions",
+      "reviewed": "{count} reviewed",
+      "answers": "{count} answers",
+      "comment": "general comment",
+      "nothing": "No items selected",
+      "data": "Feedback JSON:"
+    },
+    "kanban": {
+      "stage": "Stage"
+    },
+    "form": {
+      "editableOption": "Editable option"
+    },
+    "localSubmitHelp": "Submit here, then return to chat and ask the agent to continue."
+  }
+}
