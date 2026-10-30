@@ -2,7 +2,7 @@
 
 Harnesses: `browser-local` (any agent that can run Python and open a browser) and `claude-code` (Claude Code in a terminal, detected from `CLAUDECODE`). Adapter: `harnesses/browser-local.js`.
 
-A terminal can't draw UI inside the conversation, so every view is a standalone page with the bundle embedded. It works offline.
+Use this fallback for Claude without its widget tool or a verified loader URL, and for Cursor, Windsurf, Gemini CLI, or any other agent that can run Python and open a browser. Every view is a standalone page with the same bundle embedded; no native integration or public URL is required. It works offline.
 
 ## Render and serve
 

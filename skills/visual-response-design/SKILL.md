@@ -18,8 +18,8 @@ One prebuilt Oat/Preact renderer serves every host, with native HTML controls an
    | Surface | Harness | Reference |
    | --- | --- | --- |
    | Codex inline | `codex` | [codex.md](references/harness/codex.md) |
-   | Claude widget tool | `claude-inline` | [claude-inline.md](references/harness/claude-inline.md) |
-   | Browser panel or terminal agent | `browser-local`, `claude-code` | [browser-local.md](references/harness/browser-local.md) |
+   | Claude widget tool with a verified matching bundle URL | `claude-inline` | [claude-inline.md](references/harness/claude-inline.md) |
+   | Claude Code, Cursor, Windsurf, Gemini CLI, or another agent with a browser | `browser-local`, `claude-code` | [browser-local.md](references/harness/browser-local.md) |
    | HTML file without a bridge | `static` | [static.md](references/harness/static.md) |
 
 2. Write a spec with `schemaVersion:1`, a stable `viewId`, `view`, and `title`:
@@ -32,7 +32,7 @@ One prebuilt Oat/Preact renderer serves every host, with native HTML controls an
    | `kanban` | `rows:[{id,title,stage}]`, optional `stages` |
    | `flow` | `nodes:[{id,title,detail}]`; manually selected steps |
 
-3. Run `python3 <skill-dir>/scripts/render.py --spec <spec.json> --out <view.html> --harness <id>`. Follow the returned `handoff`: display the Codex `contentReference`, pass the small Claude loader to its widget tool, or run the local server command. Larger Codex/Claude views use the same local browser fallback. Other agents can use that fallback without a custom integration.
+3. Run `python3 <skill-dir>/scripts/render.py --spec <spec.json> --out <view.html> --harness <id>`. Follow the returned `handoff`: display the Codex `contentReference`, pass the small Claude loader to its widget tool, or run the local server command. Larger Codex/Claude views use the same local browser fallback. Use the browser fallback whenever a native widget tool or verified bundle URL is unavailable; a public URL is not required to use the skill. Other agents need no custom integration.
 
 Examples are in `assets/examples/`; `--catalog` lists them. Read [renderer-contract.md](references/renderer-contract.md) for extra fields, existing datasets, patches, configuration, or maintenance. The schema defines valid input; Python adds cross-record checks such as unique IDs.
 
@@ -46,6 +46,6 @@ Placement considers content size, available width, and theme sizes. Use `present
 
 Light is the default. Use `--appearance dark` for dark mode or `--appearance system` to follow host/OS preference. Both palettes use the same renderer. Use the configured theme pack; preserve an existing product's design system. User settings live at `~/.config/visual-response/config.json` (or `$VISUAL_RESPONSE_CONFIG`); project settings live in `.visual-response.json`. Theme, appearance, copy, and placement limits are settings. Host delivery is fixed in code, with thin adapters for feedback and drafts.
 
-Generate only the spec and, for Claude, the small loader. Browser interactions cost no model turn. Flows stay static with manual steps. Keep CSS transitions brief and honor reduced motion; no animation engine is included.
+Generate only the spec and, when choosing Claude's optional URL loader, the small loader. Browser interactions cost no model turn. Flows stay static with manual steps. Keep CSS transitions brief and honor reduced motion; no animation engine is included.
 
 For code changes, read [ui-behavior.md](references/ui-behavior.md), rebuild the bundle, run `scripts/test_renderer.py` and `node --test scripts/test_adapters.mjs`, and inspect the changed interactions in a browser. Do not claim live host submission is verified by mocked adapter tests.
