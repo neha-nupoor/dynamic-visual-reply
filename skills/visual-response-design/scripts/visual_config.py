@@ -289,7 +289,7 @@ def load_harness(identifier):
 def detect_harness(env=os.environ):
     # These markers suggest a host. Runtime bridges still have to be checked in the rendered view.
     if env.get('CLAUDECODE') == '1':
-        identifier = 'claude-inline' if 'CLAUDE_CODE_DESKTOP_APP_VERSION' in env else 'claude-code'
+        return 'claude-code', 'Claude Code uses the local browser; choose claude-inline only when show_widget is available'
     elif any(name in env for name in ('CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED', 'CODEX_HOME')):
         identifier = 'codex'
     else:

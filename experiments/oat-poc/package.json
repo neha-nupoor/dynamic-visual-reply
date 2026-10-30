@@ -1,9 +1,0 @@
-{
-  "name": "reply-ui-oat-poc",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {"build": "node build.mjs"},
-  "dependencies": {"@knadh/oat": "1.0.0", "preact": "11.1.0"},
-  "devDependencies": {"esbuild": "0.25.10"}
-}

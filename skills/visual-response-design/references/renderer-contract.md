@@ -14,7 +14,7 @@ python3 <skill-dir>/scripts/doctor.py --harness claude-inline --check-url
 
 The result JSON reports output `path`, resolved `spec` snapshot, `format`, `placement`, `harness`, `theme`, bundle/spec byte counts, and `handoff`. Byte counts are not model token counts.
 
-Codex inline embeds the bundle and returns the existing `contentReference`. Claude inline references the same version-pinned bundle by URL and returns a small loader for `show_widget`. Larger views in either host use `serve.py` and save feedback locally. Terminal agents use `browser-local` or `claude-code`; `static` produces an offline HTML file with copy/export. Host routing is fixed; no configurable backend graph is used.
+Codex inline embeds the Oat/Preact bundle and returns the existing `contentReference`. Claude inline references the identical bundle, including all CSS, by a version-pinned URL and returns a small loader for `show_widget`. Larger views in either host use `serve.py` and save feedback locally. Terminal agents use `browser-local` or `claude-code`; `static` produces an offline HTML file with copy/export. Claude Code's desktop markers do not establish that `show_widget` exists, so auto-detection uses the local browser. Host routing is fixed; no configurable backend graph is used.
 
 Other flags: `--format auto|inline|standalone`, `--theme`, `--appearance light|dark|system|host`, `--renderer-url`, `--viewport-width`, `--viewport-height`, and `--catalog`.
 
@@ -44,7 +44,7 @@ Settings merge: shipped defaults → small built-in host defaults → user confi
 
 Settings cover theme/fallback, appearance, harness, enabled views, placement, feedback prompts/message format, copy, and the pinned Claude renderer URL. `feedback.messageFormat` is `json`, `compact`, or `summary` (a readable line followed by JSON). `copy` can override selected labels/status messages. Claude's default button is **Add to chat**, with a status asking the user to press Enter.
 
-The opt-in `--theme base-web` preset uses monochrome actions, square card surfaces, 8 px controls, and labels above filled fields; see [its reference notes](../themes/base-web/reference.md).
+The default `base-web` preset (a historical name) supplies the approved spacious neutral appearance: monochrome actions, a soft light background, visible borders, square card surfaces, 2 px controls, and labels above filled fields. It now styles actual Oat/native controls; see [its reference notes](../themes/base-web/reference.md). The compact `neutral` fallback uses the same palette and corner treatment. Both appearances support brief 150–200 ms hover/focus/selection transitions and reduced-motion settings.
 
 A theme pack has `theme.json` or `assets/theme.json`, validated by `config/schema/theme.schema.json`. Packs can be supplied as a path, inline theme object, or name. Names are looked up in the bundled themes, sibling skills, `$VISUAL_RESPONSE_THEME_PATH`, and the common installed skill directories. Missing optional tokens inherit neutral values. Old motion tokens are ignored. The split accent roles `accentFill`, `onAccentFill`, `accentBorder`, and `onSelected` are preserved. CSS variables use the `--vr-` prefix.
 
@@ -79,3 +79,9 @@ node --test ../../scripts/test_adapters.mjs
 ```
 
 The manifest pins bundle version, SHA-256, SRI, bytes, adapters, and draftVersion. Rebuild after renderer/default changes. Bump draftVersion only for incompatible saved drafts. Before releasing, tag the matching commit `v<version>`; Claude's default jsDelivr URL uses that tag. A draft PR build has no published tag yet: use a temporary matching test URL for browser verification, and do not overwrite an old release tag. Keep third-party notices with the bundle. Mocked tests do not prove live host APIs; verify actual submission separately when available.
+
+Oat CSS is namespaced and scoped to the widget before being embedded in the bundle, preserving host palette variables. The renderer uses Preact directly; Oat JavaScript, MUI, Emotion, ReactDOM, and animation engines are not included. Native labels, selects, checkboxes, text inputs, and textareas retain their browser semantics. Host color changes are sampled after style updates and do not discard drafts.
+
+### Migration from 1.3
+
+Remove `output` and obsolete `delivery.mode`, `delivery.npmPackage`, `delivery.repositoryPath`, and `delivery.tagPrefix` keys. Use a supported host instead of `claude-artifact`, `module`, or a custom harness profile. The config schema rejects removed settings; it does not silently drop them or edit user files. Artifact database persistence, module/MCP wrapper output, and public-repository export tooling are removed. Legacy motion flags are accepted but ignored. Spec schemaVersion 1, feedback schemaVersion 1, and draftVersion 1.0.0 remain compatible.

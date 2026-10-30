@@ -10,11 +10,8 @@
     "build": "node build.mjs"
   },
   "dependencies": {
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
-    "@mui/material": "9.4.0",
-    "@emotion/react": "11.14.0",
-    "@emotion/styled": "11.14.1"
+    "@knadh/oat": "1.0.0",
+    "preact": "11.1.0"
   },
   "devDependencies": {
     "esbuild": "0.25.10"

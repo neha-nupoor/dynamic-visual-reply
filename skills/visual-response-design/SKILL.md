@@ -11,7 +11,7 @@ Use UI when it helps compare records, review alternatives, collect multiple answ
 
 ## Render from a spec
 
-One prebuilt renderer serves every host. Write content as JSON; do not read the bundled JavaScript into model context. Normal use requires Python 3.9+ and no package installation. Paths below are relative to this skill.
+One prebuilt Oat/Preact renderer serves every host, with native HTML controls and scoped CSS inside the same bundle. Write content as JSON; do not read the bundled JavaScript into model context. Normal use requires Python 3.9+ and no package installation. Paths below are relative to this skill.
 
 1. Choose the available surface. Run `python3 <skill-dir>/scripts/doctor.py --harness <id>` once when setup is uncertain. Its checks cover files and settings, not a live host bridge. Read only the relevant host reference:
 

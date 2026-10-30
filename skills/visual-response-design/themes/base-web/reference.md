@@ -1,14 +1,14 @@
-# Base Web reference preset (preview)
+# Spacious neutral preset
 
-This is a preset for the existing shared renderer, not the Base Web component library. It adds no runtime dependency. Keep existing personal/product themes unless this preset is selected with `--theme base-web`.
+The default preset retains the historical `base-web` identifier so existing configurations still select it. It styles the shared Oat/Preact renderer with native controls and system fonts. Its approved treatment is monochrome actions, clear labels above controls, square content surfaces, and 2 px control/badge corners.
 
-Reference checked October 29, 2026 against the live Base Web 18.2.0 form examples and current upstream source:
+The original spacing, typography and dark palette were informed by Base Web 18.2.0 on October 29, 2026: [form controls](https://baseweb.design/components/form-control/), [border tokens](https://github.com/uber/baseweb/blob/main/src/themes/shared/borders.ts), and [input styles](https://github.com/uber/baseweb/blob/main/src/input/styled-components.ts). The library implementation is [Oat](https://oat.ink/); this preset does not load Uber's Base Web library.
 
-- [Form Control](https://baseweb.design/components/form-control/): labels above fields, 14 px / 500 weight, captions below; labels retain primary text contrast.
-- [Border tokens](https://github.com/uber/baseweb/blob/main/src/themes/shared/borders.ts): input/button corners 8 px, square card surfaces. The renderer retains its system font rather than bundling a brand font.
-- [Primitive colors](https://github.com/uber/baseweb/blob/main/src/tokens/color-primitive-tokens.ts): white/black light surfaces and actions; dark #161616 canvas, #292929 fields, #DEDEDE text, #C4C4C4 supporting text.
-- [Input styles](https://github.com/uber/baseweb/blob/main/src/input/styled-components.ts): filled fields, 2 px boundary, distinct focus state. The live dark example showed a #6C6C6C idle input boundary; this preset follows that visible example.
+Review adjustments requested by Neha:
 
-This reference updates the component treatment beyond a palette swap. The collection layout, state, feedback contract and host adapters remain the shared renderer's implementation. Selected surface tint and semantic outcome colors are renderer choices; this is not a claim of pixel-identical Base Web coverage.
+- Light: #F2F3F5 panel on #E9EBEE canvas, #B8BEC6 panel/divider borders, and white inputs with #8A9099 boundaries.
+- Dark: #161616 panel/canvas, #292929 inputs, #DEDEDE text, #C4C4C4 secondary text, and #6C6C6C input boundaries.
+- Corners: 2 px on controls/badges, replacing the earlier 8 px reference; content surfaces remain square.
+- Motion: CSS hover, focus, press, selection and disclosure transitions use 150–200 ms timing with reduced-motion support. No animation engine or Oat JavaScript is loaded.
 
-Light-mode adaptation requested during review: a #F2F3F5 panel on #E9EBEE canvas, a visible #B8BEC6 panel/divider border, and white inputs with #8A9099 boundaries. These are deliberate departures from Base Web’s default white surface to soften the contrast against the chat background. Dark-mode tokens are unchanged.
+Explicit custom theme packs still control their own colors, geometry and typography. The compact `neutral` fallback shares this palette and corner treatment.

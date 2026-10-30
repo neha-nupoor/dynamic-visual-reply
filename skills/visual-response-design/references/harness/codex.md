@@ -14,7 +14,7 @@ python3 <skill-dir>/scripts/render.py --spec <spec.json> --out <view.html> --har
 ## Feedback
 
 - Inline **Send to chat** calls `window.openai.sendFollowUpMessage`, which starts your next turn with the JSON feedback envelope. Drafts persist through `setWidgetState` (best effort, about 15 KB) and are restored on `openai:set_globals`.
-- Standalone **Save feedback** writes `<view>.feedback.json` next to the page. It does not start a turn; read the file when the user asks you to continue.
+- Standalone **Submit answers** (forms) or **Submit instructions** writes `<view>.feedback.json` next to the page. The receipt asks the user to return to chat. It does not start a turn; read the file when the user asks you to continue. The server reports the path to the agent; the widget keeps filesystem details out of the user flow.
 - Without `window.openai` (for example a file opened directly), the page offers Prepare message, Copy and Export JSON.
 
 ## Setup

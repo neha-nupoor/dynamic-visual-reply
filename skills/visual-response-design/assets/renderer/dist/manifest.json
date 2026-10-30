@@ -1,9 +1,9 @@
 {
   "version": "1.4.0",
   "draftVersion": "1.0.0",
-  "sha256": "2984aab7b7a3f4af50dc61c1b1e625e9c059fbfc9eb09c4b6e186b88e300c604",
-  "sri": "sha384-1bFthd8VOuImMBLqjtO0sWe/FBk5qLA+5MYBny9UTarhREf0H68toiJb/vNUD14m",
-  "bytes": 463240,
+  "sha256": "5d433ac3190f8a557c7423c74b50439aeceb2d1ecfcf98cee9c62016c88c2b12",
+  "sri": "sha384-PcVndgvopZjuykx5gcQ8V7AC+9W1nd6z9UywP2a2+nmX1SemL/hhTFmfe+TaHGeA",
+  "bytes": 81335,
   "views": [
     "table",
     "cards",

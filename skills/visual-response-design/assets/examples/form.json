@@ -4,6 +4,6 @@
     {"id":"surface","label":"Preferred surface","type":"select","value":"panel","options":[{"id":"panel","label":"Side panel"},{"id":"inline","label":"Inline"}]},
     {"id":"priorities","label":"Priorities — select and edit","type":"multiselect","options":[{"id":"clarity","label":"Clear visual hierarchy","selected":true},{"id":"control","label":"Editable inputs","selected":true},{"id":"speed","label":"Fast scanning","selected":true}]},
     {"id":"detail","label":"Your instruction","type":"textarea","value":"Show an overview first; make details expandable."},
-    {"id":"manual","label":"Show feedback preview","type":"checkbox","value":true}
+    {"id":"manual","label":"Keep the response concise","type":"checkbox","value":true}
   ]
 }

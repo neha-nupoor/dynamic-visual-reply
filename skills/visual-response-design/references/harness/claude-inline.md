@@ -8,7 +8,9 @@ python3 <skill-dir>/scripts/render.py --spec <spec.json> --out <view.html> --har
 
 For `handoff.type: show_widget`, read the output and pass its full contents unchanged as the widget tool's code. Follow that host's widget guide. For `handoff.type: serve`, the view is too large for inline; follow [browser-local.md](browser-local.md).
 
-The default URL comes from `delivery.repository` and the bundle's release tag. Override `delivery.rendererUrl` for a different matching published build. `doctor.py --harness claude-inline --check-url` checks that the URL is reachable and byte-identical. New unreleased builds require a matching test URL until their tag is published.
+The default URL comes from `delivery.repository` and the bundle's release tag. Run `doctor.py --harness claude-inline --check-url` before handing off a release loader: the URL must be reachable and byte-identical. Override `delivery.rendererUrl` or pass `--renderer-url` for a matching published commit while reviewing an unreleased PR. Never use an older bundle with the current manifest's SRI. Until a matching URL is published, use the local browser instead of handing off a broken loader.
+
+Claude Code (including its desktop Code tab) auto-detects as `claude-code` and uses the local browser. Choose `claude-inline` explicitly when the actual `show_widget` tool is available. The bundle includes all Oat CSS, so no separate stylesheet request or inline bootstrap script is needed.
 
 **Add to chat** fills the user's message box through `sendPrompt`; the user presses Enter. The message contains a readable summary and JSON feedback. Saving drafts uses localStorage only when the sandbox permits it. Acknowledge the feedback actually received.
 

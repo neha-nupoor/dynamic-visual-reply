@@ -1,7 +1,7 @@
-import React, {useEffect,useId,useRef,useState} from 'react';
-import {createRoot} from 'react-dom/client';
-import {ThemeProvider,GlobalStyles,Box,Button,Card,CardContent,Checkbox,Chip,FormControlLabel,MenuItem,Table,TableBody,TableCell,TableHead,TableRow,TableSortLabel,TextField,Typography} from '@mui/material';
-import {cssVariables,merge,neutral,readJson,resolvePalette,responseTheme} from './design-system.mjs';
+import {Fragment,h,render} from 'preact';
+import {useEffect,useId,useRef,useState} from 'preact/hooks';
+import {merge,neutral,readJson,resolvePalette,rendererStyle} from './design-system.mjs';
+import './renderer.css';
 // Named imports let the bundler keep only these keys of defaults.json, not distribution settings such as the theme.
 import {copy as defaultCopy,feedback as defaultFeedback} from '../../../config/defaults.json';
 // Built-in adapters register themselves by id. Some hosts don't run a page's inline scripts, so they can't rely on injection.
@@ -41,27 +41,45 @@ const text=value=>value==null?'':typeof value==='object'?JSON.stringify(value):S
 // An explicit data-theme or data-mode on the page root (set by widget hosts) wins over the OS preference.
 const prefersDark=()=>{const root=document.documentElement.dataset,chosen=root.theme||root.mode;return chosen==='dark'||(chosen!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)};
 
-// Persistent labels stay above the control; they do not shrink into a notched border.
-function Field({label,value,onChange,sx,helperText,hideLabel=false,slotProps={},...props}){
-  const id=useId(),labelId=id+'-label';
-  return <Box sx={[{minWidth:0,...(props.fullWidth?{flex:1}:{})},sx]}>
-    <Box component="label" id={labelId} htmlFor={id} sx={hideLabel?{position:'absolute',width:1,height:1,overflow:'hidden',clip:'rect(0,0,0,0)',whiteSpace:'nowrap'}:{display:'block',fontSize:tokens.type.small,fontWeight:500,lineHeight:tokens.type.lineHeight,color:'text.primary',mb:1}}>{label}</Box>
-    <TextField {...props} id={id} value={value} onChange={e=>onChange(e.target.value)} helperText={helperText} fullWidth slotProps={{...slotProps,input:{...slotProps.input,notched:false},...(props.select?{select:{displayEmpty:true,...slotProps.select,labelId}}:{})}}/>
-  </Box>;
+// Module-level native controls keep focus and label associations stable through edits.
+function Field({label,value,onChange,options,multiline=false,minRows=1,helperText,hideLabel=false,inputRef,className='',...props}){
+  const id=useId(),helpId=helperText?id+'-help':undefined;
+  const control={...props,id,value:value??'',ref:inputRef,'aria-describedby':helpId};
+  return <div class={'vr-field '+className}>
+    <label class={hideLabel?'vr-sr-only':'vr-label'} htmlFor={id}>{label}</label>
+    {options?<select {...control} onChange={event=>onChange(event.currentTarget.value)}>{options.map(option=><option key={option.id} value={option.id}>{option.label}</option>)}</select>
+      :multiline?<textarea {...control} rows={minRows} onInput={event=>onChange(event.currentTarget.value)}/>
+      :<input type="text" {...control} onInput={event=>onChange(event.currentTarget.value)}/>}
+    {helperText&&<small id={helpId}>{helperText}</small>}
+  </div>;
+}
+function Check({label,checked,onChange,ariaLabel}){
+  return <label class="vr-check"><input type="checkbox" checked={checked} aria-label={ariaLabel} onChange={event=>onChange(event.currentTarget.checked)}/>{label}</label>;
+}
+function Button({variant='ghost',children,className='',...props}){
+  return <button type="button" class={(variant==='primary'?'':variant==='outlined'?'outline':'ghost')+' '+className} {...props}>{children}</button>;
 }
 
 function App(){
-  const [draft,setDraft]=useState(()=>initial(pendingDraft?null:loaded)),[query,setQuery]=useState(''),[filter,setFilter]=useState(''),[sort,setSort]=useState({key:spec.columns?.[0]?.key||'id',ascending:true}),[page,setPage]=useState(0),[bulk,setBulk]=useState(''),[receipt,setReceipt]=useState(t('status.draft')),[customMessage,setCustomMessage]=useState(null),[preview,setPreview]=useState(false),[showColumns,setShowColumns]=useState(false),[columns,setColumns]=useState(spec.columns?.map(c=>c.key)||[]),[schemeDark,setSchemeDark]=useState(prefersDark),[frame,setFrame]=useState(0),[busy,setBusy]=useState(false);
+  const [draft,setDraft]=useState(()=>initial(pendingDraft?null:loaded)),[query,setQuery]=useState(''),[filter,setFilter]=useState(''),[sort,setSort]=useState({key:spec.columns?.[0]?.key||'id',ascending:true}),[page,setPage]=useState(0),[bulk,setBulk]=useState(''),[receipt,setReceipt]=useState(t('status.draft')),[customMessage,setCustomMessage]=useState(null),[preview,setPreview]=useState(false),[showColumns,setShowColumns]=useState(false),[columns,setColumns]=useState(spec.columns?.map(c=>c.key)||[]),[hostAppearance,setHostAppearance]=useState(()=>({dark:prefersDark()})),[frame,setFrame]=useState(0),[busy,setBusy]=useState(false);
   const inlineCompact=spec.resolvedPresentation?.mode==='inline';
-  const history=useRef([]),hasEdits=useRef(false),latest=useRef(draft),messageRef=useRef(null),feedbackRef=useRef(null);
-  latest.current=draft;
+  const history=useRef([]),hasEdits=useRef(false),messageRef=useRef(null),feedbackRef=useRef(null);
   const rowMap=new Map((spec.rows||[]).map(row=>[row.id,row]));
   const rows=(spec.rows||[]).map(row=>({...row,...draft.edits[row.id]}));
   const nodes=spec.nodes||[];
-  const {dark,c}=resolvePalette(tokens,appearance,config.hostPalette,mount,schemeDark);
-  const theme=responseTheme(tokens,c,dark);
+  const {dark,c}=resolvePalette(tokens,appearance,config.hostPalette,mount,hostAppearance.dark);
   const mode=submitMode();
-  useEffect(()=>{if(appearance!=='system'&&appearance!=='host')return;const q=matchMedia('(prefers-color-scheme: dark)'),change=()=>setSchemeDark(prefersDark()),observer=new MutationObserver(change);q.addEventListener('change',change);observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','data-mode','class']});return()=>{q.removeEventListener('change',change);observer.disconnect()}},[]);
+  useEffect(()=>{
+    if(appearance!=='system'&&appearance!=='host')return;
+    const media=matchMedia('(prefers-color-scheme: dark)');
+    let frame=0;
+    // Read inherited host colors after its stylesheet settles, including same-mode palette changes.
+    const change=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>setHostAppearance({dark:prefersDark()}))};
+    const observer=new MutationObserver(change);
+    media.addEventListener('change',change);
+    observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','data-mode','class','style']});
+    return()=>{cancelAnimationFrame(frame);media.removeEventListener('change',change);observer.disconnect()};
+  },[]);
   useEffect(()=>{if(!pendingDraft)return;let live=true;pendingDraft.then(saved=>{if(live&&!hasEdits.current&&saved?.key===key)setDraft(initial(saved))}).catch(()=>{});return()=>{live=false}},[]);
   useEffect(()=>host.onExternalDraft?.(saved=>{if(!hasEdits.current&&saved?.key===key)setDraft(initial(saved))}),[]);
   function values(){return {selectedIds:draft.selected,items:[...new Set([...draft.selected,...Object.keys(draft.notes).filter(id=>draft.notes[id]),...Object.keys(draft.edits),...Object.keys(draft.stages)])].filter(id=>rowMap.has(id)||nodes.some(n=>n.id===id)).map(id=>({id,label:rowMap.get(id)?.title||rowMap.get(id)?.name||nodes.find(n=>n.id===id)?.title||id,selected:draft.selected.includes(id),instruction:draft.notes[id]||'',changes:draft.edits[id]||{},...(draft.stages[id]?{stage:draft.stages[id]}:{})})),reviewedIds:draft.reviewed,fields:(spec.fields||[]).map(f=>({id:f.id,value:draft.fields[f.id]??f.value??'',...(f.options?{options:(draft.options[f.id]||f.options)}:{})})),comment:draft.comment};}
@@ -88,7 +106,10 @@ function App(){
   function mark(id){update({...draft,reviewed:draft.reviewed.includes(id)?draft.reviewed.filter(x=>x!==id):[...draft.reviewed,id]})}
   function undo(){const prior=history.current.pop();if(prior)update(prior,false)}
   const field=(label,value,onChange,props={})=><Field label={label} value={value} onChange={onChange} {...props}/>;
-  function itemFeedback(id){return <Box sx={{display:'grid',gap:inlineCompact?.5:1,mt:inlineCompact?0:1}}>{field(t('instruction'),draft.notes[id]||'',value=>assign('notes',id,value),{multiline:true,minRows:inlineCompact?1:2,fullWidth:true,slotProps:{htmlInput:{'aria-label':t('instruction')+' for '+id}}})}<FormControlLabel label={t('reviewed')} control={<Checkbox size="small" sx={inlineCompact?{py:0}:undefined} checked={draft.reviewed.includes(id)} onChange={()=>mark(id)}/>}/></Box>}
+  function itemFeedback(id){return <div class="vr-item-feedback">
+    {field(t('instruction'),draft.notes[id]||'',value=>assign('notes',id,value),{multiline:true,minRows:inlineCompact?1:2,'aria-label':t('instruction')+' for '+id})}
+    <Check label={t('reviewed')} ariaLabel={t('reviewed')+' for '+id} checked={draft.reviewed.includes(id)} onChange={()=>mark(id)}/>
+  </div>}
   function showPreview(){setPreview(true);if(feedbackRef.current)feedbackRef.current.open=true;}
   async function submit(){
     if(busy)return;
@@ -107,35 +128,101 @@ function App(){
   const feedbackLabel=mode==='message'?t('feedbackSubmit.message'):mode==='save'?t('feedbackSubmit.save'):t('feedbackSubmit.none');
   let content;
   if(spec.view==='table'){
-    const matched=rows.filter(row=>(!filter||text(row[spec.filterKey])===filter)&&(!query||JSON.stringify(row).toLowerCase().includes(query.toLowerCase()))).sort((a,b)=>{const av=a[sort.key],bv=b[sort.key];const cmp=typeof av==='number'&&typeof bv==='number'?av-bv:text(av).localeCompare(text(bv),undefined,{numeric:true});return sort.ascending?cmp:-cmp});
+    const matched=rows.filter(row=>(!filter||text(row[spec.filterKey])===filter)&&(!query||JSON.stringify(row).toLowerCase().includes(query.toLowerCase()))).sort((a,b)=>{
+      const av=a[sort.key],bv=b[sort.key];
+      const comparison=typeof av==='number'&&typeof bv==='number'?av-bv:text(av).localeCompare(text(bv),undefined,{numeric:true});
+      return sort.ascending?comparison:-comparison;
+    });
     const size=spec.pageSize||20,last=Math.max(0,Math.ceil(matched.length/size)-1),current=Math.min(page,last),visible=matched.slice(current*size,(current+1)*size);
-    content=<><Box sx={{display:'flex',gap:1,flexWrap:'wrap',alignItems:'center',mb:2}}>{field(t('table.search'),query,value=>{setQuery(value);setPage(0)},{sx:{flex:1,minWidth:160}})}{spec.filterKey&&field(t('table.filter')+' '+spec.filterKey,filter,value=>{setFilter(value);setPage(0)},{select:true,sx:{minWidth:140},children:[<MenuItem key="all" value="">{t('table.all')}</MenuItem>,...[...new Set(rows.map(r=>text(r[spec.filterKey])))].map(v=><MenuItem key={v} value={v}>{v}</MenuItem>)]})}<Button onClick={()=>setShowColumns(!showColumns)}>{t('table.columns')}</Button><Chip size="small" label={draft.selected.length+' '+t('table.selectedCount')}/></Box>
-      {showColumns&&<Box sx={{display:'flex',flexWrap:'wrap'}}>{spec.columns.map(col=><FormControlLabel key={col.key} label={col.label} control={<Checkbox size="small" checked={columns.includes(col.key)} onChange={(_,checked)=>setColumns(checked?[...columns,col.key]:columns.filter(k=>k!==col.key))}/>}/>)}</Box>}
-      <Box sx={{display:'flex',gap:1,flexWrap:'wrap',mb:1}}><Button variant="outlined" onClick={()=>update({...draft,selected:[...new Set([...draft.selected,...visible.map(r=>r.id)])]})}>{t('table.selectVisible')}</Button><Button variant="outlined" onClick={()=>update({...draft,selected:draft.selected.filter(id=>!visible.some(r=>r.id===id))})}>{t('table.deselectVisible')}</Button>{matched.length>size&&<Button onClick={()=>update({...draft,selected:[...new Set([...draft.selected,...matched.map(r=>r.id)])]})}>{t('table.selectAllMatches',{count:matched.length})}</Button>}</Box>
-      <Box sx={{overflowX:'auto'}}><Table size="small" aria-label={spec.title}><TableHead><TableRow><TableCell>{t('table.selectColumn')}</TableCell>{spec.columns.filter(col=>columns.includes(col.key)).map(col=><TableCell key={col.key} align={col.type==='number'?'right':'left'}><TableSortLabel active={sort.key===col.key} direction={sort.ascending?'asc':'desc'} onClick={()=>setSort({key:col.key,ascending:sort.key===col.key?!sort.ascending:true})}>{col.label}</TableSortLabel></TableCell>)}<TableCell>{t('table.feedbackColumn')}</TableCell></TableRow></TableHead><TableBody>{visible.map(row=><TableRow key={row.id} selected={draft.selected.includes(row.id)}><TableCell><Checkbox size="small" checked={draft.selected.includes(row.id)} onChange={()=>toggle(row.id)} slotProps={{input:{'aria-label':t('select')+' '+row.id}}}/></TableCell>{spec.columns.filter(col=>columns.includes(col.key)).map(col=><TableCell key={col.key} align={col.type==='number'?'right':'left'} sx={col.type==='number'?{fontVariantNumeric:'tabular-nums'}:{}}>{col.editable?field(col.label,text(row[col.key]),value=>assign('edits',row.id,{...draft.edits[row.id],[col.key]:col.type==='number'&&value!==''?Number(value):value}),{type:col.type==='number'?'number':'text',sx:{minWidth:110}}):text(row[col.key])}</TableCell>)}<TableCell sx={{minWidth:190}}>{itemFeedback(row.id)}</TableCell></TableRow>)}</TableBody></Table></Box>
-      {!matched.length&&<Typography sx={{py:2}}>{t('table.empty')}</Typography>}
-      {(!inlineCompact||last>0)&&<Box sx={{display:'flex',gap:1,alignItems:'center',flexWrap:'wrap',mt:2}}><Typography variant="body2">{t('table.page',{page:current+1,pages:last+1,count:matched.length})}</Typography><Button disabled={current===0} onClick={()=>setPage(current-1)}>{t('table.previous')}</Button><Button disabled={current===last} onClick={()=>setPage(current+1)}>{t('table.next')}</Button></Box>}
-      {(!inlineCompact||draft.selected.length>1)&&<Box sx={{display:'flex',gap:1,alignItems:'center',flexWrap:'wrap',mt:2}}>{field(t('table.sharedInstruction'),bulk,setBulk,{sx:{flex:1,minWidth:190},multiline:true,minRows:1})}<Button variant="outlined" disabled={!draft.selected.length||!bulk.trim()} onClick={()=>{const notes={...draft.notes};draft.selected.forEach(id=>notes[id]=[notes[id],bulk].filter(Boolean).join('\n'));update({...draft,notes});setBulk('')}}>{t('table.applyToSelected')}</Button></Box>}</>;
+    const visibleColumns=spec.columns.filter(col=>columns.includes(col.key));
+    content=<>
+      <div class="vr-row vr-toolbar">
+        {field(t('table.search'),query,value=>{setQuery(value);setPage(0)},{type:'search',className:'vr-grow'})}
+        {spec.filterKey&&field(t('table.filter')+' '+spec.filterKey,filter,value=>{setFilter(value);setPage(0)},
+          {options:[{id:'',label:t('table.all')},...[...new Set(rows.map(row=>text(row[spec.filterKey])))].map(value=>({id:value,label:value}))]})}
+        <Button aria-expanded={showColumns} onClick={()=>setShowColumns(!showColumns)}>{t('table.columns')}</Button>
+        <span class="vr-badge" aria-live="polite">{draft.selected.length+' '+t('table.selectedCount')}</span>
+      </div>
+      {showColumns&&<div class="vr-row vr-table-actions">{spec.columns.map(col=><Check key={col.key} label={col.label} checked={columns.includes(col.key)} onChange={checked=>setColumns(checked?[...columns,col.key]:columns.filter(key=>key!==col.key))}/>)}</div>}
+      <div class="vr-row vr-table-actions">
+        <Button variant="outlined" onClick={()=>update({...draft,selected:[...new Set([...draft.selected,...visible.map(row=>row.id)])]})}>{t('table.selectVisible')}</Button>
+        <Button variant="outlined" onClick={()=>update({...draft,selected:draft.selected.filter(id=>!visible.some(row=>row.id===id))})}>{t('table.deselectVisible')}</Button>
+        {matched.length>size&&<Button onClick={()=>update({...draft,selected:[...new Set([...draft.selected,...matched.map(row=>row.id)])]})}>{t('table.selectAllMatches',{count:matched.length})}</Button>}
+      </div>
+      <div class="vr-table-wrap"><table aria-label={spec.title}>
+        <thead><tr><th scope="col">{t('table.selectColumn')}</th>{visibleColumns.map(col=><th key={col.key} scope="col" class={col.type==='number'?'vr-number':undefined} aria-sort={sort.key===col.key?(sort.ascending?'ascending':'descending'):'none'}>
+          <Button className="vr-sort" onClick={()=>setSort({key:col.key,ascending:sort.key===col.key?!sort.ascending:true})}>{col.label}{sort.key===col.key&&<span aria-hidden="true">{sort.ascending?' ↑':' ↓'}</span>}</Button>
+        </th>)}<th scope="col">{t('table.feedbackColumn')}</th></tr></thead>
+        <tbody>{visible.map(row=><tr key={row.id} class={draft.selected.includes(row.id)?'vr-selected':undefined}>
+          <td><input class="vr-checkbox" type="checkbox" checked={draft.selected.includes(row.id)} aria-label={t('select')+' '+row.id} onChange={()=>toggle(row.id)}/></td>
+          {visibleColumns.map(col=><td key={col.key} class={col.type==='number'?'vr-number':undefined}>{col.editable?
+            field(col.label,text(row[col.key]),value=>assign('edits',row.id,{...draft.edits[row.id],[col.key]:col.type==='number'&&value!==''?Number(value):value}),{type:col.type==='number'?'number':'text',className:'vr-edit-cell','aria-label':col.label+' for '+row.id})
+            :text(row[col.key])}</td>)}
+          <td class="vr-feedback-cell">{itemFeedback(row.id)}</td>
+        </tr>)}</tbody>
+      </table></div>
+      {!matched.length&&<p class="vr-empty">{t('table.empty')}</p>}
+      {(!inlineCompact||last>0)&&<div class="vr-row vr-spaced"><p class="vr-muted">{t('table.page',{page:current+1,pages:last+1,count:matched.length})}</p><Button disabled={current===0} onClick={()=>setPage(current-1)}>{t('table.previous')}</Button><Button disabled={current===last} onClick={()=>setPage(current+1)}>{t('table.next')}</Button></div>}
+      {(!inlineCompact||draft.selected.length>1)&&<div class="vr-row vr-spaced">
+        {field(t('table.sharedInstruction'),bulk,setBulk,{className:'vr-grow',multiline:true,minRows:1})}
+        <Button variant="outlined" disabled={!draft.selected.length||!bulk.trim()} onClick={()=>{const notes={...draft.notes};draft.selected.forEach(id=>notes[id]=[notes[id],bulk].filter(Boolean).join('\n'));update({...draft,notes});setBulk('')}}>{t('table.applyToSelected')}</Button>
+      </div>}
+    </>;
   }else if(spec.view==='cards'){
-    content=<Box sx={{display:'grid',gridTemplateColumns:`repeat(auto-fit,minmax(min(100%,${tokens.layout.cardMinWidth}px),1fr))`,gap:2}}>{rows.map(row=><Card key={row.id} sx={{borderColor:draft.selected.includes(row.id)?c.accentBorder:'divider',bgcolor:draft.selected.includes(row.id)?'action.selected':'background.paper'}}><CardContent><Typography fontWeight={600}>{row.title||row.name||row.id}</Typography>{row.recommended&&<Chip label={t('recommended')} color="primary" size="small" sx={{my:1}}/>}<Typography variant="body1" sx={{mt:1}}>{row.summary}</Typography>{row.details&&<details style={{marginTop:10}}><summary>{t('moreDetail')}</summary><Typography variant="body2" sx={{mt:1,whiteSpace:'pre-wrap'}}>{text(row.details)}</Typography></details>}{safeUrl(row.source)&&<Button component="a" href={row.source} target="_blank" rel="noreferrer">{t('source')}</Button>}{itemFeedback(row.id)}<Button aria-pressed={draft.selected.includes(row.id)} variant={draft.selected.includes(row.id)?'contained':'outlined'} onClick={()=>toggle(row.id)}>{draft.selected.includes(row.id)?t('selected'):row.actionLabel||t('select')}</Button></CardContent></Card>)}</Box>;
+    content=<div class="vr-grid">{rows.map(row=><article key={row.id} class={'vr-card'+(draft.selected.includes(row.id)?' vr-selected':'')}>
+      <h3>{row.title||row.name||row.id}</h3>
+      {row.recommended&&<span class="vr-badge vr-recommended">{t('recommended')}</span>}
+      <p>{row.summary}</p>
+      {row.details&&<details><summary>{t('moreDetail')}</summary><p class="vr-pre-wrap">{text(row.details)}</p></details>}
+      {safeUrl(row.source)&&<a class="vr-button button ghost" href={row.source} target="_blank" rel="noreferrer">{t('source')}</a>}
+      {itemFeedback(row.id)}
+      <div><Button aria-pressed={draft.selected.includes(row.id)} variant={draft.selected.includes(row.id)?'primary':'outlined'} onClick={()=>toggle(row.id)}>{draft.selected.includes(row.id)?t('selected'):row.actionLabel||t('select')}</Button></div>
+    </article>)}</div>;
   }else if(spec.view==='kanban'){
     const stages=spec.stages||['To review','In progress','Done'];
-    content=<Box sx={{display:'grid',gridTemplateColumns:`repeat(auto-fit,minmax(min(100%,${tokens.layout.cardMinWidth}px),1fr))`,gap:1.5}}>{stages.map(stage=><Box key={stage} sx={{bgcolor:'background.paper',border:'1px solid',borderColor:'divider',borderRadius:tokens.radius.surface+'px',p:1.5}}><Typography fontWeight={600} sx={{mb:1}}>{stage} · {rows.filter(r=>(draft.stages[r.id]||r.stage||stages[0])===stage).length}</Typography>{rows.filter(r=>(draft.stages[r.id]||r.stage||stages[0])===stage).map(row=><Card key={row.id} sx={{mb:1}}><CardContent><Typography fontWeight={600} sx={{mb:1}}>{row.title||row.name||row.id}</Typography>{field(t('kanban.stage'),draft.stages[row.id]||row.stage||stages[0],value=>assign('stages',row.id,value),{select:true,fullWidth:true,children:stages.map(v=><MenuItem key={v} value={v}>{v}</MenuItem>)})}{itemFeedback(row.id)}</CardContent></Card>)}</Box>)}</Box>;
+    content=<div class="vr-grid">{stages.map(stage=><section key={stage} class="vr-column">
+      <h3>{stage} · {rows.filter(row=>(draft.stages[row.id]||row.stage||stages[0])===stage).length}</h3>
+      {rows.filter(row=>(draft.stages[row.id]||row.stage||stages[0])===stage).map(row=><article key={row.id} class="vr-card">
+        <h3>{row.title||row.name||row.id}</h3>
+        {field(t('kanban.stage'),draft.stages[row.id]||row.stage||stages[0],value=>assign('stages',row.id,value),{options:stages.map(value=>({id:value,label:value})),'aria-label':t('kanban.stage')+' for '+row.id})}
+        {itemFeedback(row.id)}
+      </article>)}
+    </section>)}</div>;
   }else if(spec.view==='form'){
-    content=<Box sx={{display:'grid',gap:2}}>{(spec.fields||[]).map(f=>{
+    content=<div class="vr-stack">{(spec.fields||[]).map(f=>{
       const value=draft.fields[f.id]??f.value??'';
-      if(f.type==='checkbox')return <FormControlLabel key={f.id} label={f.label} control={<Checkbox checked={!!value} onChange={(_,v)=>assign('fields',f.id,v)}/>}/>;
-      if(f.type==='multiselect'){const options=draft.options[f.id]||f.options;return <Box key={f.id}><Typography fontWeight={600} sx={{mb:1}}>{f.label}</Typography>{options.map(o=><Box key={o.id} sx={{display:'flex',gap:1,alignItems:'center',mb:1}}><Checkbox checked={!!o.selected} onChange={(_,selected)=>assign('options',f.id,options.map(x=>x.id===o.id?{...x,selected}:x))} slotProps={{input:{'aria-label':'Include '+o.id}}}/>{field(t('form.editableOption'),o.label,label=>assign('options',f.id,options.map(x=>x.id===o.id?{...x,label}:x)),{fullWidth:true,hideLabel:true,slotProps:{htmlInput:{'aria-label':'Option '+o.id}}})}</Box>)}</Box>}
-      return field(f.label,value,v=>assign('fields',f.id,f.type==='number'&&v!==''?Number(v):v),{key:f.id,fullWidth:true,type:f.type==='number'?'number':'text',multiline:f.type==='textarea',minRows:f.type==='textarea'?3:undefined,select:f.type==='select',children:f.type==='select'?f.options.map(o=><MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>):undefined,helperText:f.help});
-    })}</Box>;
+      if(f.type==='checkbox')return <Check key={f.id} label={f.label} checked={!!value} onChange={checked=>assign('fields',f.id,checked)}/>;
+      if(f.type==='multiselect'){
+        const options=draft.options[f.id]||f.options;
+        return <fieldset key={f.id} class="vr-options"><legend>{f.label}</legend>{options.map(option=><div key={option.id} class="vr-option">
+          <input class="vr-checkbox" type="checkbox" checked={!!option.selected} aria-label={'Include '+option.id} onChange={event=>assign('options',f.id,options.map(item=>item.id===option.id?{...item,selected:event.currentTarget.checked}:item))}/>
+          {field(t('form.editableOption'),option.label,label=>assign('options',f.id,options.map(item=>item.id===option.id?{...item,label}:item)),{className:'vr-grow',hideLabel:true,'aria-label':'Option '+option.id})}
+        </div>)}</fieldset>;
+      }
+      return field(f.label,value,next=>assign('fields',f.id,f.type==='number'&&next!==''?Number(next):next),{key:f.id,type:f.type==='number'?'number':'text',multiline:f.type==='textarea',minRows:f.type==='textarea'?3:undefined,options:f.type==='select'?f.options:undefined,helperText:f.help});
+    })}</div>;
   }else if(spec.view==='flow'){
     const active=Math.min(nodes.length-1,frame);
     content=<>
-      <Box sx={{display:'grid',gridTemplateColumns:`repeat(auto-fit,minmax(min(100%,${tokens.layout.flowMinWidth}px),1fr))`,gap:1}}>{nodes.map((node,i)=><Box key={node.id} sx={{p:2,border:'1px solid',borderColor:active===i?c.accentBorder:'divider',borderRadius:tokens.radius.surface+'px',bgcolor:active===i?'action.selected':'background.paper'}}><Typography color="primary.main">{i+1} {i<nodes.length-1?'→':''}</Typography><Typography fontWeight={600}>{node.title}</Typography></Box>)}</Box>
-      <Box sx={{display:'flex',gap:1,flexWrap:'wrap',my:1.5}}>{nodes.map((node,i)=><Button key={node.id} aria-pressed={active===i} variant={active===i?'contained':'outlined'} onClick={()=>setFrame(i)}>{node.title}</Button>)}</Box><Typography>{nodes[active]?.detail}</Typography>
+      <ol class="vr-flow">{nodes.map((node,index)=><li key={node.id} class={'vr-step'+(active===index?' vr-selected':'')} aria-current={active===index?'step':undefined}>
+        <p class="vr-step-number">{index+1} {index<nodes.length-1?'→':''}</p><h3>{node.title}</h3>
+      </li>)}</ol>
+      <div class="vr-row vr-flow-controls">{nodes.map((node,index)=><Button key={node.id} aria-pressed={active===index} variant={active===index?'primary':'outlined'} onClick={()=>setFrame(index)}>{node.title}</Button>)}</div>
+      <p>{nodes[active]?.detail}</p>
       {nodes[active]&&itemFeedback(nodes[active].id)}
     </>;
   }
-  return <ThemeProvider theme={theme}><GlobalStyles styles={{'[data-visual-response-root]':{...cssVariables(tokens,c),colorScheme:dark?'dark':'light',fontFamily:tokens.fontFamily,lineHeight:tokens.type.lineHeight},'[data-visual-response-root] *':{boxSizing:'border-box',overflowWrap:'anywhere'},'[data-visual-response-root] summary':{cursor:'pointer',minHeight:tokens.control.minHeight,display:'list-item',alignContent:'center',fontSize:tokens.type.small,fontWeight:600,color:theme.palette.text.secondary},'[data-visual-response-root] summary:focus-visible':{outline:`${tokens.control.focusWidth}px solid ${theme.palette.primary.main}`,outlineOffset:tokens.control.focusOffset},'@media (prefers-reduced-motion: reduce)':{'[data-visual-response-root] *, [data-visual-response-root] *::before, [data-visual-response-root] *::after':{transition:'none !important',animation:'none !important'}}}}/><Box sx={{bgcolor:'background.paper',color:'text.primary',border:'1px solid',borderColor:'divider',borderRadius:tokens.radius.surface+'px',p:inlineCompact?tokens.layout.inlinePadding+'px':{xs:tokens.layout.contentPaddingCompact+'px',sm:tokens.layout.contentPadding+'px'},maxWidth:tokens.layout.maxWidth,mx:'auto',fontFamily:'typography.fontFamily'}}><Box sx={{display:'flex',gap:1,justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',mb:2}}><Typography component="h2" variant="h6" sx={{fontSize:inlineCompact?tokens.type.inlineTitle:{xs:tokens.type.titleCompact,sm:tokens.type.title}}}>{spec.title||spec.view}</Typography>{copy.badge&&<Chip size="small" label={t('badge')}/>}</Box>{(spec.context?.goal||spec.context?.next)&&<Box sx={{mb:2}}>{spec.context.goal&&<Typography variant="body2"><strong>{t('goal')}</strong> {spec.context.goal}</Typography>}{spec.context.next&&<Typography variant="body2"><strong>{t('next')}</strong> {spec.context.next}</Typography>}</Box>}{content}<Box sx={{mt:2,display:'flex',gap:1,alignItems:'center',flexWrap:'wrap'}}><Button variant="contained" disabled={busy} onClick={submit}>{submitLabel}</Button>{mode==='save'&&<Typography variant="body2" color="text.secondary">{t('localSubmitHelp')}</Typography>}</Box><Box sx={{mt:2,pt:2,borderTop:'1px solid',borderColor:'divider'}}><details ref={feedbackRef} open={!inlineCompact}><summary style={{marginBottom:inlineCompact?0:12}}>{t('feedbackSection')}</summary>{field(t('generalInstruction'),draft.comment,v=>update({...draft,comment:v}),{fullWidth:true,multiline:true,minRows:2})}<Box sx={{display:'flex',gap:1,flexWrap:'wrap',my:1.5}}><Button variant="outlined" disabled={busy} onClick={submit}>{feedbackLabel}</Button><Button variant="outlined" onClick={()=>setPreview(!preview)}>{preview?t('hidePreview'):t('preview')}</Button><Button onClick={copyMessage}>{t('copy')}</Button><Button onClick={exportFeedback}>{t('export')}</Button><Button disabled={!history.current.length} onClick={undo}>{t('undo')}</Button></Box>{preview&&<><Typography variant="body2" sx={{mb:1}}>{t('previewNote')}</Typography>{field(t('editableMessage'),message(),setCustomMessage,{fullWidth:true,multiline:true,minRows:5,inputRef:messageRef})}<Button onClick={()=>{messageRef.current?.focus();messageRef.current?.select();setReceipt(t('status.selectedText'))}}>{t('selectMessage')}</Button></>}</details><Typography role="status" color="text.secondary" variant="body2" sx={{mt:1}}>{receipt}</Typography></Box></Box></ThemeProvider>;
+  return <section class={'vr-app'+(inlineCompact?' vr-inline':'')} data-appearance={dark?'dark':'light'} style={rendererStyle(tokens,c,dark,inlineCompact)}>
+    <header class="vr-header"><h2>{spec.title||spec.view}</h2>{copy.badge&&<span class="vr-badge">{t('badge')}</span>}</header>
+    {(spec.context?.goal||spec.context?.next)&&<div class="vr-context">{spec.context.goal&&<p><strong>{t('goal')}</strong> {spec.context.goal}</p>}{spec.context.next&&<p><strong>{t('next')}</strong> {spec.context.next}</p>}</div>}
+    {content}
+    <div class="vr-row vr-actions"><Button variant="primary" disabled={busy} onClick={submit}>{submitLabel}</Button>{mode==='save'&&<p class="vr-muted">{t('localSubmitHelp')}</p>}</div>
+    <div class="vr-feedback"><details ref={feedbackRef} open={!inlineCompact}>
+      <summary>{t('feedbackSection')}</summary>
+      {field(t('generalInstruction'),draft.comment,value=>update({...draft,comment:value}),{multiline:true,minRows:2})}
+      <div class="vr-row vr-feedback-actions"><Button variant="outlined" disabled={busy} onClick={submit}>{feedbackLabel}</Button><Button variant="outlined" onClick={()=>setPreview(!preview)}>{preview?t('hidePreview'):t('preview')}</Button><Button onClick={copyMessage}>{t('copy')}</Button><Button onClick={exportFeedback}>{t('export')}</Button><Button disabled={!history.current.length} onClick={undo}>{t('undo')}</Button></div>
+      {preview&&<div class="vr-stack"><p class="vr-muted">{t('previewNote')}</p>{field(t('editableMessage'),message(),setCustomMessage,{multiline:true,minRows:5,inputRef:messageRef})}<div><Button onClick={()=>{messageRef.current?.focus();messageRef.current?.select();setReceipt(t('status.selectedText'))}}>{t('selectMessage')}</Button></div></div>}
+    </details><p class="vr-muted vr-receipt" role="status">{receipt}</p></div>
+  </section>;
 }
-createRoot(mount).render(<App/>);
+render(<App/>,mount);

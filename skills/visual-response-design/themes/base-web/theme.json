@@ -18,9 +18,9 @@
   },
   "spacingUnit": 8,
   "radius": {
-    "control": 8,
+    "control": 2,
     "surface": 0,
-    "chip": 4
+    "chip": 2
   },
   "layout": {
     "maxWidth": 1100,
@@ -85,5 +85,5 @@
     "inputFillActive": "#161616",
     "inputBorder": "#6c6c6c"
   },
-  "label": "Base Web reference preview"
+  "label": "Spacious neutral"
 }

@@ -276,7 +276,6 @@ class RendererTests(unittest.TestCase):
 
     def test_harness_detection_from_environment(self):
         cases = {
-            'claude-inline': {'CLAUDECODE': '1', 'CLAUDE_CODE_DESKTOP_APP_VERSION': '1.0'},
             'claude-code': {'CLAUDECODE': '1'},
             'codex': {'CODEX_HOME': '/tmp/codex'},
             'static': {},
@@ -284,6 +283,7 @@ class RendererTests(unittest.TestCase):
         for expected, env in cases.items():
             with self.subTest(expected=expected):
                 self.assertEqual(visual_config.detect_harness(env)[0], expected)
+        self.assertEqual(visual_config.detect_harness({'CLAUDECODE': '1', 'CLAUDE_CODE_DESKTOP_APP_VERSION': '1.0'})[0], 'claude-code')
 
     def test_claude_inline_writes_a_small_loader_without_the_bundle(self):
         with tempfile.TemporaryDirectory() as directory:
