@@ -1,4 +1,0 @@
-interface:
-  display_name: "Visual Response Design"
-  short_description: "Shared UI for reviews and batch feedback"
-  default_prompt: "Use $visual-response-design to render an interactive review from a JSON spec, preserving the configured theme and editable batch feedback."

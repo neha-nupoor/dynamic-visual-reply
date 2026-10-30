@@ -15,7 +15,7 @@ import shutil
 import sys
 
 REPO = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO / 'skills/visual-response-design/scripts'))
+sys.path.insert(0, str(REPO / 'skills/dynamic-visual-reply/scripts'))
 import render
 import visual_config
 
@@ -47,7 +47,7 @@ def generate(out, renderer_url=None):
                 html = path.read_text()
                 # A relative URL is test-only; production Claude URLs must be HTTPS.
                 html = html.replace('https://fixture.invalid/renderer.js', 'renderer.js')
-                marker = '<script src=' if harness == 'claude-inline' else '<script data-visual-response-runtime>'
+                marker = '<script src=' if harness == 'claude-inline' else '<script data-dynamic-visual-reply-runtime>'
                 position = html.index(marker)
                 html = html[:position] + '<script src="bridge-fixture.js"></script>\n' + html[position:]
                 policy = "script-src 'self'" + (" 'unsafe-inline'" if harness == 'codex' else '')
