@@ -2,7 +2,7 @@
   "$schema": "./schema/config.schema.json",
   "theme": "base-web",
   "themeFallback": "neutral",
-  "appearance": null,
+  "appearance": "system",
   "harness": "auto",
   "views": {
     "enabled": [

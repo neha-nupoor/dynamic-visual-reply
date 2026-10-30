@@ -257,6 +257,48 @@ class RendererTests(unittest.TestCase):
             self.assertEqual(context.sources['harness'], 'project')
             self.assertEqual([name for name, _ in context.layers], ['defaults', 'user', 'project', 'command line'])
 
+    def test_harness_appearance_defaults_and_null_reset(self):
+        for harness in visual_config.harness_ids():
+            expected = 'host' if harness == 'claude-inline' else 'system'
+            with self.subTest(harness=harness):
+                context = visual_config.resolve(harness=harness, isolated=True)
+                self.assertEqual(context.appearance, expected)
+                reset = visual_config.resolve({'appearance': None}, harness=harness, isolated=True)
+                self.assertEqual(reset.appearance, expected)
+                for fixed in ('light', 'dark'):
+                    context = visual_config.resolve({'appearance': fixed}, harness=harness, isolated=True)
+                    self.assertEqual(context.appearance, fixed)
+
+    def test_explicit_appearance_layers_override_harness_defaults_in_rendered_page(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            user = base / 'user.json'
+            user.write_text(json.dumps({'appearance': 'dark'}))
+            project = base / 'repo'
+            (project / '.git').mkdir(parents=True)
+            env = {'HOME': directory, 'VISUAL_RESPONSE_CONFIG': str(user)}
+            for harness in ('codex', 'claude-inline', 'browser-local'):
+                with self.subTest(harness=harness):
+                    project_config = project / '.visual-response.json'
+                    project_config.unlink(missing_ok=True)
+                    context = visual_config.resolve(harness=harness, cwd=project, env=env)
+                    self.assertEqual(context.appearance, 'dark')
+                    self.assertEqual(context.sources['appearance'], 'user')
+                    project_config.write_text(json.dumps({'appearance': 'light'}))
+                    context = visual_config.resolve(harness=harness, cwd=project, env=env)
+                    self.assertEqual(context.appearance, 'light')
+                    self.assertEqual(context.sources['appearance'], 'project')
+                    context = visual_config.resolve({'appearance': 'dark'}, harness=harness, cwd=project, env=env)
+                    self.assertEqual(context.appearance, 'dark')
+                    self.assertEqual(context.sources['appearance'], 'command line')
+                    spec = self.example('flow')
+                    spec['appearance'] = 'light'
+                    out = base / (harness + '.html')
+                    quiet(render.render, spec, out, 'inline', context=context)
+                    config = json.loads(out.read_text().split('data-visual-response-config>', 1)[1].split('</script>', 1)[0])
+                    self.assertEqual(config['appearance'], 'light')
+                    self.assertNotIn('hostPalette', config)
+
     def test_unknown_config_keys_are_rejected(self):
         with self.assertRaises(ValueError):
             visual_config.resolve({'colour': 'blue'}, isolated=True)
