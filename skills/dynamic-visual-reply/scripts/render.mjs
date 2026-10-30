@@ -47,10 +47,11 @@ export function validate(spec) {
 }
 /** RFC-style quoted delimited records, including escaped quotes and embedded newlines. */
 export function delimitedRows(text, delimiter = ',') {
-  const records = []; let row = [], cell = '', quoted = false;
+  const records = []; let row = [], cell = '', quoted = false, recordStarted = false;
   text = text.replace(/^\uFEFF/, '');
   for (let index = 0; index < text.length; index++) {
     const char = text[index];
+    if (char !== '\n' && char !== '\r') recordStarted = true;
     if (char === '"') {
       if (quoted && text[index + 1] === '"') { cell += '"'; index++; }
       else if (quoted || cell === '') quoted = !quoted;
@@ -58,12 +59,12 @@ export function delimitedRows(text, delimiter = ',') {
     } else if (!quoted && char === delimiter) { row.push(cell); cell = ''; }
     else if (!quoted && (char === '\n' || char === '\r')) {
       if (char === '\r' && text[index + 1] === '\n') index++;
-      if (row.length || cell) records.push([...row, cell]);
-      row = []; cell = '';
+      if (recordStarted) records.push([...row, cell]);
+      row = []; cell = ''; recordStarted = false;
     } else cell += char;
   }
   requireValue(!quoted, 'Unclosed quoted field in delimited data');
-  if (row.length || cell) records.push([...row, cell]);
+  if (recordStarted) records.push([...row, cell]);
   const headers = records.shift() || [];
   return records.map(values => Object.fromEntries(headers.map((key, index) => [key, values[index] ?? null])));
 }

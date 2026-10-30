@@ -73,6 +73,16 @@ test('CSV and TSV retain quoted delimiters, newlines, escaped quotes, BOM and nu
   }
   assert.throws(() => render.delimitedRows('id,name\nx,"unfinished'), /Unclosed/);
 });
+test('quoted empty CSV and TSV records reach validation while blank lines are skipped', t => {
+  for (const delimiter of [',', '\t']) for (const newline of ['\n', '\r\n', '\r']) for (const ending of ['', newline]) {
+    assert.deepEqual(render.delimitedRows('id' + newline + newline + '""' + ending, delimiter), [{id: ''}]);
+  }
+  const dir = temporary(t);
+  fs.writeFileSync(path.join(dir, 'rows.csv'), 'id\n""\nonboarding\n');
+  const spec = {schemaVersion: 1, viewId: 'quoted-empty', view: 'table', title: 'CSV',
+    columns: [{key: 'id', label: 'ID'}], dataFile: 'rows.csv'};
+  assert.throws(() => render.validate(render.resolveData(spec, path.join(dir, 'spec.json'))), /rows\[0\]\.id/);
+});
 test('JSON datasets resolve relative to the spec and do not accept two data sources', t => {
   const dir = temporary(t); write(path.join(dir, 'rows.json'), {rows: example('table').rows});
   const spec = example('table'); delete spec.rows; spec.dataFile = 'rows.json';
@@ -235,6 +245,17 @@ test('packaged helper runs with no npm install and no Python executable on PATH'
     '--out', out, '--harness', 'codex'], {cwd: dir, env: {PATH: dir, HOME: dir}, encoding: 'utf8'});
   assert.equal(result.status, 0, result.stderr); assert.equal(JSON.parse(result.stdout).handoff.type, 'contentReference');
   assert.ok(fs.existsSync(out));
+});
+test('helpers can be imported from stdin or with an unavailable entry-point path', t => {
+  const dir = temporary(t);
+  const imports = ['render', 'serve', 'doctor'].map(name =>
+    'await import(' + JSON.stringify(new URL('./' + name + '.mjs', import.meta.url).href) + ');').join('\n');
+  for (const prefix of ['', 'process.argv[1] = ' + JSON.stringify(path.join(dir, 'missing-entry.mjs')) + ';\n']) {
+    const result = spawnSync(process.execPath, ['--input-type=module', '-'],
+      {input: prefix + imports + '\nconsole.log("imported");', cwd: dir, encoding: 'utf8'});
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout.trim(), 'imported');
+  }
 });
 test('CLI errors are structured and do not produce a view', t => {
   const dir = temporary(t);

@@ -252,7 +252,11 @@ export function resolve(cli = {}, {harness, cwd, env = process.env, isolated = f
 export function parseCli(options, args = process.argv.slice(2), allowPositionals = false) {
   return parseArgs({args, options: {...options, help: {type: 'boolean', short: 'h'}}, allowPositionals, strict: true});
 }
-export function isMain(url) { return !!process.argv[1] && url === pathToFileURL(fs.realpathSync(process.argv[1])).href; }
+export function isMain(url) {
+  if (!process.argv[1] || process.argv[1] === '-') return false;
+  try { return url === pathToFileURL(fs.realpathSync(process.argv[1])).href; }
+  catch { return false; }
+}
 export async function runCli(fn) {
   try { await fn(); } catch (error) { process.stderr.write(JSON.stringify({error: error.message}) + '\n'); process.exitCode = 2; }
 }
