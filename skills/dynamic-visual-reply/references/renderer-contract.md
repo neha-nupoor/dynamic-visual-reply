@@ -18,6 +18,13 @@ Codex inline embeds the Oat/Preact bundle and returns the existing `contentRefer
 
 Other flags: `--format auto|inline|standalone`, `--theme`, `--appearance light|dark|system|host`, `--renderer-url`, `--viewport-width`, `--viewport-height`, and `--catalog`.
 
+## Static view
+
+`scripts/static_view.py` writes the view's content as finished HTML with a scoped stylesheet built from the theme's sizes and palette, honoring `light`, `dark`, `system` and `host` like the renderer. It shows the title, context and records only, with no controls: table rows up to `pageSize` (with a "Showing N of M rows" note), cards with details and source links, kanban columns, form answers, and every flow step with its detail.
+
+- Interactive pages (the default) put the static block directly before `[data-dynamic-visual-reply-root]`. The rule `[data-dynamic-visual-reply-static]:has(+[data-dynamic-visual-reply-root]>*){display:none}` hides it as soon as the renderer draws, so no renderer code changes. A renderer that fails to load leaves the static view and a note that interactive controls appear once it loads.
+- `"interactive": false` in the spec writes only the static block: no renderer script, JSON data blocks or mount point. Claude inline then needs no renderer URL, and the result reports `"delivery": "none"`.
+
 ## Specs and datasets
 
 ```json
@@ -40,7 +47,7 @@ Each render writes `<output-stem>.spec.json`. Patches support `upsert` (merge ro
 
 ## Settings and themes
 
-Settings merge: shipped defaults → small built-in host defaults → user config → project config → flags. The spec can override appearance. Appearance defaults to `host` for Claude inline and `system` elsewhere; an explicit fixed mode at a higher-priority layer wins. A null config appearance resets to the harness default, rather than the theme pack's fixed mode. Agents should omit appearance flags unless the user requests an override. User config is `$DYNAMIC_VISUAL_REPLY_CONFIG`, otherwise `$XDG_CONFIG_HOME/dynamic-visual-reply/config.json` or `~/.config/dynamic-visual-reply/config.json`. Project config is `.dynamic-visual-reply.json`, searched up to the repository root. `--print-config` shows the effective values and their sources.
+Settings merge: shipped defaults → small built-in host defaults → user config → project config → flags. The spec can override appearance. Appearance defaults to `system` for every harness, so the configured theme's colors apply; `host` (Claude's own colors) is opt-in; an explicit fixed mode at a higher-priority layer wins. A null config appearance resets to the harness default, rather than the theme pack's fixed mode. Agents should omit appearance flags unless the user requests an override. User config is `$DYNAMIC_VISUAL_REPLY_CONFIG`, otherwise `$XDG_CONFIG_HOME/dynamic-visual-reply/config.json` or `~/.config/dynamic-visual-reply/config.json`. Project config is `.dynamic-visual-reply.json`, searched up to the repository root. `--print-config` shows the effective values and their sources.
 
 Settings cover theme/fallback, appearance, harness, enabled views, placement, feedback prompts/message format, copy, and an optional pinned Claude renderer URL. `feedback.messageFormat` is `json`, `compact`, or `summary` (a readable line followed by JSON). `copy` can override selected labels/status messages. Claude's default button is **Add to chat**, with a status asking the user to press Enter.
 

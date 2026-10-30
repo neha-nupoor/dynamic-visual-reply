@@ -19,7 +19,8 @@ HARNESSES = {
     'static': {'label': 'Static HTML', 'adapter': None},
 }
 CLAUDE_CONFIG = {
-    'appearance': 'host',
+    # The configured theme's own light/dark palettes follow Claude's mode; `host` (Claude's colors) is opt-in.
+    'appearance': 'system',
     'placement': {'viewport': {'width': 680, 'height': 900}, 'maxSpecBytes': 24000},
     'feedback': {'messageFormat': 'summary'},
     'copy': {'submit': {'message': 'Add to chat'},
@@ -341,8 +342,8 @@ class Context:
 
     @property
     def appearance(self):
-        # A null appearance resets to the host default rather than a theme pack's fixed mode.
-        return self.config.get('appearance') or ('host' if self.harness['id'] == 'claude-inline' else 'system')
+        # A null appearance resets to `system` rather than a theme pack's fixed mode.
+        return self.config.get('appearance') or 'system'
 
 
 def resolve(cli=None, *, harness=None, cwd=None, env=os.environ, isolated=False):

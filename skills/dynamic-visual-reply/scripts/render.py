@@ -8,6 +8,7 @@ import math
 from pathlib import Path
 import sys
 
+import static_view
 import visual_config
 from visual_config import ROOT, load, require
 
@@ -219,7 +220,14 @@ def page_theme(context):
     return visual_config.diff(context.theme, load(visual_config.THEME_FILE))
 
 def fragment(spec, context, appearance, info, delivery):
-    parts = ['<div data-dynamic-visual-reply-root></div>',
+    # A finished, read-only view comes first; the renderer's mount point follows it and hides it once drawn.
+    interactive = spec.get('interactive', True)
+    inline = spec['resolvedPresentation']['mode'] == 'inline'
+    static = static_view.markup(spec, context.theme, context.config['copy'], appearance, inline=inline, interactive=interactive)
+    if not interactive:
+        return static + '\n'
+    parts = [static,
+             '<div data-dynamic-visual-reply-root></div>',
              '<script type="application/json" data-dynamic-visual-reply-config>' + json_for_html(runtime_config(context, appearance, info['sha256'])) + '</script>',
              '<script type="application/json" data-dynamic-visual-reply-theme>' + json_for_html(page_theme(context)) + '</script>',
              '<script type="application/json" data-dynamic-visual-reply-spec>' + json_for_html(spec) + '</script>']
@@ -287,14 +295,14 @@ def render(spec, out, mode='auto', viewport_width=None, viewport_height=None, *,
     spec['stateKey'] = hashlib.sha256((info['draftVersion'] + ':' + spec['viewId'] + ':' + spec['view']).encode()).hexdigest()[:24]
     appearance = spec.get('appearance') or context.appearance
     delivery = context.config['delivery']
-    delivery_mode = 'url' if context.harness['id'] == 'claude-inline' else 'embed'
+    delivery_mode = 'none' if spec.get('interactive', True) is False else 'url' if context.harness['id'] == 'claude-inline' else 'embed'
     out.parent.mkdir(parents=True, exist_ok=True)
     snapshot = out.with_suffix('.spec.json')
     snapshot.write_text(json.dumps(spec, ensure_ascii=False, allow_nan=False, indent=2) + '\n', encoding='utf-8')
     data = json_for_html(spec)
     result = {'harness': context.harness['id'], 'theme': context.theme['name'], 'view': spec['view'],
               'rendererHash': info['sha256'], 'specBytes': len(data.encode()), 'rendererBytes': info['bytes'],
-              'delivery': delivery_mode, 'spec': str(snapshot), 'placement': decision}
+              'delivery': delivery_mode, 'interactive': spec.get('interactive', True), 'spec': str(snapshot), 'placement': decision}
     kind = 'fragment' if decision['mode'] == 'inline' and context.harness['id'] in ('codex', 'claude-inline') else 'document'
     body = fragment(spec, context, appearance, info, delivery)
     size_limit = context.config['placement']['maxInlineBytes']
@@ -304,7 +312,7 @@ def render(spec, out, mode='auto', viewport_width=None, viewport_height=None, *,
         if context.harness['id'] in ('codex', 'claude-inline'):
             context = context.switch('browser-local')
             delivery = context.config['delivery']
-            result.update(harness='browser-local', delivery='embed')
+            result.update(harness='browser-local', delivery='none' if spec.get('interactive', True) is False else 'embed')
         kind = 'document'
         body = fragment(spec, context, appearance, info, delivery)
     output = wrap(body, kind, spec, context, appearance)

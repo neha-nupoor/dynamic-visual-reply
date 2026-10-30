@@ -19,6 +19,10 @@ Alternatively, set `delivery.rendererUrl` or pass `--renderer-url` for an immuta
 
 For `handoff.type: show_widget`, read the small output file and pass its contents unchanged as `widget_code`. Do not paste the renderer bundle into the tool call. For `handoff.type: serve`, follow [browser-local.md](browser-local.md).
 
+## Read-only views without a URL
+
+A spec with `"interactive": false` renders as finished HTML and CSS with no script, so it needs no renderer URL or pinned commit. Use it for content the user only reads. Interactive views also start with the same static view, which stays visible if the renderer URL fails to load.
+
 ## Without a URL or widget tool
 
 Use the same renderer in the [local browser](browser-local.md); no public URL or additional integration is needed:
@@ -31,4 +35,4 @@ Claude Code (including its desktop Code tab) auto-detects as `claude-code` and u
 
 **Add to chat** fills the user's message box through `sendPrompt`; the user presses Enter. The message contains a readable summary and JSON feedback. Saving drafts uses localStorage only when the sandbox permits it. Acknowledge the feedback actually received.
 
-The configured theme applies. Appearance defaults to `host`, using Claude's available CSS colors and light/dark markers with theme/OS fallbacks. Explicit appearance choices from the spec, flags, project, or user configuration take priority; omit extra flags when following the default. Explicit light/dark stays fixed. The bundle includes all Oat CSS, so the loader makes no separate stylesheet request.
+The configured theme applies, including its colors. Appearance defaults to `system`: the theme's light or dark palette follows Claude's light/dark markers, then the OS setting. Set `appearance: host` to use Claude's own CSS colors instead, with theme fallbacks for any it doesn't define. Explicit appearance choices from the spec, flags, project, or user configuration take priority; omit extra flags when following the default. Explicit light/dark stays fixed. The bundle includes all Oat CSS, so the loader makes no separate stylesheet request.

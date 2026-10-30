@@ -117,7 +117,7 @@ The optional loader uses a pushed Git commit containing the identical bundle. Se
 
 ## Appearance and settings
 
-Appearance follows the harness by default: Claude inline uses available host colors and light/dark mode; other surfaces follow exposed host light/dark markers, otherwise OS preference. Explicit choices win in this order:
+Appearance defaults to `system` everywhere: the theme's own light or dark palette, following host light/dark markers when exposed, otherwise OS preference. Set `appearance: host` to use Claude's own colors instead. Explicit choices win in this order:
 
 `spec → command-line flag → project config → user config → harness default`
 

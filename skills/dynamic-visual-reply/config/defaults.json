@@ -79,6 +79,13 @@
     "recommended": "Recommended",
     "moreDetail": "More detail",
     "source": "Source",
+    "static": {
+      "pending": "Interactive feedback controls appear here once the renderer loads.",
+      "rows": "Showing {shown} of {count} rows.",
+      "yes": "Yes",
+      "no": "No",
+      "empty": "None"
+    },
     "preview": "Preview batch",
     "hidePreview": "Hide preview",
     "copy": "Copy feedback",

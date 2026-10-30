@@ -15,6 +15,7 @@
       "properties": {"goal": {"type": "string"}, "next": {"type": "string"}}
     },
     "presentation": {"enum": ["auto", "inline", "standalone"]},
+    "interactive": {"description": "false renders a finished, read-only view with no renderer script: no JavaScript, CDN or release tag needed. Default true.", "type": "boolean"},
     "appearance": {"enum": ["light", "dark", "system", "host"]},
     "revision": {"type": "integer", "minimum": 1},
     "feedbackPrompt": {"type": "string"},

@@ -296,7 +296,7 @@ class RendererTests(unittest.TestCase):
 
     def test_harness_appearance_defaults_and_null_reset(self):
         for harness in visual_config.harness_ids():
-            expected = 'host' if harness == 'claude-inline' else 'system'
+            expected = 'system'
             with self.subTest(harness=harness):
                 context = visual_config.resolve(harness=harness, isolated=True)
                 self.assertEqual(context.appearance, expected)
@@ -305,6 +305,18 @@ class RendererTests(unittest.TestCase):
                 for fixed in ('light', 'dark'):
                     context = visual_config.resolve({'appearance': fixed}, harness=harness, isolated=True)
                     self.assertEqual(context.appearance, fixed)
+
+    def test_claude_host_colors_are_opt_in(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for appearance, palette in ((None, False), ('host', True)):
+                with self.subTest(appearance=appearance):
+                    # Interactive Claude pages need a pinned renderer commit; any full SHA works for rendering.
+                    context = visual_config.resolve({'appearance': appearance, 'delivery': {'commit': 'a' * 40}}, harness='claude-inline', isolated=True)
+                    out = Path(directory) / f'{appearance}.html'
+                    quiet(render.render, self.example('flow'), out, 'inline', context=context)
+                    config = json.loads(out.read_text().split('data-dynamic-visual-reply-config>', 1)[1].split('</script>', 1)[0])
+                    self.assertEqual(config['appearance'], appearance or 'system')
+                    self.assertEqual('hostPalette' in config, palette)
 
     def test_explicit_appearance_layers_override_harness_defaults_in_rendered_page(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -457,6 +469,83 @@ class RendererTests(unittest.TestCase):
         for role in ('--vr-accent', '--vr-on-accent', '--vr-control-border', '--vr-font'):
             self.assertIn(role, css)
         self.assertIn('prefers-color-scheme: dark', css)
+
+    def render_html(self, spec, context=None, mode='inline'):
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory) / 'view.html'
+            result = quiet(render.render, spec, out, mode, context=context)
+            return result, out.read_text()
+
+    def test_static_view_alone_has_no_script_for_every_example(self):
+        for path in sorted((ROOT / 'assets/examples').glob('*.json')):
+            with self.subTest(example=path.stem):
+                spec = render.load(path)
+                spec['interactive'] = False
+                result, html = self.render_html(spec)
+                self.assertNotIn('<script', html)
+                self.assertNotIn('data-dynamic-visual-reply-root', html)
+                self.assertIn('data-dynamic-visual-reply-static', html)
+                self.assertIn(spec['title'].replace('&', '&amp;'), html)
+                self.assertEqual(result['delivery'], 'none')
+                self.assertFalse(result['interactive'])
+
+    def test_interactive_pages_place_static_view_before_the_mount_point(self):
+        result, html = self.render_html(self.example('flow'))
+        self.assertTrue(result['interactive'])
+        self.assertLess(html.index('data-dynamic-visual-reply-static'), html.index('<div data-dynamic-visual-reply-root>'))
+        self.assertIn('[data-dynamic-visual-reply-static]:has(+[data-dynamic-visual-reply-root]>*){display:none}', html)
+        self.assertIn('Interactive feedback controls appear here once the renderer loads.', html)
+
+    def test_static_view_shows_each_views_content(self):
+        cards = self.example('cards')
+        flow = self.example('flow')
+        form = self.example('form')
+        kanban = self.example('kanban')
+        for spec, expected in ((cards, [row['title'] for row in cards['rows']]),
+                               (flow, [node['title'] for node in flow['nodes']]),
+                               (form, [field['label'] for field in form['fields']]),
+                               (kanban, [row['title'] for row in kanban['rows']])):
+            spec['interactive'] = False
+            with self.subTest(view=spec['view']):
+                html = self.render_html(spec)[1]
+                for text in expected:
+                    self.assertIn(text.replace('&', '&amp;'), html)
+
+    def test_static_table_notes_rows_beyond_the_first_page(self):
+        spec = self.table()
+        spec.update(interactive=False, pageSize=1)
+        html = self.render_html(spec, mode='standalone')[1]
+        self.assertIn(f'Showing 1 of {len(spec["rows"])} rows.', html)
+
+    def test_static_view_escapes_spec_text(self):
+        spec = self.example('cards')
+        spec['interactive'] = False
+        spec['rows'][0]['title'] = '<img src=x onerror=alert(1)>'
+        spec['rows'][0]['source'] = 'javascript:alert(1)'
+        html = self.render_html(spec, mode='standalone')[1]
+        self.assertNotIn('<img src=x', html)
+        self.assertIn('&lt;img src=x onerror=alert(1)&gt;', html)
+        self.assertNotIn('javascript:alert', html)
+
+    def test_claude_static_view_needs_no_renderer_url(self):
+        context = visual_config.resolve({'delivery': {'repository': None}}, harness='claude-inline', isolated=True)
+        spec = self.example('flow')
+        spec['interactive'] = False
+        result, html = self.render_html(spec, context=context)
+        self.assertEqual(result['handoff']['type'], 'show_widget')
+        self.assertNotIn('cdn.jsdelivr.net', html)
+
+    def test_static_view_follows_appearance(self):
+        theme = render.default_context().theme
+        for appearance in ('light', 'dark', 'system', 'host'):
+            spec = self.example('flow')
+            spec.update(interactive=False, appearance=appearance)
+            with self.subTest(appearance=appearance):
+                html = self.render_html(spec)[1]
+                own = theme['light' if appearance == 'light' else 'dark']['surface']
+                self.assertIn(f'--vrs-t-surface:{own}', html)
+                self.assertEqual('prefers-color-scheme:dark' in html, appearance in ('system', 'host'))
+                self.assertEqual('var(--surface-2,' in html, appearance == 'host')
 
 if __name__ == '__main__':
     os.environ.pop('DYNAMIC_VISUAL_REPLY_CONFIG', None)
