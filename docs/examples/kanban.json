@@ -1,1 +1,0 @@
-{"schemaVersion":1,"viewId":"demo-kanban","revision":1,"view":"kanban","title":"Release board","feedbackPrompt":"Notes","stages":["Review","Ready"],"rows":[{"id":"onboarding","title":"Onboarding checklist","stage":"Review"},{"id":"shortcuts","title":"Keyboard shortcuts","stage":"Review"},{"id":"export","title":"Export presets","stage":"Review"}]}

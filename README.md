@@ -32,7 +32,7 @@ The demo agent received instructions for `onboarding`, `shortcuts`, and `export`
 
 ### Component gallery
 
-These previews use the same renderer and the [sample session's JSON specs](docs/examples/). The local preview labels its simulated chat bridge; it is not evidence of a native chat submission.
+These screenshots show all five views using fictional release tasks. They use the shared renderer in a local preview with a labeled simulated chat bridge.
 
 ### Table
 
@@ -192,14 +192,6 @@ skills/dynamic-visual-reply/
 Normal users do not need to build the renderer. For implementation changes, follow the [renderer contract](skills/dynamic-visual-reply/references/renderer-contract.md#maintenance) and [UI behavior guide](skills/dynamic-visual-reply/references/ui-behavior.md).
 
 Git commits identify skill revisions; bundle hashes identify renderer bytes. Dependency pins and compatibility markers are retained. There is no routine skill version bump or tag-publishing workflow.
-
-## Token usage
-
-In one recorded Codex sample, the agent authored five widget specs using **988 output tokens**. Correcting the inline display reference used another **351 output tokens**. The shared 82 KB renderer supplied the UI without the model generating its implementation again.
-
-Authoring and the display correction used **355,967 total tokens**, including repeated input context. The full recorded session, including feedback replies and recording preparation, used **1,113,678 input tokens** (1,059,200 cached) and **2,967 output tokens**: **1,116,645 total**. The 988-token figure measures authoring output only; it is not the full cost. The widgets provide selection, per-item instructions, and structured batch feedback; no controlled usability or token-savings comparison was performed.
-
-See the [benchmark, method, and limits](docs/benchmark.md) and [recorded counters](docs/benchmark.json). Costs vary with the model, context, cache, and harness. This Codex result does not describe Claude's string-based inline delivery.
 
 ## License
 
