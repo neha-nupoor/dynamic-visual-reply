@@ -1,18 +1,19 @@
 {
   "name": "visual-response-renderer",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "private": true,
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "type": "module",
-  "scripts": {"build": "node build.mjs"},
-  "dependencies": {
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
-    "@mui/material": "9.4.0",
-    "@emotion/react": "11.14.0",
-    "@emotion/styled": "11.14.1",
-    "remotion": "4.0.532",
-    "@remotion/player": "4.0.532"
+  "scripts": {
+    "build": "node build.mjs"
   },
-  "devDependencies": {"esbuild": "0.25.10"}
+  "dependencies": {
+    "@knadh/oat": "1.0.0",
+    "preact": "11.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.10"
+  }
 }

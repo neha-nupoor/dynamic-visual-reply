@@ -38,52 +38,40 @@ def report(args, env=os.environ):
                      'Install that theme pack beside this skill or point `theme` at its folder.')
     delivery = config['delivery']
     url_check = None
-    paths = {h: visual_config.load_harness(h) for h in visual_config.harness_ids()}
-    used = {harness['id']} | {harness[k] for k in ('standaloneHarness', 'inlineHarness') if harness.get(k)}
-    for identifier in sorted(used):
-        mode = (context if identifier == harness['id'] else visual_config.resolve(cli, harness=identifier)).config['delivery']
-        if mode['mode'] == 'url':
-            url = visual_config.renderer_url(mode, manifest['version'])
-            if not url:
-                problems.append(f'{identifier} loads the renderer from a URL, but neither delivery.rendererUrl nor delivery.repository is set. '
-                                'Release this skill from a public GitHub repo (set repository) or publish dist/renderer.js to npm (set rendererUrl).')
-            elif identifier == 'claude-artifact' and not url.startswith(('https://cdn.jsdelivr.net/npm/', 'https://unpkg.com/', 'https://cdnjs.cloudflare.com/')):
-                problems.append(f'claude-artifact pages only load scripts from cdnjs, unpkg or jsDelivr /npm/, so {url} will be blocked. '
-                                'Set delivery.rendererUrl to an npm-published copy for artifacts.')
-            elif manifest['version'] not in url:
-                notes.append(f'{url} does not name version {manifest["version"]}; make sure it serves the same bundle.')
-            if url and args.check_url:
-                url_check = check_url(url, manifest.get('sri'))
-                if not url_check['reachable']:
-                    problems.append(f'rendererUrl is not reachable: {url_check["error"]}')
-                elif not url_check['matchesLocalBundle']:
-                    problems.append('rendererUrl serves a different bundle than dist/renderer.js; publish this build or update the URL.')
-    submit = {'codex': 'window.openai.sendFollowUpMessage starts a chat turn; standalone views save to a file through serve.py',
-              'claude-inline': 'sendPrompt() starts a chat turn; standalone views become a Claude artifact',
-              'claude-artifact': 'Submit writes to the artifact `batches` collection; Claude reads it with ArtifactData',
-              'browser-local': 'serve.py saves <view>.feedback.json; ask the agent to read it',
-              'claude-code': 'serve.py saves <view>.feedback.json; ask the agent to read it',
-              'static': 'No bridge: Prepare message, Copy and Export JSON only',
-              'module': 'The wrapper supplies window.visualResponseHost'}
+    if harness['id'] == 'claude-inline':
+        url = visual_config.renderer_url(delivery, manifest['version'])
+        if not url:
+            problems.append('Claude inline needs a pinned renderer URL or delivery.repository.')
+        elif args.check_url:
+            url_check = check_url(url, manifest.get('sri'))
+            if not url_check['reachable']:
+                problems.append(f'Renderer URL is not reachable: {url_check["error"]}')
+            elif not url_check['matchesLocalBundle']:
+                problems.append('Renderer URL differs from this build; publish a matching release before using it.')
+    submit = {'codex': 'Inline uses window.openai.sendFollowUpMessage; larger views save feedback through serve.py.',
+              'claude-inline': 'Inline adds feedback to the message box; press Enter to send. Larger views use serve.py.',
+              'browser-local': 'serve.py saves <view>.feedback.json; ask the agent to read it.',
+              'claude-code': 'serve.py saves <view>.feedback.json; ask the agent to read it.',
+              'static': 'Copy or export feedback and paste it into chat.'}
+    notes.append('These checks verify files and settings, not the host rendering or submission APIs. Test those in the rendered view.')
     return {
         'ok': not problems,
         'harness': {'id': harness['id'], 'label': harness['label'], 'reason': context.harness_reason,
-                    'detected': detected, 'detectedReason': detected_reason, 'handoff': harness['handoff'],
-                    'standaloneHarness': harness.get('standaloneHarness'), 'references': harness.get('references'),
-                    'feedback': submit.get(harness['id'], 'See the harness profile notes')},
+                    'detected': detected, 'detectedReason': detected_reason, 'runtimeVerified': False,
+                    'feedback': submit.get(harness['id'], 'Choose a supported harness explicitly')},
         'theme': {'name': context.theme['name'], 'source': context.theme_source, 'appearance': context.appearance,
                   'contrastOk': not contrast},
         'delivery': {**delivery, 'bundleVersion': manifest['version'], 'bundleBytes': manifest['bytes'], 'urlCheck': url_check},
         'configLayers': context.layers,
         'userConfig': str(visual_config.user_config_path(env)),
-        'availableHarnesses': {h: p['label'] for h, p in paths.items()},
+        'availableHarnesses': {h: p['label'] for h, p in visual_config.HARNESSES.items()},
         'problems': problems,
         'notes': notes,
     }
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--harness', help='Check a specific harness profile instead of the detected one')
+    parser.add_argument('--harness', help='Check a supported host instead of the suggested one')
     parser.add_argument('--theme', help='Check a specific theme pack')
     parser.add_argument('--check-url', action='store_true', help='Download rendererUrl and compare it with the local bundle')
     args = parser.parse_args()

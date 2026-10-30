@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "visual-response/config.schema.json",
   "title": "Visual response configuration layer",
-  "description": "Any layer (defaults, harness profile `config`, user config, project config) uses this shape. Every key is optional; later layers override earlier ones key by key.",
+  "description": "Defaults, user, project and command-line settings; later layers override earlier ones.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -10,13 +10,12 @@
     "theme": {"description": "Theme pack name, a path to a theme.json or pack folder, or an inline theme object.", "type": ["string", "object"]},
     "themeFallback": {"type": "string"},
     "appearance": {"enum": ["light", "dark", "system", "host", null]},
-    "harness": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "harness": {"enum": ["auto", "codex", "claude-inline", "claude-code", "browser-local", "static"]},
     "views": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "enabled": {"type": "array", "uniqueItems": true, "items": {"enum": ["table", "cards", "form", "kanban", "flow"]}},
-        "motion": {"type": "boolean"}
+        "enabled": {"type": "array", "uniqueItems": true, "items": {"enum": ["table", "cards", "form", "kanban", "flow"]}}
       }
     },
     "placement": {
@@ -41,8 +40,7 @@
             "cards": {"anyOf": [{"const": false}, {"type": "object", "additionalProperties": false, "properties": {"items": {"type": "integer", "minimum": 0}}}]},
             "form": {"anyOf": [{"const": false}, {"type": "object", "additionalProperties": false, "properties": {"units": {"type": "integer", "minimum": 0}}}]},
             "flow": {"anyOf": [{"const": false}, {"type": "object", "additionalProperties": false, "properties": {"nodes": {"type": "integer", "minimum": 0}}}]},
-            "kanban": {"anyOf": [{"const": false}, {"type": "object", "additionalProperties": false, "properties": {"items": {"type": "integer", "minimum": 0}}}]},
-            "motion": {"type": "boolean"}
+            "kanban": {"anyOf": [{"const": false}, {"type": "object", "additionalProperties": false, "properties": {"items": {"type": "integer", "minimum": 0}}}]}
           }
         },
         "maxInlineBytes": {"type": "integer", "minimum": 1000},
@@ -53,21 +51,9 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "mode": {"enum": ["embed", "url", "module"]},
         "rendererUrl": {"type": ["string", "null"], "pattern": "^https://"},
-        "repository": {"description": "Public GitHub \"owner/name\" this skill is released from. When rendererUrl is null, the renderer loads from jsDelivr at the release tag (tagPrefix + bundle version).", "type": ["string", "null"], "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
-        "npmPackage": {"description": "Published npm package that contains this repository layout. When rendererUrl is null, the renderer loads from jsDelivr's npm path at the bundle version, which both inline widgets and artifacts accept.", "type": ["string", "null"], "pattern": "^(@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*$"},
-        "repositoryPath": {"description": "This skill's folder inside the repository.", "type": "string"},
-        "tagPrefix": {"type": "string"},
+        "repository": {"description": "Public GitHub \"owner/name\" this skill is released from. When rendererUrl is null, the renderer loads from jsDelivr at the release tag (v + bundle version).", "type": ["string", "null"], "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
         "integrity": {"description": "\"manifest\" computes SRI from the local bundle, a literal sha384-… value pins one, null omits it.", "type": ["string", "null"]}
-      }
-    },
-    "output": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "inline": {"enum": ["fragment", "document", "artifact-page"]},
-        "standalone": {"enum": ["fragment", "document", "artifact-page"]}
       }
     },
     "feedback": {

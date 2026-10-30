@@ -1,0 +1,69 @@
+[data-visual-response-root] {min-width:0}
+[data-visual-response-root] .vr-app {font:var(--vr-body)/var(--vr-leading) var(--vr-font);color:var(--vr-text);background:var(--vr-surface);padding:var(--vr-padding-compact);max-width:var(--vr-max-width);margin-inline:auto;border:1px solid var(--vr-divider);border-radius:var(--vr-radius-surface)}
+[data-visual-response-root] .vr-app * {min-width:0;box-sizing:border-box;overflow-wrap:anywhere;animation:none}
+[data-visual-response-root] .vr-header {display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+[data-visual-response-root] h2 {font-size:var(--vr-title-compact);line-height:var(--vr-title-leading);letter-spacing:var(--vr-title-tracking);font-weight:700;margin:0}
+[data-visual-response-root] h3 {font-size:var(--vr-section);font-weight:600;line-height:1.4;margin:0}
+[data-visual-response-root] p {margin:0}
+[data-visual-response-root] .vr-row {display:flex;gap:var(--vr-space);flex-wrap:wrap;align-items:center}
+[data-visual-response-root] .vr-stack {display:grid;gap:calc(var(--vr-space)*2)}
+[data-visual-response-root] .vr-item-feedback {display:grid;gap:var(--vr-space);margin-top:var(--vr-space)}
+[data-visual-response-root] .vr-inline .vr-item-feedback {gap:calc(var(--vr-space)/2);margin-top:0}
+[data-visual-response-root] .vr-context {display:grid;gap:4px;font-size:var(--vr-small);margin-bottom:16px}
+[data-visual-response-root] .vr-field {display:grid;gap:8px;min-width:0}
+[data-visual-response-root] .vr-grow {flex:1;min-width:min(100%,160px)}
+[data-visual-response-root] .vr-label {display:block;font-size:var(--vr-small);font-weight:500;color:var(--vr-text)}
+[data-visual-response-root] .vr-field input,[data-visual-response-root] .vr-field select,[data-visual-response-root] .vr-field textarea {width:100%;font:inherit;margin:0;background-color:var(--vr-input-fill);color:var(--vr-text);border:2px solid var(--oat-input);border-radius:var(--vr-radius-control);padding:var(--vr-input-padding);min-height:var(--vr-input-height)}
+[data-visual-response-root] .vr-field select {padding-inline-end:32px}
+[data-visual-response-root] .vr-field :is(input,select,textarea):focus {background-color:var(--vr-input-fill-active);border-color:var(--oat-ring)}
+[data-visual-response-root] .vr-field textarea {height:auto;resize:vertical}
+[data-visual-response-root] .vr-field small {font-size:var(--vr-small);color:var(--vr-muted);font-weight:400}
+[data-visual-response-root] .vr-check {display:inline-flex;align-items:center;gap:8px;font-size:var(--vr-small);font-weight:400;min-height:var(--vr-control-height);margin:0}
+[data-visual-response-root] .vr-check input,[data-visual-response-root] input.vr-checkbox {width:20px;height:20px;flex:none;border-radius:0;margin:0;border-color:var(--vr-control-border)}
+[data-visual-response-root] .vr-check input:checked,[data-visual-response-root] input.vr-checkbox:checked {border-color:var(--oat-primary)}
+[data-visual-response-root] .vr-app button,[data-visual-response-root] a.vr-button {font:500 var(--vr-body)/1.5 var(--vr-font);min-height:var(--vr-control-height);padding:var(--vr-button-padding);border-radius:var(--vr-radius-control);white-space:normal;cursor:var(--cursor-interaction,pointer)}
+[data-visual-response-root] .vr-app button:disabled {cursor:not-allowed}
+[data-visual-response-root] .vr-app button:not(:disabled):active {transform:scale(.98)}
+[data-visual-response-root] :is(button,a.vr-button,summary):focus-visible {outline:var(--vr-focus-width) solid var(--oat-ring);outline-offset:var(--vr-focus-offset)}
+[data-visual-response-root] .vr-badge {display:inline-flex;padding:4px 9px;border-radius:var(--vr-radius-chip);background:var(--vr-hover);color:var(--vr-muted);font-size:var(--vr-meta);font-weight:600}
+[data-visual-response-root] .vr-recommended {background:var(--vr-selected);color:var(--vr-on-selected)}
+[data-visual-response-root] .vr-toolbar {margin-bottom:16px;align-items:end}
+[data-visual-response-root] .vr-table-wrap {overflow-x:auto}
+[data-visual-response-root] table {width:100%;margin:0;border-collapse:collapse;font-size:var(--vr-small)}
+[data-visual-response-root] th,[data-visual-response-root] td {padding:var(--vr-cell-padding);vertical-align:top;border-bottom:1px solid var(--vr-divider)}
+[data-visual-response-root] thead th {background:var(--vr-hover);color:var(--vr-muted);font-weight:600;text-align:start}
+[data-visual-response-root] th .vr-sort {font:inherit;min-height:32px;padding:0;text-align:inherit;justify-content:start}
+[data-visual-response-root] .vr-number {text-align:right;font-variant-numeric:tabular-nums}
+[data-visual-response-root] .vr-edit-cell {min-width:110px}
+[data-visual-response-root] .vr-feedback-cell {min-width:190px}
+[data-visual-response-root] .vr-selected,[data-visual-response-root] tbody tr.vr-selected:hover {background:var(--vr-selected)}
+[data-visual-response-root] .vr-table-actions {margin-bottom:8px}
+[data-visual-response-root] .vr-spaced {margin-top:16px}
+[data-visual-response-root] .vr-empty {padding-block:16px}
+[data-visual-response-root] .vr-muted {color:var(--vr-muted);font-size:var(--vr-small)}
+[data-visual-response-root] .vr-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,var(--vr-card-min)),1fr));gap:16px}
+[data-visual-response-root] .vr-card {display:grid;align-content:start;gap:12px;padding:var(--vr-surface-padding);border:1px solid var(--vr-divider);border-radius:var(--vr-radius-surface);background:var(--oat-card);box-shadow:none;transition:background-color var(--oat-transition),border-color var(--oat-transition)}
+[data-visual-response-root] .vr-card.vr-selected,[data-visual-response-root] .vr-step.vr-selected {background:var(--vr-selected);border-color:var(--vr-accent-border)}
+[data-visual-response-root] .vr-card .vr-item-feedback {margin:0}
+[data-visual-response-root] .vr-column {display:grid;align-content:start;gap:12px;border:1px solid var(--vr-divider);padding:12px;border-radius:var(--vr-radius-surface)}
+[data-visual-response-root] .vr-options {border:0;margin:0;padding:0}
+[data-visual-response-root] .vr-options legend {font-size:var(--vr-body);font-weight:600;margin-bottom:8px}
+[data-visual-response-root] .vr-option {display:flex;align-items:center;gap:8px;margin-bottom:8px}
+[data-visual-response-root] .vr-flow {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,var(--vr-flow-min)),1fr));gap:8px;list-style:none;margin:0;padding:0}
+[data-visual-response-root] .vr-step {padding:16px;border:1px solid var(--vr-divider);border-radius:var(--vr-radius-surface);background:var(--oat-card);transition:background-color var(--oat-transition),border-color var(--oat-transition)}
+[data-visual-response-root] .vr-step-number {color:var(--vr-accent);font-size:var(--vr-small)}
+[data-visual-response-root] .vr-flow-controls {margin-block:12px}
+[data-visual-response-root] .vr-actions {margin-top:16px}
+[data-visual-response-root] .vr-feedback {margin-top:16px;padding-top:16px;border-top:1px solid var(--vr-divider)}
+[data-visual-response-root] .vr-app details {border:0;border-radius:0;box-shadow:none;padding:0;background:none}
+[data-visual-response-root] .vr-app summary {min-height:var(--vr-control-height);font-size:var(--vr-small);font-weight:600;color:var(--vr-muted);padding:8px 20px 8px 0;cursor:var(--cursor-interaction,pointer)}
+[data-visual-response-root] .vr-app details[open]>summary {margin-bottom:12px}
+[data-visual-response-root] .vr-feedback-actions {margin-block:12px}
+[data-visual-response-root] .vr-receipt {margin-top:12px}
+[data-visual-response-root] .vr-pre-wrap {white-space:pre-wrap}
+[data-visual-response-root] .vr-sr-only {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(min-width:600px) {[data-visual-response-root] .vr-app{padding:var(--vr-padding)}[data-visual-response-root] h2{font-size:var(--vr-title)}}
+@media(prefers-reduced-motion:reduce) {
+  [data-visual-response-root] *,[data-visual-response-root] *::before,[data-visual-response-root] *::after {transition:none!important;animation:none!important}
+  [data-visual-response-root] .vr-app button:not(:disabled):active {transform:none}
+}

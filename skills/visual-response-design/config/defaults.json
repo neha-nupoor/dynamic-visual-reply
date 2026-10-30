@@ -1,8 +1,8 @@
 {
   "$schema": "./schema/config.schema.json",
-  "theme": "neutral",
+  "theme": "base-web",
   "themeFallback": "neutral",
-  "appearance": null,
+  "appearance": "system",
   "harness": "auto",
   "views": {
     "enabled": [
@@ -11,8 +11,7 @@
       "form",
       "kanban",
       "flow"
-    ],
-    "motion": true
+    ]
   },
   "placement": {
     "viewport": {
@@ -39,24 +38,15 @@
       },
       "kanban": {
         "items": 6
-      },
-      "motion": true
+      }
     },
     "maxInlineBytes": 1000000,
     "maxSpecBytes": null
   },
   "delivery": {
-    "mode": "embed",
     "rendererUrl": null,
-    "npmPackage": null,
     "repository": "neha-nupoor/reply-ui",
-    "repositoryPath": "skills/visual-response-design",
-    "tagPrefix": "v",
     "integrity": "manifest"
-  },
-  "output": {
-    "inline": "fragment",
-    "standalone": "document"
   },
   "feedback": {
     "defaultPrompt": "Review my batch feedback and continue the task.",
@@ -69,14 +59,14 @@
     "next": "Next:",
     "submit": {
       "message": "Send to chat",
-      "save": "Save feedback",
-      "saveForm": "Save answers",
+      "save": "Submit instructions",
+      "saveForm": "Submit answers",
       "none": "Prepare message",
       "busy": "Sending…"
     },
     "feedbackSubmit": {
       "message": "Send feedback",
-      "save": "Save feedback",
+      "save": "Submit instructions",
       "none": "Prepare feedback"
     },
     "feedbackSection": "Feedback and actions",
@@ -100,8 +90,8 @@
       "draft": "Draft · nothing submitted",
       "edited": "Draft updated · nothing submitted",
       "submitted": "Submission requested · the agent will confirm receipt.",
-      "saved": "Feedback saved. Ask the agent to read it.",
-      "savedTo": "Feedback saved to {path}. Ask the agent to read it.",
+      "saved": "Instructions submitted locally. Return to chat to continue.",
+      "savedTo": "Instructions submitted locally. Return to chat to continue.",
       "unavailable": "Direct submission unavailable. Copy the editable message below.",
       "failed": "Submission failed. Your edits are retained; use Copy feedback.",
       "copied": "Copied · paste into chat to send.",
@@ -144,12 +134,6 @@
     "form": {
       "editableOption": "Editable option"
     },
-    "flow": {
-      "play": "Play",
-      "pause": "Pause",
-      "replay": "Replay",
-      "speed": "Speed",
-      "timeline": "Timeline"
-    }
+    "localSubmitHelp": "Submit here, then return to chat and ask the agent to continue."
   }
 }

@@ -1,4 +1,4 @@
-"""Configuration, theme-pack and harness-profile resolution; Python standard library only."""
+"""Resolve themes and settings for the supported hosts; Python standard library only."""
 from dataclasses import dataclass, field
 import json
 import os
@@ -8,11 +8,30 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_DIR = ROOT / 'config'
 SCHEMA_DIR = CONFIG_DIR / 'schema'
-HARNESS_DIR = ROOT / 'harnesses'
 THEME_DIR = ROOT / 'themes'
 PROJECT_FILE = '.visual-response.json'
-# Spec keys allowed to override configuration for a single view; anything else stays with the user or project.
-SPEC_OVERRIDES = ('appearance',)
+# Delivery is fixed for these hosts; profiles cannot redirect views or add new backends.
+HARNESSES = {
+    'codex': {'label': 'Codex / ChatGPT widget host', 'adapter': 'codex.js'},
+    'claude-inline': {'label': 'Claude inline widget', 'adapter': 'claude-inline.js'},
+    'claude-code': {'label': 'Claude Code terminal', 'adapter': 'browser-local.js'},
+    'browser-local': {'label': 'Local browser', 'adapter': 'browser-local.js'},
+    'static': {'label': 'Static HTML', 'adapter': None},
+}
+CLAUDE_CONFIG = {
+    'appearance': 'host',
+    'placement': {'viewport': {'width': 680, 'height': 900}, 'maxSpecBytes': 24000},
+    'feedback': {'messageFormat': 'summary'},
+    'copy': {'submit': {'message': 'Add to chat'},
+             'feedbackSubmit': {'message': 'Add feedback to chat'},
+             'status': {'submitted': 'Added to your message box. Press Enter to send it.'}},
+}
+HOST_PALETTE = {
+    'canvas': '--surface-0', 'surface': '--surface-2', 'text': '--text-primary',
+    'muted': '--text-secondary', 'divider': '--border', 'controlBorder': '--border-strong',
+    'accent': '--fill-accent', 'onAccent': '--on-accent', 'selected': '--bg-accent',
+    'hover': '--surface-1', 'success': '--text-success', 'warning': '--text-warning', 'error': '--text-danger',
+}
 
 
 def load(path):
@@ -80,6 +99,11 @@ def _type_ok(value, expected):
     return any(checks[t](value) for t in (expected if isinstance(expected, list) else [expected]))
 
 
+def _equal(left, right):
+    # JSON booleans are not numbers, unlike Python's True == 1 and False == 0.
+    return isinstance(left, bool) == isinstance(right, bool) and left == right
+
+
 def schema_errors(instance, schema, root=None, base_dir=SCHEMA_DIR, path='$'):
     """Validate the JSON Schema keywords the shipped schemas use; returns a list of messages."""
     root = schema if root is None else root
@@ -90,9 +114,9 @@ def schema_errors(instance, schema, root=None, base_dir=SCHEMA_DIR, path='$'):
     sub = lambda s, i=instance, p=path: schema_errors(i, s, root, base_dir, p)
     if 'type' in schema and not _type_ok(instance, schema['type']):
         return [f'{path}: expected {schema["type"]}']
-    if 'const' in schema and instance != schema['const']:
+    if 'const' in schema and not _equal(instance, schema['const']):
         errors.append(f'{path}: must equal {schema["const"]!r}')
-    if 'enum' in schema and instance not in schema['enum']:
+    if 'enum' in schema and not any(_equal(instance, value) for value in schema['enum']):
         errors.append(f'{path}: must be one of {schema["enum"]}')
     if 'not' in schema and not sub(schema['not']):
         errors.append(f'{path}: matches a forbidden value')
@@ -184,7 +208,12 @@ def find_theme(reference, env=os.environ, base_dir=None):
 
 def complete_theme(theme):
     """Fill keys added after theme v2 from the neutral theme, so older packs keep working."""
-    return merge(load(THEME_DIR / 'neutral/theme.json'), theme)
+    result = merge(load(THEME_DIR / 'neutral/theme.json'), theme)
+    result.pop('motion', None)  # Older personal theme packs remain usable.
+    for mode in ('light', 'dark'):
+        # Optional accent roles inherit the pack's own accent, not another pack's blue.
+        result[mode] = {**result[mode], **complete_palette(theme[mode])}
+    return result
 
 
 def luminance(color):
@@ -240,51 +269,33 @@ def css_variables(theme, appearance=None):
 
 
 def renderer_url(delivery, version):
-    """rendererUrl, else jsDelivr's npm path for `npmPackage` (inline and artifacts), else its GitHub path for `repository` (inline only)."""
+    """Claude inline loads the same pinned renderer from a URL; other hosts embed it."""
     if delivery.get('rendererUrl'):
         return delivery['rendererUrl']
-    path = delivery.get('repositoryPath', 'skills/visual-response-design').strip('/') + '/assets/renderer/dist/renderer.js'
-    if delivery.get('npmPackage'):
-        return f'https://cdn.jsdelivr.net/npm/{delivery["npmPackage"]}@{version}/{path}'
-    if delivery.get('repository'):
-        tag = delivery.get('tagPrefix', 'v') + version
-        return f'https://cdn.jsdelivr.net/gh/{delivery["repository"]}@{tag}/{path}'
+    repository = delivery.get('repository')
+    if repository:
+        return f'https://cdn.jsdelivr.net/gh/{repository}@v{version}/skills/visual-response-design/assets/renderer/dist/renderer.js'
     return None
 
 
-# ---------------------------------------------------------------- harnesses
-
 def harness_ids():
-    return sorted(p.stem for p in HARNESS_DIR.glob('*.json'))
+    return list(HARNESSES)
 
 
 def load_harness(identifier):
-    path = HARNESS_DIR / f'{identifier}.json'
-    require(path.is_file(), f'Unknown harness {identifier!r}; available: {", ".join(harness_ids())}')
-    profile = load(path)
-    check_schema(profile, 'harness', f'Harness profile {identifier}')
-    require(profile['id'] == identifier, f'Harness profile {path.name} declares id {profile["id"]!r}')
-    if profile.get('adapter'):
-        require((HARNESS_DIR / profile['adapter']).is_file(), f'Harness {identifier} adapter {profile["adapter"]} is missing')
-    return profile
+    require(identifier in HARNESSES, f'Unknown harness {identifier!r}; available: {", ".join(HARNESSES)}')
+    return {'id': identifier, **HARNESSES[identifier]}
 
 
 def detect_harness(env=os.environ):
-    """Pick the highest-priority profile whose detect rules match; `static` when none do."""
-    matches = []
-    for identifier in harness_ids():
-        rules = load(HARNESS_DIR / f'{identifier}.json').get('detect')
-        if not rules:
-            continue
-        env_ok = all(name in env and (value == '*' or env[name] == value) for name, value in rules.get('env', {}).items())
-        any_ok = not rules.get('anyEnv') or any(name in env for name in rules['anyEnv'])
-        if (rules.get('env') or rules.get('anyEnv')) and env_ok and any_ok:
-            matches.append((rules.get('priority', 0), identifier, rules))
-    if not matches:
-        return 'static', 'No harness markers found in the environment'
-    priority, identifier, rules = max(matches)
-    markers = list(rules.get('env', {})) + [n for n in rules.get('anyEnv', []) if n in env]
-    return identifier, f'Detected from environment ({", ".join(markers)})'
+    # These markers suggest a host. Runtime bridges still have to be checked in the rendered view.
+    if env.get('CLAUDECODE') == '1':
+        return 'claude-code', 'Claude Code uses the local browser; choose claude-inline only when show_widget is available'
+    elif any(name in env for name in ('CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED', 'CODEX_HOME')):
+        identifier = 'codex'
+    else:
+        return 'static', 'No harness markers found; choose --harness explicitly when needed'
+    return identifier, 'Suggested by environment markers; runtime bridge not verified'
 
 
 # ---------------------------------------------------------------- resolution
@@ -319,16 +330,17 @@ class Context:
     inputs: dict = field(default_factory=dict)
 
     def switch(self, harness):
-        """The same inputs resolved for another harness profile."""
+        """Resolve the same settings for the local browser fallback."""
         return resolve(harness=harness, **self.inputs)
 
     @property
     def appearance(self):
-        return self.config.get('appearance') or self.theme.get('appearance') or 'light'
+        # A null appearance resets to the host default rather than a theme pack's fixed mode.
+        return self.config.get('appearance') or ('host' if self.harness['id'] == 'claude-inline' else 'system')
 
 
 def resolve(cli=None, *, harness=None, cwd=None, env=os.environ, isolated=False):
-    """Merge defaults → harness profile → user → project → command-line options, then load the theme.
+    """Merge defaults → host defaults → user → project → command-line options, then load the theme.
 
     `isolated` skips user/project files and environment detection, for tests and reproducible output.
     """
@@ -354,8 +366,9 @@ def resolve(cli=None, *, harness=None, cwd=None, env=os.environ, isolated=False)
         chosen, reason = ('codex', 'Isolated default') if isolated else detect_harness(env)
     else:
         reason = 'Requested explicitly' if (harness or cli.get('harness')) else 'Set in configuration'
-    profile = load_harness(chosen)
-    layers.insert(1, (f'harness:{chosen}', str(HARNESS_DIR / f'{chosen}.json'), profile.get('config', {})))
+    host = load_harness(chosen)
+    if chosen == 'claude-inline':
+        layers.insert(1, ('host:claude-inline', 'built-in host defaults', CLAUDE_CONFIG))
 
     config, sources = {}, {}
     for name, _, data in layers:
@@ -364,10 +377,11 @@ def resolve(cli=None, *, harness=None, cwd=None, env=os.environ, isolated=False)
             sources[leaf] = name
     config.pop('$schema', None)
 
-    base_dir = Path(next((s for n, s, _ in layers if n == 'project'), cwd or Path.cwd())).parent
+    project_source = next((source for name, source, _ in layers if name == 'project'), None)
+    base_dir = Path(project_source).parent if project_source else Path(cwd or Path.cwd())
     found = find_theme(config['theme'], env, base_dir) or find_theme(config.get('themeFallback') or 'neutral', env, base_dir)
     require(found, f'Theme {config["theme"]!r} was not found and the fallback is missing')
     theme, theme_source = found
     check_schema(theme, 'theme', f'Theme ({theme_source})')
     inputs = {'cli': cli, 'cwd': cwd, 'env': env, 'isolated': isolated}
-    return Context(config, complete_theme(theme), profile, reason, theme_source, [(n, s) for n, s, _ in layers], sources, inputs)
+    return Context(config, complete_theme(theme), host, reason, theme_source, [(n, s) for n, s, _ in layers], sources, inputs)

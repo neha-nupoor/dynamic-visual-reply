@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Serve one standalone view on loopback and save deliberately submitted feedback."""
 import argparse
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 import sys
@@ -71,7 +71,7 @@ def main():
             except (ValueError, OSError, TypeError) as error:
                 self.respond(400, json.dumps({'error': str(error)}).encode())
 
-    server = HTTPServer(('127.0.0.1', args.port), Handler)
+    server = ThreadingHTTPServer(('127.0.0.1', args.port), Handler)
     print(json.dumps({'url': f'http://127.0.0.1:{server.server_port}/', 'feedback': str(feedback), 'pidHint': 'Stop this process to close the preview server'}), flush=True)
     try:
         server.serve_forever()

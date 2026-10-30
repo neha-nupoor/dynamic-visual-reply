@@ -61,16 +61,6 @@
       }
     },
     "table": {"type": "object", "properties": {"cellPadding": {"$ref": "#/$defs/pair"}}},
-    "motion": {
-      "type": "object",
-      "properties": {
-        "secondsPerStage": {"type": "number", "minimum": 0.5, "maximum": 20},
-        "fps": {"type": "integer", "minimum": 12, "maximum": 60},
-        "canvas": {"$ref": "#/$defs/pair"},
-        "numberSize": {"$ref": "#/$defs/px"},
-        "labelSize": {"$ref": "#/$defs/px"}
-      }
-    },
     "light": {"$ref": "#/$defs/palette"},
     "dark": {"$ref": "#/$defs/palette"}
   },
@@ -89,6 +79,9 @@
         "muted": {"$ref": "#/$defs/color"},
         "divider": {"$ref": "#/$defs/color"},
         "controlBorder": {"$ref": "#/$defs/color"},
+        "inputFill": {"$ref": "#/$defs/color"},
+        "inputFillActive": {"$ref": "#/$defs/color"},
+        "inputBorder": {"$ref": "#/$defs/color"},
         "accent": {"$ref": "#/$defs/color"},
         "onAccent": {"$ref": "#/$defs/color"},
         "accentFill": {"description": "Optional. Primary button fill when `accent` (used for text and links) is too light for white labels. Defaults to accent.", "$ref": "#/$defs/color"},

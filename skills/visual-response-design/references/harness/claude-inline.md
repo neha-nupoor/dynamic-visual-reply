@@ -1,41 +1,28 @@
-# Claude app inline widget (`show_widget`)
+# Claude inline widget (optional URL loader)
 
-Profile: `harnesses/claude-inline.json` · adapter: `harnesses/claude-inline.js` · standalone views switch to `claude-artifact`.
+Claude's widget tool accepts HTML fragments with inline JavaScript. It does not inherently require a public renderer URL. This skill's `claude-inline` implementation uses a small external-script loader so the agent does not read or pass the entire shared bundle through model context. The URL is required by that loader, not by the skill or by every Claude surface.
 
-Use this in the Claude desktop or web app when a widget tool such as `show_widget` is available. `doctor.py` detects the desktop app from `CLAUDECODE` and `CLAUDE_CODE_DESKTOP_APP_VERSION`; elsewhere pass `--harness claude-inline`.
-
-## Why it differs
-
-`show_widget` takes the widget's code as text you write. It cannot load a file from disk, so the 800 KB bundle is never pasted. The page loads it from `delivery.rendererUrl` (a published, version-pinned copy, checked with SRI). You only write the small loader the script produces: the spec, the theme, and a few lines of adapter. That is usually 1–4 KB.
-
-## One-time setup
-
-When this skill comes from a public GitHub repository whose `config/defaults.json` sets `delivery.repository`, nothing is needed. The renderer loads from jsDelivr at the release tag (`v` + bundle version), for example `https://cdn.jsdelivr.net/gh/<owner>/<repo>@v1.1.0/skills/visual-response-design/assets/renderer/dist/renderer.js`.
-
-Otherwise, set a published renderer URL in user config (`~/.config/visual-response/config.json`):
-
-```json
-{"delivery": {"rendererUrl": "https://cdn.jsdelivr.net/npm/<package>@<version>/dist/renderer.js"}}
-```
-
-The widget sandbox allows scripts from cdnjs, esm.sh, jsDelivr and unpkg. Run `scripts/doctor.py --check-url` to confirm the URL serves exactly this build.
-
-## Render and hand off
+Use this route only when the actual `show_widget` tool is available and a matching bundle URL is verified:
 
 ```sh
+python3 <skill-dir>/scripts/doctor.py --harness claude-inline --check-url
 python3 <skill-dir>/scripts/render.py --spec <spec.json> --out <view.html> --harness claude-inline
 ```
 
-- **Inline** (`handoff.type: "show_widget"`): read the output file and pass its full contents, unchanged, as `widget_code`. Follow your host's own widget rules, such as reading its guide before the first widget. Put any explanation in your message text, not in the widget.
-- **Standalone** (`handoff.type: "artifact"`): the script already switched to the artifact profile. Follow [claude-artifact.md](claude-artifact.md).
-- **Standalone without an artifact-loadable URL** (`handoff.type: "serve"`): artifacts only accept npm-hosted scripts, so with only a GitHub release configured the script falls back to `browser-local`. Follow [browser-local.md](browser-local.md).
+The loader's default URL comes from `delivery.repository` and the bundle's release tag. Override `delivery.rendererUrl` or pass `--renderer-url` for a matching published commit while reviewing an unreleased PR. The URL must be reachable and byte-identical to the local bundle; never use an older bundle with the current manifest's SRI. External scripts must also be permitted by the widget's current sandbox; follow its guide. These file/URL checks do not verify live host execution.
 
-Specs above `placement.maxSpecBytes` (24 KB by default) go standalone automatically, because every inline byte is model output.
+For `handoff.type: show_widget`, read the small output file and pass its contents unchanged as `widget_code`. Do not paste the renderer bundle into the tool call. For `handoff.type: serve`, follow [browser-local.md](browser-local.md).
 
-## Feedback
+## Without a URL or widget tool
 
-**Add to chat** calls the widget's global `sendPrompt()`. In the Claude desktop app, that puts the message in the user's message box and does not send it; the user presses Enter. The widget can't send on its own, so the label and status say exactly that. Because the user sees the text before sending it, this profile uses `feedback.messageFormat: "summary"`: a readable line, then the one-line JSON envelope. Acknowledge the values you actually received. Drafts are kept in the widget's local storage only when the sandbox allows it.
+Use the same renderer in the [local browser](browser-local.md); no public URL, release tag, or additional integration is needed:
 
-## Appearance
+```sh
+python3 <skill-dir>/scripts/render.py --spec <spec.json> --out <view.html> --harness browser-local
+```
 
-The theme's own appearance applies. A `system` theme switches between its light and dark palettes with the Claude host (it reads the host's `data-mode`/`data-theme`, then the OS setting); a `light` theme stays light even on a dark host. To use the Claude host's own colors instead of the theme's, set `"appearance": "host"`. The page then reads the host CSS variables listed in the profile's `hostPalette` at runtime, and falls back to the theme for any that are missing.
+Claude Code (including its desktop Code tab) auto-detects as `claude-code` and uses this browser path. Larger views use it too. Only select `claude-inline` when both prerequisites above are available; it is not a general Claude requirement.
+
+**Add to chat** fills the user's message box through `sendPrompt`; the user presses Enter. The message contains a readable summary and JSON feedback. Saving drafts uses localStorage only when the sandbox permits it. Acknowledge the feedback actually received.
+
+The configured theme applies. Appearance defaults to `host`, using Claude's available CSS colors and light/dark markers with theme/OS fallbacks. Explicit appearance choices from the spec, flags, project, or user configuration take priority; omit extra flags when following the default. Explicit light/dark stays fixed. The bundle includes all Oat CSS, so the loader makes no separate stylesheet request.

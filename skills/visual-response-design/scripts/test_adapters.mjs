@@ -1,7 +1,7 @@
 // Contract checks for harness adapters: node --test scripts/test_adapters.mjs
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync, readdirSync} from 'node:fs';
+import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {dirname, join} from 'node:path';
 import vm from 'node:vm';
@@ -29,18 +29,6 @@ function load(file,extra={}){
 
 const draft={key:'k1',selected:['a']};
 const message={message:'{"request":"go"}',feedback:{schemaVersion:1},title:'Review'};
-
-test('every profile adapter defines the host interface',()=>{
-  for(const file of readdirSync(harnesses).filter(f=>f.endsWith('.json'))){
-    const profile=JSON.parse(readFileSync(join(harnesses,file),'utf8'));
-    if(!profile.adapter)continue;
-    const {host}=load(profile.adapter,{openai:{},sendPrompt(){}});
-    assert.equal(typeof host.submit,'function',file);
-    assert.ok(['message','save','none'].includes(host.capabilities.submit),file);
-    assert.equal(typeof host.saveDraft,'function',file);
-    assert.equal(typeof host.loadDraft,'function',file);
-  }
-});
 
 test('codex adapter keeps renderer 1.0 calls',async()=>{
   const calls=[];
@@ -75,29 +63,6 @@ test('claude-inline adapter sends through sendPrompt',async()=>{
   await host.submit(message);
   same(sent,[message.message]);
   assert.equal(load('claude-inline.js').host.capabilities.submit,'none');
-});
-
-test('claude-artifact adapter writes batches and per-viewer drafts',async()=>{
-  const writes=[];
-  const doc=path=>({set:d=>{writes.push(['set',path,d]);return Promise.resolve()},get:()=>Promise.resolve({exists:true,data:()=>({draft:JSON.stringify(draft)})})});
-  const db={collection:path=>({add:d=>{writes.push(['add',path,d]);return Promise.resolve({})},doc:id=>doc(path+'/'+id)})};
-  const user={id:()=>Promise.resolve('u_1')};
-  const claude={use:name=>Promise.resolve(name==='db'?db:name==='user'?user:null)};
-  const {host}=load('claude-artifact.js',{claude});
-  await host.submit(message);
-  assert.equal(writes[0][0],'add');
-  assert.equal(writes[0][1],'batches');
-  assert.equal(writes[0][2].by,'u_1');
-  same(writes[0][2].feedback,{schemaVersion:1});
-  same(await host.loadDraft('k1'),draft);
-  host.saveDraft('k1',draft);
-  await new Promise(r=>setTimeout(r,900));
-  same(writes.at(-1).slice(0,2),['set','data/users/u_1/vr-k1']);
-});
-
-test('claude-artifact adapter reports missing storage as a failure',async()=>{
-  const {host}=load('claude-artifact.js',{claude:{use:()=>Promise.resolve(null)}});
-  await assert.rejects(host.submit(message));
 });
 
 test('browser-local adapter posts to serve.py only on loopback',async()=>{

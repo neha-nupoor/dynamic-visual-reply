@@ -1,8 +1,8 @@
 # Local browser panel (`serve.py`)
 
-Profiles: `browser-local` (any agent that can run Python and open a browser) and `claude-code` (Claude Code in a terminal, detected from `CLAUDECODE`). Adapter: `harnesses/browser-local.js`.
+Harnesses: `browser-local` (any agent that can run Python and open a browser) and `claude-code` (Claude Code in a terminal, detected from `CLAUDECODE`). Adapter: `harnesses/browser-local.js`.
 
-A terminal can't draw UI inside the conversation, so every view is a standalone page with the bundle embedded. It works offline.
+Use this fallback for Claude without its widget tool or a verified loader URL, and for Cursor, Windsurf, Gemini CLI, or any other agent that can run Python and open a browser. Every view is a standalone page with the same bundle embedded; no native integration or public URL is required. It works offline. Appearance defaults to `system`; a standalone browser page follows OS preference unless host light/dark markers are exposed. Explicit user/project appearance choices and requested overrides take priority.
 
 ## Render and serve
 
@@ -14,4 +14,4 @@ Run the returned `handoff.command`. It starts `serve.py` on `127.0.0.1` with a f
 
 ## Feedback
 
-**Save feedback** posts to `serve.py`, which atomically writes `<view>.feedback.json`. Saving does not start an agent turn. When the user asks you to continue, read that file and acknowledge what it contains. Opened as a plain `file://` page, the view falls back to Prepare message, Copy and Export JSON.
+**Submit instructions** posts to `serve.py`, which atomically writes `<view>.feedback.json`. Saving does not start an agent turn. When the user asks you to continue, read that file and acknowledge what it contains. Opened as a plain `file://` page, the view falls back to Prepare message, Copy and Export JSON.
