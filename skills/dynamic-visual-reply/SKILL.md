@@ -19,7 +19,7 @@ Render only when all three hold:
 
 Stay in chat when there are one or two points, when feedback will be overall ("make it shorter"), or when the content is prose that needs inline comments; use a document with comments for that instead. A comparison with nothing to respond to belongs in a markdown table. When the call is borderline, end the chat reply with a one-line offer, such as "Want a review view to mark these up?", instead of rendering. An explicit request for a view is always a trigger.
 
-Never let the view replace the answer. The chat reply must stand on its own: summarize what the view contains and what you recommend, so the user can answer in text and ignore the view. Do not repeat the view's full content in chat.
+Never let the view replace the answer. The chat reply must stand on its own: summarize what the view contains and what you recommend, so the user can answer in text and ignore the view. Do not repeat the view's full content in chat. Use Markdown for surrounding chat text and screenshot captions; do not wrap chat responses or images in raw HTML such as `<details>` or `<summary>`. Keep HTML inside the rendered widget file.
 
 Choose the view by the response you expect: `table` for many comparable records, `cards` for a few alternatives, `form` for several questions, `kanban` for moving items between stages. Use `flow` only when each step needs its own response; a plain explanation of a sequence stays in chat. Many items usually exceed the inline limits and open as a full browser page; that is expected, so do not shrink content to force inline.
 
