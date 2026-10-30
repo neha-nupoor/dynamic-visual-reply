@@ -15,4 +15,6 @@ This proof answers whether Oat can achieve the requested appearance with native 
 
 The existing reference preset supplies monochrome colors, above-field labels, a cool gray light surface and stronger boundaries. This proof uses Neha's requested 2px control corners and square content surfaces. A small local stylesheet maps the palette and supplies layout/target sizing. Oat's upstream defaults are not Base Web components. The proof can be discarded after a visual decision; migrate and test the real renderer separately if approved.
 
+Basic motion uses Oat's existing CSS transitions with 150ms/200ms durations and `cubic-bezier(.4,0,.2,1)`, matching MUI's shortest/shorter timing and common easing. Hover/focus colors, field focus rings, checkboxes, table rows, card/flow selection and the disclosure chevron transition briefly; buttons have a small press response. No animation JavaScript or first-render animation is added. `prefers-reduced-motion: reduce` disables transitions and the press transform.
+
 Dependency licenses: MIT (Oat and Preact); notices are copied into `dist/THIRD_PARTY_NOTICES.txt` during the build.

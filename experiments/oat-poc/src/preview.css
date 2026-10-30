@@ -1,8 +1,8 @@
 /* Oat owns the controls. These rules map the approved palette and lay out the five previews. */
 #oat-response-preview {max-width:1100px;margin-inline:auto;font:16px/1.5 system-ui,sans-serif;min-width:0}
-#oat-response-preview .oat-preview {padding:24px;background:var(--background);color:var(--foreground);border:1px solid var(--border);font-family:var(--font-sans);min-width:0;--text-regular:1rem;--text-7:.875rem;--transition-fast:0s;--transition-normal:0s}
+#oat-response-preview .oat-preview {padding:24px;background:var(--background);color:var(--foreground);border:1px solid var(--border);font-family:var(--font-sans);min-width:0;--text-regular:1rem;--text-7:.875rem;--transition-fast:150ms cubic-bezier(.4,0,.2,1);--transition:200ms cubic-bezier(.4,0,.2,1)}
 #oat-response-preview .oat-compact {padding:18px}
-#oat-response-preview * {min-width:0;overflow-wrap:anywhere;animation:none!important;transition:none!important}
+#oat-response-preview * {min-width:0;overflow-wrap:anywhere;animation:none}
 #oat-response-preview h2 {font-size:26px;line-height:1.25;margin:0;font-weight:700}
 #oat-response-preview h3 {font-size:18px;line-height:1.4;margin:0;font-weight:600}
 #oat-response-preview h4 {font-size:16px;line-height:1.4;margin:0;font-weight:600}
@@ -20,6 +20,7 @@
 #oat-response-preview button {min-height:44px;font-size:16px;font-weight:500;white-space:normal;cursor:var(--cursor-interaction,pointer)}
 #oat-response-preview button.small {font-size:14px;min-height:40px}
 #oat-response-preview button[aria-pressed=true] {box-shadow:none}
+#oat-response-preview button:not(:disabled):active {transform:scale(.98)}
 #oat-response-preview .poc-check {display:flex;align-items:center;gap:10px;min-height:44px;color:var(--foreground)}
 #oat-response-preview .poc-actions {margin-top:20px}
 #oat-response-preview .poc-feedback {margin-top:20px;padding:20px 0 0;border:0;border-top:1px solid var(--border);border-radius:0;background:none;box-shadow:none}
@@ -42,6 +43,7 @@
 #oat-response-preview .poc-grid {display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
 #oat-response-preview .card {border-radius:0;box-shadow:none;padding:20px;background:var(--card);border-color:var(--border);color:var(--foreground)}
 #oat-response-preview .card[data-selected=true] {background:var(--poc-selected);border-color:var(--foreground)}
+#oat-response-preview .card {transition:background-color var(--transition),border-color var(--transition)}
 #oat-response-preview .card>p {margin-block:16px}
 #oat-response-preview .card>header {margin-bottom:16px}
 #oat-response-preview .card>footer {margin-top:20px}
@@ -55,3 +57,7 @@
 #oat-response-preview .poc-step-number {font-size:14px;color:var(--muted-foreground)}
 #oat-response-preview .poc-sr-only {position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}
 @media(max-width:480px) {#oat-response-preview .oat-preview{padding:16px}#oat-response-preview .poc-header{gap:10px}#oat-response-preview h2{font-size:24px}}
+@media(prefers-reduced-motion:reduce) {
+  #oat-response-preview *,#oat-response-preview *::before,#oat-response-preview *::after {transition:none!important;animation:none!important}
+  #oat-response-preview button:not(:disabled):active {transform:none}
+}
