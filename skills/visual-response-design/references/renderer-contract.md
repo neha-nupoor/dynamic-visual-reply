@@ -84,4 +84,6 @@ Oat CSS is namespaced and scoped to the widget before being embedded in the bund
 
 ### Migration from 1.3
 
+Theme-pack `appearance` remains accepted for compatibility but no longer selects the mode of rendered views. Harness appearance is now the fallback. To preserve a personal pack's fixed light/dark preference, move it to top-level settings: for example, set `"appearance": "dark"` in `~/.config/visual-response/config.json` or the project's `.visual-response.json`. Explicit spec/flag/config choices still take priority over the harness default.
+
 Remove `output` and obsolete `delivery.mode`, `delivery.npmPackage`, `delivery.repositoryPath`, and `delivery.tagPrefix` keys. Use a supported host instead of `claude-artifact`, `module`, or a custom harness profile. The config schema rejects removed settings; it does not silently drop them or edit user files. Artifact database persistence, module wrapper output, and public-repository export tooling are removed. Legacy motion flags are accepted but ignored. Spec schemaVersion 1, feedback schemaVersion 1, and draftVersion 1.0.0 remain compatible.
