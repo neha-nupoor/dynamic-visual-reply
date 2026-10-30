@@ -5,11 +5,11 @@ Adapter: `scripts/adapters/codex.js`. The existing inline rendering and feedback
 ## Render and hand off
 
 ```sh
-python3 <skill-dir>/scripts/render.py --spec <spec.json> --out <view.html> --harness codex
+node <skill-dir>/scripts/render.mjs --spec <spec.json> --out <view.html> --harness codex
 ```
 
-- **Inline** (`handoff.type: "contentReference"`): the output embeds the full bundle, so it works offline. Put the returned `contentReference` in your final response. Do not paste the HTML.
-- **Standalone** (`handoff.type: "serve"`): run the returned `command` (it starts `serve.py` on loopback), open the printed URL in a browser panel, and keep the server alive while the user reviews.
+- **Inline** (`handoff.type: "contentReference"`): the output embeds the full bundle, so it works offline. Put the returned `contentReference` verbatim on its own line in your final response, preserving its delimiter glyphs (`visualize{"path":"/absolute/path/view.html"}`). Plain `visualize{...}` text does not render a widget. Do not paste the HTML or wrap the reference in a Markdown link or code fence.
+- **Standalone** (`handoff.type: "serve"`): run the returned `command` (it starts `serve.mjs` on loopback), open the printed URL in a browser panel, and keep the server alive while the user reviews.
 
 ## Feedback
 

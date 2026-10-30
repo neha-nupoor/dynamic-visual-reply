@@ -1,20 +1,20 @@
 # Renderer contract
 
-Use Python's standard library to hydrate the prebuilt bundle. Author specs rather than regenerating the bundle. Codex and browser delivery use the generated file directly; Claude's widget tool requires passing its complete HTML fragment as a string.
+Use Node.js built-ins to hydrate the prebuilt bundle. Author specs rather than regenerating the bundle. Codex and browser delivery use the generated file directly; Claude's widget tool requires passing its complete HTML fragment as a string.
 
 ## Commands and delivery
 
 ```sh
-python3 <skill-dir>/scripts/render.py --spec <input.json> --out <view.html> --harness codex
-python3 <skill-dir>/scripts/render.py --spec <previous.spec.json> --patch <changes.json> --out <view.html> --harness codex
-python3 <skill-dir>/scripts/render.py --print-config --harness codex
-python3 <skill-dir>/scripts/render.py --theme-css <theme.css>
-python3 <skill-dir>/scripts/doctor.py --harness claude-inline
+node <skill-dir>/scripts/render.mjs --spec <input.json> --out <view.html> --harness codex
+node <skill-dir>/scripts/render.mjs --spec <previous.spec.json> --patch <changes.json> --out <view.html> --harness codex
+node <skill-dir>/scripts/render.mjs --print-config --harness codex
+node <skill-dir>/scripts/render.mjs --theme-css <theme.css>
+node <skill-dir>/scripts/doctor.mjs --harness claude-inline
 ```
 
 The result JSON reports output `path`, resolved `spec` snapshot, `format`, `placement`, `harness`, `theme`, bundle/spec byte counts, and `handoff`. Byte counts are not model token counts.
 
-Every output embeds the same Oat/Preact bundle and CSS. Codex inline returns the existing `contentReference`; Claude inline returns a generated fragment for `show_widget`, with no external script or public URL. Claude's string-based handoff includes the full bundle and uses model context. Check the actual native tool, its current HTML/JavaScript support, and payload limits before selecting inline delivery. Environment detection is only a suggestion. Larger views use `serve.py` and save feedback locally. Cursor, Windsurf, Gemini CLI, and other terminal/IDE agents use `browser-local`; Claude Code uses `claude-code`; `static` produces an offline HTML file with copy/export. If rendering is unavailable or fails, provide the intended content in normal Markdown. Use the browser route when interaction remains useful and that route is available; do not add a second HTML renderer as a fallback. Host routing is fixed.
+Every output embeds the same Oat/Preact bundle and CSS. Codex inline returns the existing `contentReference`; Claude inline returns a generated fragment for `show_widget`, with no external script or public URL. Claude's string-based handoff includes the full bundle and uses model context. Check the actual native tool, its current HTML/JavaScript support, and payload limits before selecting inline delivery. Environment detection is only a suggestion. Larger views use `serve.mjs` and save feedback locally. Cursor, Windsurf, Gemini CLI, and other terminal/IDE agents use `browser-local`; Claude Code uses `claude-code`; `static` produces an offline HTML file with copy/export. If rendering is unavailable or fails, provide the intended content in normal Markdown. Use the browser route when interaction remains useful and that route is available; do not add a second HTML renderer as a fallback. Host routing is fixed.
 
 Other flags: `--format auto|inline|standalone`, `--theme`, `--appearance light|dark|system|host`, `--viewport-width`, `--viewport-height`, and `--catalog`.
 
@@ -62,20 +62,19 @@ The bundle includes three thin adapters under `scripts/adapters/`: `codex.js`, `
 | --- | --- | --- |
 | Codex | `window.openai.sendFollowUpMessage({prompt,title})` | `setWidgetState`, `widgetState`, `openai:set_globals`; localStorage without a host bridge |
 | Claude inline | `sendPrompt(message)` fills the message box; user sends | localStorage when allowed |
-| Local browser | POST to `serve.py` `/api/feedback` | localStorage |
+| Local browser | POST to `serve.mjs` `/api/feedback` | localStorage |
 
 Without a bridge, copy/export remains available. Codex snapshots above approximately 15 KB produce a warning instead of silently truncating. Restored drafts must match the key and cannot overwrite newer local edits. The key uses `draftVersion` + viewId + view, so appearance and bundle changes preserve drafts.
 
 ## Maintenance
 
-`config/schema/spec.schema.json` defines input rules; `render.validate` uses it directly and adds cross-record constraints. The standard-library schema reader handles the keywords used by the shipped schemas; extend its tests when adding keywords. There is no second scalar/shape validator.
+`config/schema/spec.schema.json` defines input rules; `validate` in `scripts/render.mjs` uses it directly and adds cross-record constraints. The dependency-free schema reader handles the keywords used by the shipped schemas; extend its tests when adding keywords. There is no second scalar/shape validator.
 
 ```sh
 cd <skill-dir>/assets/renderer
 npm ci --ignore-scripts --no-audit --no-fund
 npm run build
-python3 ../../scripts/test_renderer.py
-node --test ../../scripts/test_adapters.mjs
+node --test ../../scripts/test_renderer.mjs ../../scripts/test_adapters.mjs
 ```
 
 Git commits identify skill revisions. The manifest records SHA-256, SRI, bytes, adapters, and draftVersion; builds have no separate release number. Rebuild after renderer/default changes, then commit and push the reviewed source, bundle, and manifest together. Keep exact dependency pins and the lockfile. Change compatibility markers (schemaVersion, theme format version, draftVersion) only for incompatible data changes; ordinary updates preserve saved drafts.
@@ -85,6 +84,8 @@ All hosts use the checked-in bundle directly. No CDN publication or URL verifica
 Oat CSS is namespaced and scoped to the widget before being embedded in the bundle, preserving host palette variables. The renderer uses Preact directly; Oat JavaScript, MUI, Emotion, ReactDOM, and animation engines are not included. Native labels, selects, checkboxes, text inputs, and textareas retain their browser semantics. Host color changes are sampled after style updates and do not discard drafts.
 
 ### Migrating older installations
+
+The helpers now use Node.js 22.20+ with built-in modules. Replace `python3 scripts/<helper>.py` commands with `node scripts/<helper>.mjs` for render, serve, and doctor. No runtime npm install is required. Copy the complete updated skill directory; the prebuilt renderer and host adapters remain bundled.
 
 Theme-pack `appearance` remains accepted for compatibility but no longer selects the mode of rendered views. Harness appearance is now the fallback. To preserve a personal pack's fixed light/dark preference, move it to top-level settings: for example, set `"appearance": "dark"` in `~/.config/dynamic-visual-reply/config.json` or the project's `.dynamic-visual-reply.json`. Explicit spec/flag/config choices still take priority over the harness default.
 

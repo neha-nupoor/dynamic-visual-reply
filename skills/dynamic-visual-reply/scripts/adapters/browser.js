@@ -1,4 +1,4 @@
-/* Local browser adapter: saves feedback through serve.py's /api/feedback when served on loopback. */
+/* Local browser adapter: saves feedback through serve.mjs's /api/feedback when served on loopback. */
 (function () {
   var storagePrefix = 'dynamic-visual-reply:';
   var legacyStoragePrefix = 'visual-response:';

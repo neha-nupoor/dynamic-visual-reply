@@ -20,13 +20,61 @@ Use a widget when several items need different responses. Keep short answers, pr
 
 Selections and edits stay drafts until you submit them. Submitting sends instructions to the agent; it does not directly change your tasks or source data.
 
+## Widget previews
+
+### Inside Codex
+
+Recorded in a real Codex chat: enter instructions for individual steps and use **Send to chat**. The clip shows the native widget and its button; the complete feedback receipt was verified separately in the same chat.
+
+![Native Codex widget interaction](docs/media/codex-inline-demo.gif)
+
+The demo agent received instructions for `onboarding`, `shortcuts`, and `export` with their IDs intact. This verifies the Codex route; Claude's native route remains unverified.
+
+### Component gallery
+
+These previews use the same renderer and the [sample session's JSON specs](docs/examples/). The local preview labels its simulated chat bridge; it is not evidence of a native chat submission.
+
+### Table
+
+Select records and attach an instruction to each one.
+
+![Table with per-record feedback](docs/media/table-light.png)
+
+### Cards
+
+Compare alternatives and respond to each card.
+
+![Cards with feedback controls](docs/media/cards-light.png)
+
+### Form
+
+Collect several answers before submitting one message.
+
+![Form in light mode](docs/media/form-light.png)
+
+### Board
+
+Review items by stage and prepare changes as a draft.
+
+![Board with stage controls](docs/media/kanban-light.png)
+
+### Flow
+
+Review one step at a time and give feedback on individual steps.
+
+![Flow with step controls](docs/media/flow-light.png)
+
+Both themes use the same controls and layout:
+
+![Form in dark mode](docs/media/form-dark.png)
+
 ## Requirements
 
 - **An agent with file access and command execution** to read the skill and run its helpers.
-- **Python 3.9+** on the machine where the agent runs. Python validates JSON specs and generates HTML; the browser workflow also uses it to serve the page and save feedback. No Python packages need installing.
-- **A browser or a supported inline widget tool** to display the result. The widget itself runs JavaScript, not Python.
+- **Node.js 22.20+** on the machine where the agent runs. The helpers validate JSON specs, generate HTML, and run the local feedback server using Node built-ins. No Python or runtime npm packages are required.
+- **A browser or a supported inline widget tool** to display the result. The widget uses the same prebuilt JavaScript renderer in every harness.
 
-The renderer is prebuilt, so normal use needs no Node.js or build step. The optional installer below uses Git and Node.js 22.20+; manual installation avoids the Node.js requirement.
+The renderer is prebuilt, so normal use needs no npm install or build step. The optional installer below also requires Git; manual installation uses the same Node runtime.
 
 ## Install
 
@@ -93,17 +141,17 @@ reply_skill_dir="$PWD/.agents/skills/dynamic-visual-reply"
 reply_preview_dir="$PWD/dynamic-visual-reply-preview"
 mkdir -p "$reply_preview_dir"
 
-python3 "$reply_skill_dir/scripts/doctor.py" --harness browser-local
-python3 "$reply_skill_dir/scripts/render.py" \
+node "$reply_skill_dir/scripts/doctor.mjs" --harness browser-local
+node "$reply_skill_dir/scripts/render.mjs" \
   --spec "$reply_skill_dir/assets/examples/form.json" \
   --out "$reply_preview_dir/form.html" \
   --harness browser-local
-python3 "$reply_skill_dir/scripts/serve.py" "$reply_preview_dir/form.html" --port 0
+node "$reply_skill_dir/scripts/serve.mjs" "$reply_preview_dir/form.html" --port 0
 ```
 
-Open the local URL printed by the server. Keep it running while reviewing, submit your answers, then ask the agent to read the printed feedback file. Stop the server when finished. On Windows, use the equivalent shell paths and `py -3` if `python3` is unavailable.
+Open the local URL printed by the server. Keep it running while reviewing, submit your answers, then ask the agent to read the printed feedback file. Stop the server when finished. On Windows, use the equivalent paths and variables for your shell.
 
-`doctor.py` checks local files, configuration, bundle hashes, and theme contrast. It cannot establish that an inline host tool or submission bridge exists.
+`doctor.mjs` checks local files, configuration, bundle hashes, and theme contrast. It cannot establish that an inline host tool or submission bridge exists.
 
 ## Appearance
 
@@ -122,7 +170,7 @@ Use `"light"` for light mode, or `null` to restore the harness default. Preserve
 ## Troubleshooting
 
 - **Skill is not discovered:** check its installation path and restart the agent session. Verify the complete skill folder was installed.
-- **Python is missing:** install Python 3.9+ where the agent executes commands. A prebuilt renderer removes the build requirement, but the current helpers still need Python.
+- **Node is missing:** install Node.js 22.20+ where the agent executes commands. The prebuilt renderer needs no npm install.
 - **Widget does not appear:** check actual tool availability and payload limits. Use the browser route when available, or continue in normal chat.
 - **Browser feedback does not arrive:** use the server's HTTP URL rather than opening the file directly. Submit, then ask the agent to read the feedback file; local submission does not wake the agent.
 - **Settings fail after updating:** older installations may contain an obsolete `delivery` object or use the former `visual-response-design` skill name. See [migration guidance](skills/dynamic-visual-reply/references/renderer-contract.md#migrating-older-installations). Disable the old skill after checking the new installation to avoid duplicate discovery.
@@ -144,6 +192,14 @@ skills/dynamic-visual-reply/
 Normal users do not need to build the renderer. For implementation changes, follow the [renderer contract](skills/dynamic-visual-reply/references/renderer-contract.md#maintenance) and [UI behavior guide](skills/dynamic-visual-reply/references/ui-behavior.md).
 
 Git commits identify skill revisions; bundle hashes identify renderer bytes. Dependency pins and compatibility markers are retained. There is no routine skill version bump or tag-publishing workflow.
+
+## Token usage
+
+In one recorded Codex sample, the agent authored five widget specs using **988 output tokens**. Correcting the inline display reference used another **351 output tokens**. The shared 82 KB renderer supplied the UI without the model generating its implementation again.
+
+Authoring and the display correction used **355,967 total tokens**, including repeated input context. The full recorded session, including feedback replies and recording preparation, used **1,113,678 input tokens** (1,059,200 cached) and **2,967 output tokens**: **1,116,645 total**. The 988-token figure measures authoring output only; it is not the full cost. The widgets provide selection, per-item instructions, and structured batch feedback; no controlled usability or token-savings comparison was performed.
+
+See the [benchmark, method, and limits](docs/benchmark.md) and [recorded counters](docs/benchmark.json). Costs vary with the model, context, cache, and harness. This Codex result does not describe Claude's string-based inline delivery.
 
 ## License
 

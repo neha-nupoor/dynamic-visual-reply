@@ -3,8 +3,8 @@
 Use this route only when the current session actually exposes a widget tool such as `show_widget` that accepts inline HTML and JavaScript. Inspect its current instructions and payload limits first. A Claude model or app name alone does not establish that the tool exists.
 
 ```sh
-python3 <skill-dir>/scripts/doctor.py --harness claude-inline
-python3 <skill-dir>/scripts/render.py --spec <spec.json> --out <view.html> --harness claude-inline
+node <skill-dir>/scripts/doctor.mjs --harness claude-inline
+node <skill-dir>/scripts/render.mjs --spec <spec.json> --out <view.html> --harness claude-inline
 ```
 
 The generated fragment embeds the identical Oat/Preact renderer and CSS used by Codex and the local browser. No external script, CDN, public URL, or delivery configuration is used. Local manifest hashes verify the bundle before rendering. File checks do not prove execution in the native host.

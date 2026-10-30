@@ -1,0 +1,1 @@
+{"schemaVersion":1,"viewId":"demo-flow","revision":1,"view":"flow","title":"Release steps","feedbackPrompt":"Notes","nodes":[{"id":"onboarding","title":"Onboarding checklist","detail":"Review"},{"id":"shortcuts","title":"Keyboard shortcuts","detail":"Review"},{"id":"export","title":"Export presets","detail":"Review"}]}

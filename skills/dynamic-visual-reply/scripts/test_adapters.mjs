@@ -66,7 +66,7 @@ test('claude-inline adapter sends through sendPrompt',async()=>{
   assert.equal(load('claude.js').host.capabilities.submit,'none');
 });
 
-test('browser-local adapter posts to serve.py only on loopback',async()=>{
+test('browser-local adapter posts to serve.mjs only on loopback',async()=>{
   const posted=[];
   const fetch=(url,init)=>{posted.push([url,JSON.parse(init.body)]);return Promise.resolve({ok:true,json:()=>Promise.resolve({saved:true,path:'/tmp/v.feedback.json'})})};
   const {host}=load('browser.js',{fetch});
