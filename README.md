@@ -113,7 +113,7 @@ Use `--harness claude-inline` only when the actual `show_widget` tool is availab
 
 Run `python3 "$reply_skill_dir/scripts/doctor.py" --harness claude-inline --check-url` before choosing this route. Then render with `--harness claude-inline` and pass the small output file to `show_widget` as instructed by its returned handoff and current host guide. **Add to chat** fills the message box; the user presses Enter.
 
-The default loader URL uses the renderer's release tag. An unreleased build can instead use an identical published commit via `delivery.rendererUrl` / `--renderer-url`, with matching integrity. If the URL is unavailable, mismatched, or blocked by the host, use `browser-local`. A release tag, CDN, and public renderer URL are optional for using the skill. See the [Claude guide](skills/dynamic-visual-reply/references/harness/claude-inline.md).
+The optional loader uses a pushed Git commit containing the identical bundle. Set `delivery.commit` to its full 40-character SHA with `delivery.repository`, or supply an immutable URL through `delivery.rendererUrl` / `--renderer-url`. No commit is selected by default. Verify that the URL matches the local bundle before using it. If it is unavailable, mismatched, or blocked by the host, use `browser-local`. A CDN and public renderer URL are optional for using the skill. See the [Claude guide](skills/dynamic-visual-reply/references/harness/claude-inline.md).
 
 ## Appearance and settings
 
@@ -145,12 +145,14 @@ python3 "$reply_skill_dir/scripts/render.py" --print-config --harness browser-lo
 
 See [SKILL.md](skills/dynamic-visual-reply/SKILL.md) for invocation rules and the [renderer contract](skills/dynamic-visual-reply/references/renderer-contract.md) for specs, datasets, patches, settings, and supported behavior.
 
-## Build and release
+## Build and verify
 
 1. In `skills/dynamic-visual-reply/assets/renderer`, run `npm ci --ignore-scripts` and `npm run build`.
 2. Run `python3 skills/dynamic-visual-reply/scripts/test_renderer.py` and `node --test skills/dynamic-visual-reply/scripts/test_adapters.mjs`.
 3. For browser regression checks, run `python3 tests/browser_fixtures.py <output-directory>` and serve that directory on loopback. The fixtures exercise the built renderer with local Codex/Claude bridge doubles; the Claude fixture deliberately blocks inline JavaScript and checks SRI. That conservative test policy is not a claim about Claude's actual sandbox. No real chat message is sent by these fixtures.
-4. If distributing the optional Claude URL loader, publish the matching reviewed `v<version>` tag and run `doctor.py --harness claude-inline --check-url` before handing it off. During PR review, use `--renderer-url` pointing to the identical bundle at a published commit. The local browser path needs no release tag or CDN URL. Do not overwrite an old tag or claim that bridge doubles prove live host submission.
+4. Commit and push the reviewed source, bundle, and manifest together. For the optional Claude URL loader, configure a full pushed commit SHA containing that bundle and run `doctor.py --harness claude-inline --check-url` before handing it off. The local browser path embeds the bundle and works offline.
+
+Git commits identify skill revisions; the manifest's SHA-256 and SHA-384 SRI identify and verify the renderer bytes. There is no skill release number, routine version bump, or tag-publishing step. Dependency versions and the lockfile remain pinned. Compatibility markers (`schemaVersion: 1`, theme format `version: 1`, and `draftVersion: "1.0.0"`) change only when their data formats become incompatible; ordinary updates preserve saved drafts.
 
 ## Renaming from reply-ui / visual-response-design
 
@@ -160,7 +162,7 @@ New settings use `~/.config/dynamic-visual-reply/config.json`, `.dynamic-visual-
 
 Old `base-web` and `neutral` theme names resolve to the single `generic` theme. It keeps the previously approved spacious layout; the old compact fallback is no longer a separate preset. Draft keys and feedback schema version are unchanged. Browser drafts can be read from the legacy storage prefix; new edits save under the new name. Existing custom hosts using `window.visualResponseHost` remain supported through a compatibility fallback.
 
-## Migrating to 1.4
+## Migrating older installations
 
 Theme-pack `appearance` remains accepted for compatibility but no longer selects the mode of rendered views. Harness appearance is now the fallback. To preserve a personal pack's fixed light/dark preference, move it to top-level settings: for example, set `"appearance": "dark"` in `~/.config/dynamic-visual-reply/config.json` or the project's `.dynamic-visual-reply.json`. Explicit spec/flag/config choices still take priority over the harness default.
 

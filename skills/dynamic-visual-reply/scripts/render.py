@@ -199,10 +199,10 @@ def manifest():
     require(hashlib.sha256(BUNDLE.read_bytes()).hexdigest() == data['sha256'], 'Renderer bundle differs from its manifest; rebuild before use')
     return data
 
-def runtime_config(context, appearance):
+def runtime_config(context, appearance, renderer_hash):
     """Only what differs from the defaults compiled into the bundle, to keep pages small."""
     defaults = load(ROOT / 'config/defaults.json')
-    config = {'harness': context.harness['id'], 'appearance': appearance}
+    config = {'harness': context.harness['id'], 'appearance': appearance, 'rendererHash': renderer_hash}
     if context.harness.get('adapter'):
         config['adapter'] = context.harness['adapter']
     copy = visual_config.diff(context.config.get('copy', {}), defaults['copy'])
@@ -220,12 +220,12 @@ def page_theme(context):
 
 def fragment(spec, context, appearance, info, delivery):
     parts = ['<div data-dynamic-visual-reply-root></div>',
-             '<script type="application/json" data-dynamic-visual-reply-config>' + json_for_html(runtime_config(context, appearance)) + '</script>',
+             '<script type="application/json" data-dynamic-visual-reply-config>' + json_for_html(runtime_config(context, appearance, info['sha256'])) + '</script>',
              '<script type="application/json" data-dynamic-visual-reply-theme>' + json_for_html(page_theme(context)) + '</script>',
              '<script type="application/json" data-dynamic-visual-reply-spec>' + json_for_html(spec) + '</script>']
     if context.harness['id'] == 'claude-inline':
-        url = visual_config.renderer_url(delivery, info['version'])
-        require(url, 'No renderer URL: set delivery.rendererUrl, or delivery.repository for a public GitHub release; run scripts/doctor.py for details.')
+        url = visual_config.renderer_url(delivery)
+        require(url, 'No renderer URL: set delivery.rendererUrl, or delivery.repository and delivery.commit for a matching pushed Git commit; run scripts/doctor.py for details, or use browser-local.')
         integrity = info.get('sri') if delivery.get('integrity') == 'manifest' else delivery.get('integrity')
         attributes = f' integrity="{integrity}" crossorigin="anonymous"' if integrity else ''
         parts.append(f'<script src="{url}"{attributes}></script>')
@@ -284,7 +284,7 @@ def render(spec, out, mode='auto', viewport_width=None, viewport_height=None, *,
         context = context.switch('browser-local')
     spec['resolvedPresentation'] = decision
     # Draft keys follow draftVersion so cosmetic or harness changes never discard saved drafts.
-    spec['stateKey'] = hashlib.sha256((info.get('draftVersion', info['version']) + ':' + spec['viewId'] + ':' + spec['view']).encode()).hexdigest()[:24]
+    spec['stateKey'] = hashlib.sha256((info['draftVersion'] + ':' + spec['viewId'] + ':' + spec['view']).encode()).hexdigest()[:24]
     appearance = spec.get('appearance') or context.appearance
     delivery = context.config['delivery']
     delivery_mode = 'url' if context.harness['id'] == 'claude-inline' else 'embed'
@@ -293,7 +293,7 @@ def render(spec, out, mode='auto', viewport_width=None, viewport_height=None, *,
     snapshot.write_text(json.dumps(spec, ensure_ascii=False, allow_nan=False, indent=2) + '\n', encoding='utf-8')
     data = json_for_html(spec)
     result = {'harness': context.harness['id'], 'theme': context.theme['name'], 'view': spec['view'],
-              'rendererVersion': info['version'], 'specBytes': len(data.encode()), 'rendererBytes': info['bytes'],
+              'rendererHash': info['sha256'], 'specBytes': len(data.encode()), 'rendererBytes': info['bytes'],
               'delivery': delivery_mode, 'spec': str(snapshot), 'placement': decision}
     kind = 'fragment' if decision['mode'] == 'inline' and context.harness['id'] in ('codex', 'claude-inline') else 'document'
     body = fragment(spec, context, appearance, info, delivery)

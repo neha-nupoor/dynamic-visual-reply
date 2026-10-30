@@ -84,7 +84,7 @@ function App(){
   useEffect(()=>{if(!pendingDraft)return;let live=true;pendingDraft.then(saved=>{if(live&&!hasEdits.current&&saved?.key===key)setDraft(initial(saved))}).catch(()=>{});return()=>{live=false}},[]);
   useEffect(()=>host.onExternalDraft?.(saved=>{if(!hasEdits.current&&saved?.key===key)setDraft(initial(saved))}),[]);
   function values(){return {selectedIds:draft.selected,items:[...new Set([...draft.selected,...Object.keys(draft.notes).filter(id=>draft.notes[id]),...Object.keys(draft.edits),...Object.keys(draft.stages)])].filter(id=>rowMap.has(id)||nodes.some(n=>n.id===id)).map(id=>({id,label:rowMap.get(id)?.title||rowMap.get(id)?.name||nodes.find(n=>n.id===id)?.title||id,selected:draft.selected.includes(id),instruction:draft.notes[id]||'',changes:draft.edits[id]||{},...(draft.stages[id]?{stage:draft.stages[id]}:{})})),reviewedIds:draft.reviewed,fields:(spec.fields||[]).map(f=>({id:f.id,value:draft.fields[f.id]??f.value??'',...(f.options?{options:(draft.options[f.id]||f.options)}:{})})),comment:draft.comment};}
-  function payload(){return {schemaVersion:1,viewId:spec.viewId,view:spec.view,revision:spec.revision||1,...values(),source:{harness:host.id||'static',theme:tokens.name,rendererVersion:__RENDERER_VERSION__}};}
+  function payload(){return {schemaVersion:1,viewId:spec.viewId,view:spec.view,revision:spec.revision||1,...values(),source:{harness:host.id||'static',theme:tokens.name,rendererHash:config.rendererHash}};}
   function message(){
     if(customMessage!=null)return customMessage;
     const request=spec.feedbackPrompt||(spec.view==='form'?prompts.formPrompt:prompts.defaultPrompt),feedback=payload();

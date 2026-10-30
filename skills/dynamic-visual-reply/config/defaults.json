@@ -46,7 +46,8 @@
   "delivery": {
     "rendererUrl": null,
     "repository": "neha-nupoor/dynamic-visual-reply",
-    "integrity": "manifest"
+    "integrity": "manifest",
+    "commit": null
   },
   "feedback": {
     "defaultPrompt": "Review my batch feedback and continue the task.",

@@ -14,7 +14,7 @@ python3 <skill-dir>/scripts/doctor.py --harness claude-inline --check-url
 
 The result JSON reports output `path`, resolved `spec` snapshot, `format`, `placement`, `harness`, `theme`, bundle/spec byte counts, and `handoff`. Byte counts are not model token counts.
 
-Codex inline embeds the Oat/Preact bundle and returns the existing `contentReference`. The optional Claude inline route references the identical bundle, including all CSS, by a version-pinned URL and returns a small loader for `show_widget`. Claude accepts inline HTML/JavaScript; the loader avoids passing the prebuilt bundle through model context. A public URL is a prerequisite for this particular loader, not for using the skill: choose `browser-local` whenever the widget tool or a verified matching URL is unavailable. Larger views in either host use `serve.py` and save feedback locally. Cursor, Windsurf, Gemini CLI, and other terminal/IDE agents use the same `browser-local` fallback; Claude Code uses `claude-code`; `static` produces an offline HTML file with copy/export. Claude Code's desktop markers do not establish that `show_widget` exists, so auto-detection uses the local browser. Host routing is fixed; no configurable backend graph is used.
+Codex inline embeds the Oat/Preact bundle and returns the existing `contentReference`. The optional Claude inline route references the identical bundle, including all CSS, by a commit-pinned URL and returns a small loader for `show_widget`. Claude accepts inline HTML/JavaScript; the loader avoids passing the prebuilt bundle through model context. A public URL is a prerequisite for this particular loader, not for using the skill: choose `browser-local` whenever the widget tool or a verified matching URL is unavailable. Larger views in either host use `serve.py` and save feedback locally. Cursor, Windsurf, Gemini CLI, and other terminal/IDE agents use the same `browser-local` fallback; Claude Code uses `claude-code`; `static` produces an offline HTML file with copy/export. Claude Code's desktop markers do not establish that `show_widget` exists, so auto-detection uses the local browser. Host routing is fixed; no configurable backend graph is used.
 
 Other flags: `--format auto|inline|standalone`, `--theme`, `--appearance light|dark|system|host`, `--renderer-url`, `--viewport-width`, `--viewport-height`, and `--catalog`.
 
@@ -54,7 +54,7 @@ Automatic placement estimates width/height from theme sizes. Default eligibility
 
 ## Feedback and drafts
 
-The schemaVersion 1 feedback envelope retains `viewId`, view, revision, selected/reviewed IDs, item instructions/edits, form answers/options, general comment, and `source:{harness,theme,rendererVersion}`. Selected items and items with edits/comments are submitted across all pages. Preview, editable generated message, copy, text selection, export, and undo stay available.
+The schemaVersion 1 feedback envelope retains `viewId`, view, revision, selected/reviewed IDs, item instructions/edits, form answers/options, and general comment. Optional metadata is now `source:{harness,theme,rendererHash}`, where `rendererHash` is the manifest's SHA-256. Older feedback with `source.rendererVersion` remains readable. Selected items and items with edits/comments are submitted across all pages. Preview, editable generated message, copy, text selection, export, and undo stay available.
 
 The bundle includes three thin adapters under `scripts/adapters/`: `codex.js`, `claude.js`, and `browser.js`. Their registry IDs remain `codex`, `claude-inline`, and `browser-local`, independent of filenames. The renderer selects one by the page's `config.adapter`:
 
@@ -78,11 +78,13 @@ python3 ../../scripts/test_renderer.py
 node --test ../../scripts/test_adapters.mjs
 ```
 
-The manifest pins bundle version, SHA-256, SRI, bytes, adapters, and draftVersion. Rebuild after renderer/default changes. Bump draftVersion only for incompatible saved drafts. For the optional Claude URL loader, publish the matching reviewed commit as `v<version>` and verify it with `doctor.py --harness claude-inline --check-url`; the default jsDelivr URL uses that tag. During PR review, use a matching commit-pinned URL. The local browser path embeds the bundle and needs no public URL or release tag. Do not overwrite an old release tag. Keep third-party notices with the bundle. Mocked tests do not prove live host APIs; verify actual submission separately when available.
+Git commits identify skill revisions. The manifest records SHA-256, SRI, bytes, adapters, and draftVersion; builds have no separate release number. Rebuild after renderer/default changes, then commit and push the reviewed source, bundle, and manifest together. Keep exact dependency pins and the lockfile. Change compatibility markers (schemaVersion, theme format version, draftVersion) only for incompatible data changes; ordinary updates preserve saved drafts.
+
+For the optional Claude URL loader, set `delivery.repository` and `delivery.commit` to a full pushed commit SHA containing the identical bundle, or override `delivery.rendererUrl` with a matching immutable URL. Verify it with `doctor.py --harness claude-inline --check-url`. No commit is configured by default; repository alone does not select a bundle. The local browser path embeds the bundle and needs no public URL. Keep third-party notices with the bundle. Mocked tests do not prove live host APIs; verify actual submission separately when available.
 
 Oat CSS is namespaced and scoped to the widget before being embedded in the bundle, preserving host palette variables. The renderer uses Preact directly; Oat JavaScript, MUI, Emotion, ReactDOM, and animation engines are not included. Native labels, selects, checkboxes, text inputs, and textareas retain their browser semantics. Host color changes are sampled after style updates and do not discard drafts.
 
-### Migration from 1.3
+### Migrating older installations
 
 Theme-pack `appearance` remains accepted for compatibility but no longer selects the mode of rendered views. Harness appearance is now the fallback. To preserve a personal pack's fixed light/dark preference, move it to top-level settings: for example, set `"appearance": "dark"` in `~/.config/dynamic-visual-reply/config.json` or the project's `.dynamic-visual-reply.json`. Explicit spec/flag/config choices still take priority over the harness default.
 

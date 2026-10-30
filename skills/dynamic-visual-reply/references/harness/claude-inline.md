@@ -9,13 +9,19 @@ python3 <skill-dir>/scripts/doctor.py --harness claude-inline --check-url
 python3 <skill-dir>/scripts/render.py --spec <spec.json> --out <view.html> --harness claude-inline
 ```
 
-The loader's default URL comes from `delivery.repository` and the bundle's release tag. Override `delivery.rendererUrl` or pass `--renderer-url` for a matching published commit while reviewing an unreleased PR. The URL must be reachable and byte-identical to the local bundle; never use an older bundle with the current manifest's SRI. External scripts must also be permitted by the widget's current sandbox; follow its guide. These file/URL checks do not verify live host execution.
+Configure `delivery.repository` and `delivery.commit` (the full 40-character SHA of a pushed Git commit containing the matching bundle). No commit is selected by default. For example, set these keys in the project's `.dynamic-visual-reply.json`, replacing the placeholder with the actual commit:
+
+```json
+{"delivery":{"repository":"neha-nupoor/dynamic-visual-reply","commit":"<full-40-character-commit-sha>"}}
+```
+
+Alternatively, set `delivery.rendererUrl` or pass `--renderer-url` for an immutable URL to the identical bundle. A URL override takes priority over repository/commit settings. The URL must be reachable and byte-identical to the local bundle; never use an older bundle with the current manifest's SRI. Run the doctor check above with the same configuration used for rendering. External scripts must also be permitted by the widget's current sandbox; follow its guide. These file/URL checks do not verify live host execution.
 
 For `handoff.type: show_widget`, read the small output file and pass its contents unchanged as `widget_code`. Do not paste the renderer bundle into the tool call. For `handoff.type: serve`, follow [browser-local.md](browser-local.md).
 
 ## Without a URL or widget tool
 
-Use the same renderer in the [local browser](browser-local.md); no public URL, release tag, or additional integration is needed:
+Use the same renderer in the [local browser](browser-local.md); no public URL or additional integration is needed:
 
 ```sh
 python3 <skill-dir>/scripts/render.py --spec <spec.json> --out <view.html> --harness browser-local

@@ -1,6 +1,5 @@
 {
   "name": "dynamic-visual-reply-renderer",
-  "version": "1.4.0",
   "private": true,
   "files": [
     "dist"

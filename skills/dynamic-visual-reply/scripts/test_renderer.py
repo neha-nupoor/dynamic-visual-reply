@@ -19,7 +19,8 @@ import visual_config
 
 ROOT = render.ROOT
 SPEC_SCHEMA = visual_config.load(visual_config.SCHEMA_DIR / 'spec.schema.json')
-URL = 'https://cdn.jsdelivr.net/npm/dynamic-visual-reply-renderer@1.1.0/dist/renderer.js'
+COMMIT = 'a' * 40
+URL = f'https://cdn.jsdelivr.net/gh/someone/dynamic-visual-reply@{COMMIT}/skills/dynamic-visual-reply/assets/renderer/dist/renderer.js'
 DEFAULT_THEME = visual_config.load(visual_config.CONFIG_DIR / 'defaults.json')['theme']
 
 def quiet(fn, *args, **kwargs):
@@ -309,7 +310,7 @@ class RendererTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
             user = base / 'user.json'
-            user.write_text(json.dumps({'appearance': 'dark'}))
+            user.write_text(json.dumps({'appearance': 'dark', 'delivery': {'rendererUrl': URL}}))
             project = base / 'repo'
             (project / '.git').mkdir(parents=True)
             env = {'HOME': directory, 'DYNAMIC_VISUAL_REPLY_CONFIG': str(user)}
@@ -377,21 +378,54 @@ class RendererTests(unittest.TestCase):
             self.assertNotIn('data-dynamic-visual-reply-runtime', html)
             self.assertLess(len(html.encode()), 8000)
 
-    def test_public_repository_release_supplies_the_renderer_url(self):
-        delivery = {'repository': 'someone/dynamic-visual-reply'}
-        self.assertEqual(visual_config.renderer_url(delivery, '1.1.0'),
-                         'https://cdn.jsdelivr.net/gh/someone/dynamic-visual-reply@v1.1.0/skills/dynamic-visual-reply/assets/renderer/dist/renderer.js')
-        self.assertEqual(visual_config.renderer_url({**delivery, 'rendererUrl': URL}, '1.1.0'), URL)
+    def test_public_repository_commit_supplies_the_renderer_url(self):
+        delivery = {'repository': 'someone/dynamic-visual-reply', 'commit': COMMIT}
+        self.assertEqual(visual_config.renderer_url(delivery), URL)
+        override = 'https://example.com/immutable/renderer.js'
+        self.assertEqual(visual_config.renderer_url({**delivery, 'rendererUrl': override}), override)
+        self.assertIsNone(visual_config.renderer_url({'repository': delivery['repository']}))
+        self.assertIsNone(visual_config.renderer_url({'commit': COMMIT}))
         with tempfile.TemporaryDirectory() as directory:
-            context = visual_config.resolve({'delivery': {'repository': 'someone/dynamic-visual-reply'}}, harness='claude-inline', isolated=True)
+            context = visual_config.resolve({'delivery': delivery}, harness='claude-inline', isolated=True)
             quiet(render.render, self.example('flow'), Path(directory) / 'w.html', 'auto', context=context)
-            self.assertIn('cdn.jsdelivr.net/gh/someone/dynamic-visual-reply@v', (Path(directory) / 'w.html').read_text())
+            self.assertIn(URL, (Path(directory) / 'w.html').read_text())
+
+    def test_delivery_commit_rejects_mutable_or_incomplete_references(self):
+        for commit in ('main', 'v1.4.0', 'a' * 7, 'g' * 40, ''):
+            with self.subTest(commit=commit), self.assertRaises(ValueError):
+                visual_config.resolve({'delivery': {'commit': commit}}, isolated=True)
+
+    def test_bundle_identity_is_a_hash_and_does_not_change_draft_keys(self):
+        manifest = render.manifest()
+        self.assertNotIn('version', manifest)
+        self.assertEqual(manifest['draftVersion'], '1.0.0')
+        with tempfile.TemporaryDirectory() as directory:
+            keys = []
+            for harness in ('codex', 'claude-inline', 'browser-local', 'static'):
+                context = visual_config.resolve({'delivery': {'rendererUrl': URL}}, harness=harness, isolated=True)
+                out = Path(directory) / (harness + '.html')
+                result = quiet(render.render, self.example('flow'), out, 'inline', context=context)
+                config = json.loads(out.read_text().split('data-dynamic-visual-reply-config>', 1)[1].split('</script>', 1)[0])
+                self.assertEqual(result['rendererHash'], manifest['sha256'])
+                self.assertEqual(config['rendererHash'], manifest['sha256'])
+                self.assertNotIn('rendererVersion', result)
+                keys.append(render.load(out.with_suffix('.spec.json'))['stateKey'])
+            self.assertEqual(len(set(keys)), 1)
+
+    def test_feedback_accepts_bundle_hash_and_legacy_metadata(self):
+        schema = visual_config.load(visual_config.SCHEMA_DIR / 'feedback.schema.json')
+        feedback = {'schemaVersion': 1, 'viewId': 'test', 'view': 'form', 'revision': 1,
+                    'selectedIds': [], 'reviewedIds': [], 'items': [], 'fields': [], 'comment': ''}
+        for source in ({'rendererHash': render.manifest()['sha256']}, {'rendererVersion': '1.3.0'}, {}):
+            self.assertEqual(visual_config.schema_errors({**feedback, 'source': source}, schema), [])
+        self.assertTrue(visual_config.schema_errors({**feedback, 'source': {'rendererHash': 'bad'}}, schema))
 
     def test_url_delivery_requires_renderer_url(self):
         with tempfile.TemporaryDirectory() as directory:
-            context = visual_config.resolve({'delivery': {'repository': None}}, harness='claude-inline', isolated=True)
-            with self.assertRaises(ValueError):
-                quiet(render.render, self.example('flow'), Path(directory) / 'w.html', 'auto', context=context)
+            for repository in (None, 'neha-nupoor/dynamic-visual-reply'):
+                context = visual_config.resolve({'delivery': {'repository': repository}}, harness='claude-inline', isolated=True)
+                with self.subTest(repository=repository), self.assertRaisesRegex(ValueError, 'delivery.commit'):
+                    quiet(render.render, self.example('flow'), Path(directory) / 'w.html', 'auto', context=context)
 
     def test_large_claude_views_use_the_same_local_browser_as_codex(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dynamic-visual-reply/feedback.schema.json",
   "title": "Dynamic visual reply feedback envelope",
-  "description": "What every harness's submit path delivers. `source` was added in renderer 1.1.0 and is additive.",
+  "description": "What every harness's submit path delivers. `source` metadata is optional and additive. New feedback identifies the bundle by SHA-256; legacy rendererVersion is still accepted.",
   "type": "object",
   "required": ["schemaVersion", "viewId", "view", "revision", "selectedIds", "items", "reviewedIds", "fields", "comment"],
   "properties": {
@@ -31,7 +31,7 @@
     "comment": {"type": "string"},
     "source": {
       "type": "object",
-      "properties": {"harness": {"type": "string"}, "theme": {"type": "string"}, "rendererVersion": {"type": "string"}}
+      "properties": {"harness": {"type": "string"}, "theme": {"type": "string"}, "rendererHash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "rendererVersion": {"description": "Legacy metadata, accepted when reading older feedback.", "type": "string"}}
     }
   }
 }

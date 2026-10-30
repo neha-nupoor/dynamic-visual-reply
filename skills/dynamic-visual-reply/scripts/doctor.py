@@ -39,15 +39,15 @@ def report(args, env=os.environ):
     delivery = config['delivery']
     url_check = None
     if harness['id'] == 'claude-inline':
-        url = visual_config.renderer_url(delivery, manifest['version'])
+        url = visual_config.renderer_url(delivery)
         if not url:
-            problems.append('Claude inline needs a pinned renderer URL or delivery.repository.')
+            problems.append('Claude inline needs delivery.rendererUrl or both delivery.repository and delivery.commit; otherwise use browser-local.')
         elif args.check_url:
             url_check = check_url(url, manifest.get('sri'))
             if not url_check['reachable']:
                 problems.append(f'Renderer URL is not reachable: {url_check["error"]}')
             elif not url_check['matchesLocalBundle']:
-                problems.append('Renderer URL differs from this build; publish a matching release before using it.')
+                problems.append('Renderer URL differs from this build; use a pushed commit containing the matching bundle.')
     submit = {'codex': 'Inline uses window.openai.sendFollowUpMessage; larger views save feedback through serve.py.',
               'claude-inline': 'Inline adds feedback to the message box; press Enter to send. Larger views use serve.py.',
               'browser-local': 'serve.py saves <view>.feedback.json; ask the agent to read it.',
@@ -61,7 +61,7 @@ def report(args, env=os.environ):
                     'feedback': submit.get(harness['id'], 'Choose a supported harness explicitly')},
         'theme': {'name': context.theme['name'], 'source': context.theme_source, 'appearance': context.appearance,
                   'contrastOk': not contrast},
-        'delivery': {**delivery, 'bundleVersion': manifest['version'], 'bundleBytes': manifest['bytes'], 'urlCheck': url_check},
+        'delivery': {**delivery, 'bundleHash': manifest['sha256'], 'bundleBytes': manifest['bytes'], 'urlCheck': url_check},
         'configLayers': context.layers,
         'userConfig': str(visual_config.user_config_path(env)),
         'availableHarnesses': {h: p['label'] for h, p in visual_config.HARNESSES.items()},
