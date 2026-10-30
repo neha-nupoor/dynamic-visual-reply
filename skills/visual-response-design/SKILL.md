@@ -1,13 +1,27 @@
 ---
 name: visual-response-design
-description: Render interactive tables, cards, forms, boards, and sequential flows when visual structure or batch feedback materially helps. Use one shared renderer across Codex, Claude, and local browser views; keep simple answers in chat.
+description: Render interactive tables, cards, forms, boards, and flows when the user will likely respond to several separate items (approve, edit, choose, or instruct per item), so they can reply once with feedback tied to stable IDs instead of quoting or highlighting multiple places in chat. Keep one or two points, overall feedback, and prose in chat.
 metadata:
   short-description: Shared UI for reviews and batch feedback
 ---
 
 # Visual Response Design
 
-Use UI when it helps compare records, review alternatives, collect multiple answers, or explain a sequence. Keep simple replies in normal chat.
+## When to render
+
+The purpose is per-item feedback. Render a view when you expect the user to respond to several separate places, so they reply once with instructions tied to stable IDs instead of quoting or highlighting each spot in chat. Do not render UI merely because the skill is available, or because a visual would look nicer than text.
+
+Render only when all three hold:
+
+1. There are three or more separate items, and the user will likely respond to each one differently.
+2. Each item fits a record shape: a row, card, form field, board card, or step.
+3. The user could not say what they want in one sentence.
+
+Stay in chat when there are one or two points, when feedback will be overall ("make it shorter"), or when the content is prose that needs inline comments; use a document with comments for that instead. A comparison with nothing to respond to belongs in a markdown table. When the call is borderline, end the chat reply with a one-line offer, such as "Want a review view to mark these up?", instead of rendering. An explicit request for a view is always a trigger.
+
+Never let the view replace the answer. The chat reply must stand on its own: summarize what the view contains and what you recommend, so the user can answer in text and ignore the view. Do not repeat the view's full content in chat.
+
+Choose the view by the response you expect: `table` for many comparable records, `cards` for a few alternatives, `form` for several questions, `kanban` for moving items between stages. Use `flow` only when each step needs its own response; a plain explanation of a sequence stays in chat. Many items usually exceed the inline limits and open as a full browser page; that is expected, so do not shrink content to force inline.
 
 ## Render from a spec
 
@@ -44,7 +58,7 @@ Placement considers content size, available width, and theme sizes. Use `present
 
 ## Appearance and cost
 
-Light is the default. Use `--appearance dark` for dark mode or `--appearance system` to follow host/OS preference. Both palettes use the same renderer. Use the configured theme pack; preserve an existing product's design system. User settings live at `~/.config/visual-response/config.json` (or `$VISUAL_RESPONSE_CONFIG`); project settings live in `.visual-response.json`. Theme, appearance, copy, and placement limits are settings. Host delivery is fixed in code, with thin adapters for feedback and drafts.
+Match the host's theme so the view looks like part of the conversation. For Claude inline, pass `--appearance host` so the view uses Claude's own colors and follows its light or dark mode. For Codex, the local browser, and static files, pass `--appearance system` so the view follows the host or OS mode. Use `--appearance light` or `--appearance dark` only when the user asks for a fixed mode. Without a flag the view renders light, which can clash with a dark host. Both palettes use the same renderer. Use the configured theme pack; preserve an existing product's design system. User settings live at `~/.config/visual-response/config.json` (or `$VISUAL_RESPONSE_CONFIG`); project settings live in `.visual-response.json`. Theme, appearance, copy, and placement limits are settings. Host delivery is fixed in code, with thin adapters for feedback and drafts.
 
 Generate only the spec and, for Claude, the small loader. Browser interactions cost no model turn. Flows stay static with manual steps. Keep CSS transitions brief and honor reduced motion; no animation engine is included.
 
