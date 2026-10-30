@@ -44,7 +44,7 @@ Placement considers content size, available width, and theme sizes. Use `present
 
 ## Appearance and cost
 
-Light is the default. Use `--appearance dark` for dark mode or `--appearance system` to follow host/OS preference. Both palettes use the same renderer. Use the configured theme pack; preserve an existing product's design system. User settings live at `~/.config/visual-response/config.json` (or `$VISUAL_RESPONSE_CONFIG`); project settings live in `.visual-response.json`. Theme, appearance, copy, and placement limits are settings. Host delivery is fixed in code, with thin adapters for feedback and drafts.
+By default, follow the harness appearance: Claude inline uses `host`; other surfaces use `system` (host light/dark markers when exposed, otherwise OS preference). Honor explicit appearance settings in the spec, flags, project, or user config before this fallback. Do not add appearance flags just to enforce the default; use them for a requested override. Both palettes use the same renderer. Use the configured theme pack; preserve an existing product's design system. User settings live at `~/.config/visual-response/config.json` (or `$VISUAL_RESPONSE_CONFIG`); project settings live in `.visual-response.json`. Theme, appearance, copy, and placement limits are settings. Host delivery is fixed in code, with thin adapters for feedback and drafts.
 
 Generate only the spec and, when choosing Claude's optional URL loader, the small loader. Browser interactions cost no model turn. Flows stay static with manual steps. Keep CSS transitions brief and honor reduced motion; no animation engine is included.
 

@@ -25,4 +25,4 @@ Claude Code (including its desktop Code tab) auto-detects as `claude-code` and u
 
 **Add to chat** fills the user's message box through `sendPrompt`; the user presses Enter. The message contains a readable summary and JSON feedback. Saving drafts uses localStorage only when the sandbox permits it. Acknowledge the feedback actually received.
 
-The configured theme applies. System appearance follows host data-theme/data-mode or OS preference. Explicit light/dark stays fixed; host appearance can use Claude's CSS colors with theme fallbacks. The bundle includes all Oat CSS, so the loader makes no separate stylesheet request.
+The configured theme applies. Appearance defaults to `host`, using Claude's available CSS colors and light/dark markers with theme/OS fallbacks. Explicit appearance choices from the spec, flags, project, or user configuration take priority; omit extra flags when following the default. Explicit light/dark stays fixed. The bundle includes all Oat CSS, so the loader makes no separate stylesheet request.

@@ -40,7 +40,7 @@ Each render writes `<output-stem>.spec.json`. Patches support `upsert` (merge ro
 
 ## Settings and themes
 
-Settings merge: shipped defaults → small built-in host defaults → user config → project config → flags. The spec can override appearance. User config is `$VISUAL_RESPONSE_CONFIG`, otherwise `$XDG_CONFIG_HOME/visual-response/config.json` or `~/.config/visual-response/config.json`. Project config is `.visual-response.json`, searched up to the repository root. `--print-config` shows the effective values and their sources.
+Settings merge: shipped defaults → small built-in host defaults → user config → project config → flags. The spec can override appearance. Appearance defaults to `host` for Claude inline and `system` elsewhere; an explicit fixed mode at a higher-priority layer wins. A null config appearance resets to the harness default, rather than the theme pack's fixed mode. Agents should omit appearance flags unless the user requests an override. User config is `$VISUAL_RESPONSE_CONFIG`, otherwise `$XDG_CONFIG_HOME/visual-response/config.json` or `~/.config/visual-response/config.json`. Project config is `.visual-response.json`, searched up to the repository root. `--print-config` shows the effective values and their sources.
 
 Settings cover theme/fallback, appearance, harness, enabled views, placement, feedback prompts/message format, copy, and an optional pinned Claude renderer URL. `feedback.messageFormat` is `json`, `compact`, or `summary` (a readable line followed by JSON). `copy` can override selected labels/status messages. Claude's default button is **Add to chat**, with a status asking the user to press Enter.
 
