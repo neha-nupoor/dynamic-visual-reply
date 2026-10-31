@@ -18,7 +18,7 @@
 [data-dynamic-visual-reply-root] .vr-field input,[data-dynamic-visual-reply-root] .vr-field select,[data-dynamic-visual-reply-root] .vr-field textarea {width:100%;font:inherit;margin:0;background-color:var(--vr-input-fill);color:var(--vr-text);border:1px solid var(--oat-input);border-radius:var(--vr-radius-control);padding:var(--vr-input-padding);min-height:var(--vr-input-height)}
 [data-dynamic-visual-reply-root] .vr-field select {padding-inline-end:32px}
 [data-dynamic-visual-reply-root] .vr-field :is(input,select,textarea):focus {background-color:var(--vr-input-fill-active);border-color:var(--oat-ring)}
-[data-dynamic-visual-reply-root] .vr-field textarea {height:auto;resize:vertical}
+[data-dynamic-visual-reply-root] .vr-field textarea {height:auto;resize:vertical;overflow:auto;max-width:100%}
 [data-dynamic-visual-reply-root] .vr-field small {font-size:var(--vr-small);color:var(--vr-muted);font-weight:400}
 [data-dynamic-visual-reply-root] .vr-check {display:inline-flex;align-items:center;gap:6px;font-size:var(--vr-small);font-weight:400;min-height:var(--vr-control-height);margin:0}
 [data-dynamic-visual-reply-root] .vr-check input,[data-dynamic-visual-reply-root] input.vr-checkbox {width:16px;height:16px;flex:none;border-radius:0;margin:0;border-color:var(--vr-control-border)}

@@ -174,7 +174,7 @@ Open the local URL printed by the server. Keep it running while reviewing, submi
 
 ## Appearance
 
-Desktop views use compact spacing: 14 px body text, 32 px controls, and an 18 px inline title. Touch controls retain larger targets. Codex and Claude share this preset; native host density is not detected automatically. Existing theme settings can override the sizes.
+Desktop views use compact spacing: 14 px body text, 32 px controls, and an 18 px inline title. Free-text form answers start compact and can be resized vertically with the bottom-right handle. Touch controls retain larger targets. Codex and Claude share this preset; native host density is not detected automatically. Existing theme settings can override the sizes.
 
 Appearance follows the host where supported, with OS preference as a fallback. Explicit choices take priority:
 
