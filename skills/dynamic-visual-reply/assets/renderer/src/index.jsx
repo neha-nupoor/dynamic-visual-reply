@@ -200,7 +200,7 @@ function App(){
           {field(t('form.editableOption'),option.label,label=>assign('options',f.id,options.map(item=>item.id===option.id?{...item,label}:item)),{className:'vr-grow',hideLabel:true,'aria-label':'Option '+option.id})}
         </div>)}</fieldset>;
       }
-      return field(f.label,value,next=>assign('fields',f.id,f.type==='number'&&next!==''?Number(next):next),{key:f.id,type:f.type==='number'?'number':'text',multiline:f.type==='textarea',minRows:f.type==='textarea'?3:undefined,options:f.type==='select'?f.options:undefined,helperText:f.help});
+      return field(f.label,value,next=>assign('fields',f.id,f.type==='number'&&next!==''?Number(next):next),{key:f.id,type:f.type==='number'?'number':'text',multiline:f.type==='textarea'||f.type==='text',minRows:f.type==='textarea'?3:1,options:f.type==='select'?f.options:undefined,helperText:f.help});
     })}</div>;
   }else if(spec.view==='flow'){
     const active=Math.min(nodes.length-1,frame);
