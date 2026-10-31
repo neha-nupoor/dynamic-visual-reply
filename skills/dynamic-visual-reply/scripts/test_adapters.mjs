@@ -89,3 +89,12 @@ test('renamed adapters restore legacy browser drafts and prefer newer saved valu
     assert.ok(store.has('dynamic-visual-reply:k1'));
   }
 });
+
+test('codex state-only bridge preserves drafts without advertising chat submission',()=>{
+  const saved=[];
+  const {host}=load('codex.js',{openai:{setWidgetState:s=>saved.push(s),widgetState:{privateContent:{draft}}}});
+  assert.equal(host.capabilities.submit,'none');
+  host.saveDraft('k1',draft,{modelContent:{viewId:'v'}});
+  same(saved[0].privateContent.draft,draft);
+  same(host.loadDraft('k1'),draft);
+});

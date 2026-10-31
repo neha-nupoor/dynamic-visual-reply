@@ -292,3 +292,19 @@ test('local server handles idle connections and saves the exact feedback envelop
   }
   assert.ok(!fs.readdirSync(path.dirname(feedback)).some(name => name.endsWith('.tmp')));
 });
+
+test('explicit Codex inline overrides card-count placement but preserves payload limits', t => {
+  const spec = {schemaVersion: 1, viewId: 'inline-cards', view: 'cards', title: 'Review ideas',
+    rows: ['a', 'b', 'c'].map(id => ({id, title: id, summary: 'An idea to review'}))};
+  assert.equal(page(t, spec, context('codex'), 'auto').result.handoff.type, 'serve');
+  const {result, html} = page(t, spec, context('codex'), 'inline');
+  assert.equal(result.harness, 'codex');
+  assert.equal(result.output, 'fragment');
+  assert.equal(block(html, 'config').adapter, 'codex');
+  const reference = result.contentReference;
+  assert.equal(reference, result.handoff.value);
+  assert.match(reference, /^visualize\{"path":.*\}$/);
+  assert.equal(JSON.parse(reference.slice('visualize'.length, -1)).path, result.path);
+  const limited = context('codex', {placement: {maxInlineBytes: 1000}});
+  assert.throws(() => page(t, spec, limited, 'inline'), /exceeds/);
+});
