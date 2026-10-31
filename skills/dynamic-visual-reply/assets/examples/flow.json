@@ -1,4 +1,4 @@
 {
   "schemaVersion":1,"viewId":"sample-flow","view":"flow","title":"Sample: batch feedback flow",
-  "nodes":[{"id":"select","title":"Select","detail":"Choose records by stable IDs."},{"id":"edit","title":"Edit","detail":"Attach instructions to those records."},{"id":"review","title":"Review","detail":"Preview the exact batch scope."},{"id":"send","title":"Send","detail":"Submit deliberately and check the receipt."}]
+  "nodes":[{"id":"select","title":"Select records","detail":"Keep the selection tied to stable record IDs."},{"id":"edit","title":"Add instructions","detail":"Keep each instruction tied to its record."},{"id":"review","title":"Preview batch","detail":"Confirm which records and changes will be sent."},{"id":"send","title":"Submit feedback","detail":"Check the receipt before treating feedback as received."}]
 }
