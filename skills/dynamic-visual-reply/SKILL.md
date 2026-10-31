@@ -23,6 +23,15 @@ Never let the view replace the answer. The chat reply must stand on its own: sum
 
 Choose the view by the response you expect: `table` for many comparable records, `cards` for a few alternatives, `form` for several questions, `kanban` for moving items between stages. Use `flow` only when each step needs its own response; a plain explanation of a sequence stays in chat. Many items usually exceed the inline limits and open as a full browser page; that is expected, so do not shrink content to force inline.
 
+## Write scannable items
+
+- Front-load distinguishing words. Use short verb–object action labels or concise category names, with tense that reflects the item's actual state.
+- Give each peer group one repeatable structure, such as action and expected result. Keep option labels short; put supporting context in nearby text or expandable details where the view supports it.
+- Use one term per concept. Preserve meaningful distinctions such as Reviewed versus Approved and Sent versus Received; submission wording must match the delivery behavior.
+- Give peers comparable detail. Use differences in length, emphasis, or metadata to convey real differences; preserve important exceptions without inventing missing facts or forcing equal word counts.
+
+Adapted from [Five Principles for Generating Readable AI Text in Bulk](https://fsdatalab.github.io/blog/agent-text-at-scale/).
+
 ## Render from a spec
 
 One prebuilt Oat/Preact renderer serves every host, with native HTML controls and scoped CSS inside the same bundle. Write content as JSON. Codex and browser handoffs use the generated file directly; Claude's string-based handoff is described below. Normal use requires Node.js 22.20+ and no package installation. Paths below are relative to this skill.

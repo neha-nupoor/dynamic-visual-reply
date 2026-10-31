@@ -1,8 +1,8 @@
 {
   "schemaVersion":1,"viewId":"sample-cards","view":"cards","title":"Sample: choose a response surface",
   "rows":[
-    {"id":"inline","title":"Inline","summary":"Small explanations in the conversation","details":"Lowest navigation overhead.","actionLabel":"Choose inline"},
-    {"id":"panel","title":"Side panel","summary":"Substantial review and batch editing","recommended":true,"details":"Keeps the work beside the conversation.","actionLabel":"Choose side panel"},
-    {"id":"reference","title":"Reference document","summary":"Material to revisit later","details":"Choose a destination when you want to save it.","actionLabel":"Choose reference"}
+    {"id":"inline","title":"Inline","summary":"Review a few items in the conversation.","details":"Fits short reviews that need little navigation.","actionLabel":"Choose inline"},
+    {"id":"panel","title":"Side panel","summary":"Review a larger batch beside the conversation.","recommended":true,"details":"Fits longer reviews with several edits or instructions.","actionLabel":"Choose side panel"},
+    {"id":"reference","title":"Reference document","summary":"Review saved material in a document.","details":"Fits reviews that need a durable record.","actionLabel":"Choose reference"}
   ]
 }

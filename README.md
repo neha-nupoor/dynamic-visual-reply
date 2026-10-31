@@ -27,10 +27,10 @@ The agent writes a JSON spec; the Node helper supplies the existing UI. The tabl
 | Widget | Example size | Estimated spec tokens |
 | --- | --- | ---: |
 | [Table](skills/dynamic-visual-reply/assets/examples/table.json) | 4 records, 3 columns | 169 |
-| [Cards](skills/dynamic-visual-reply/assets/examples/cards.json) | 3 cards | 131 |
+| [Cards](skills/dynamic-visual-reply/assets/examples/cards.json) | 3 cards | 139 |
 | [Form](skills/dynamic-visual-reply/assets/examples/form.json) | 4 fields | 175 |
 | [Board](skills/dynamic-visual-reply/assets/examples/kanban.json) | 3 items | 83 |
-| [Flow](skills/dynamic-visual-reply/assets/examples/flow.json) | 4 steps | 97 |
+| [Flow](skills/dynamic-visual-reply/assets/examples/flow.json) | 4 steps | 111 |
 
 Counted on October 30, 2026, with [js-tiktoken](https://github.com/dqbd/tiktoken/tree/main/js) 1.0.21 and the `o200k_base` encoding. These are **spec-text estimates, not measured total tokens per widget**. They exclude chat context, skill instructions, reasoning, tool calls, captions, and feedback replies. Model tokenizers, formatting, and content length can change the counts. No usability or percentage token-savings comparison was measured.
 
