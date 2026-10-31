@@ -40,7 +40,7 @@ Running the Node renderer uses **zero model tokens**. Codex and local browser ro
 
 ### Inside Codex
 
-Recorded in a real Codex chat: enter instructions for individual steps and use **Send to chat**. The clip shows the native widget and its button; the complete feedback receipt was verified separately in the same chat.
+Recorded in a real Codex chat: enter instructions for individual steps and use **Send to chat**. The clip shows the native widget and its button; the complete feedback receipt was verified separately in the same chat. It predates the compact spacing update; the component gallery below shows the current sizing.
 
 ![Native Codex widget interaction](docs/media/codex-inline-demo.gif)
 
@@ -173,6 +173,8 @@ Open the local URL printed by the server. Keep it running while reviewing, submi
 `doctor.mjs` checks local files, configuration, bundle hashes, and theme contrast. It cannot establish that an inline host tool or submission bridge exists.
 
 ## Appearance
+
+Desktop views use compact spacing: 14 px body text, 32 px controls, and an 18 px inline title. Touch controls retain larger targets. Codex and Claude share this preset; native host density is not detected automatically. Existing theme settings can override the sizes.
 
 Appearance follows the host where supported, with OS preference as a fallback. Explicit choices take priority:
 

@@ -4,18 +4,18 @@
   "version": 1,
   "fontFamily": "system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
   "type": {
-    "body": 16,
-    "small": 14,
+    "body": 14,
+    "small": 13,
     "meta": 12,
-    "title": 32,
-    "titleCompact": 28,
-    "inlineTitle": 24,
-    "section": 18,
-    "lineHeight": 1.5,
+    "title": 24,
+    "titleCompact": 20,
+    "inlineTitle": 18,
+    "section": 14,
+    "lineHeight": 1.45,
     "titleLineHeight": 1.25,
     "titleTracking": "0"
   },
-  "spacingUnit": 8,
+  "spacingUnit": 4,
   "radius": {
     "control": 2,
     "surface": 0,
@@ -25,27 +25,27 @@
     "maxWidth": 1100,
     "cardMinWidth": 220,
     "flowMinWidth": 150,
-    "surfacePadding": 24,
-    "contentPadding": 32,
-    "contentPaddingCompact": 16,
-    "inlinePadding": 16
+    "surfacePadding": 12,
+    "contentPadding": 16,
+    "contentPaddingCompact": 12,
+    "inlinePadding": 12
   },
   "control": {
-    "minHeight": 48,
-    "inputHeight": 48,
-    "paddingX": 16,
-    "paddingY": 12,
+    "minHeight": 32,
+    "inputHeight": 32,
+    "paddingX": 10,
+    "paddingY": 4,
     "inputPadding": [
-      10,
-      14
+      4,
+      8
     ],
     "focusWidth": 2,
     "focusOffset": 2
   },
   "table": {
     "cellPadding": [
-      10,
-      10
+      6,
+      8
     ]
   },
   "light": {

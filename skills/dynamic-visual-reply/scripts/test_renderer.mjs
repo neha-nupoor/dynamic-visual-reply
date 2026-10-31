@@ -102,13 +102,14 @@ test('patches merge fields, retain other rows, remove records and increment revi
   assert.ok(!updated.rows.some(row => row.id === 'flows')); assert.equal(updated.revision, 2);
   assert.throws(() => render.applyPatch(spec, {unknown: true}), /Unknown patch/);
 });
-test('placement preserves the existing sample decisions and viewport behavior', () => {
+test('placement respects compact geometry, item limits and viewport bounds', () => {
   for (const [view, mode] of Object.entries({table: 'standalone', cards: 'standalone', form: 'standalone', kanban: 'inline', flow: 'inline'}))
     assert.equal(render.placement(example(view)).mode, mode);
   const table = example('table'); table.rows = table.rows.slice(0, 1);
   assert.equal(render.placement(table).mode, 'inline');
   assert.equal(render.placement(table, 360).mode, 'standalone');
-  table.rows.push({id: 'extra', name: 'Extra'}); assert.equal(render.placement(table).mode, 'standalone');
+  table.rows.push({id: 'extra', name: 'Extra'}); assert.equal(render.placement(table).mode, 'inline');
+  assert.equal(render.placement(table, undefined, 240).mode, 'standalone');
   table.rows = table.rows.slice(0, 1); table.rows[0].name = 'Long description '.repeat(100);
   assert.equal(render.placement(table).mode, 'standalone');
 });
