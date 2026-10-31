@@ -88,7 +88,7 @@ Both themes use the same controls and layout:
 
 - **An agent with file access and command execution** to read the skill and run its helpers.
 - **Node.js 22.20+** on the machine where the agent runs. The helpers validate JSON specs, generate HTML, and run the local feedback server using Node built-ins. No Python or runtime npm packages are required.
-- **A browser or a supported inline widget tool** to display the result. The widget uses the same prebuilt JavaScript renderer in every harness.
+- **A browser or supported inline rendering** to display the result. Codex can use its documented `visualize` content-reference contract without a separate widget tool. Claude inline requires a suitable host widget tool. All routes use the same prebuilt JavaScript renderer.
 
 The renderer is prebuilt, so normal use needs no npm install or build step. The optional installer below also requires Git; manual installation uses the same Node runtime.
 
@@ -124,16 +124,19 @@ Ask your agent:
 
 The agent chooses a view, writes a JSON spec, and runs the bundled helper. You review the widget and submit when ready. Stable record IDs keep your feedback attached to the right items across sorting, filtering, and compatible updates.
 
-Your agent checks the tools available in the current session before choosing where to display a view:
+Your agent checks the current session's documented rendering contracts and available tools before choosing where to display a view:
 
 | Environment | Display route |
 | --- | --- |
-| Codex with an inline widget tool | Inline for small views; local browser for larger ones |
-| Claude with a suitable inline widget tool | Embedded HTML fragment; local browser if the payload is unsuitable |
+| Codex with the documented `visualize` content-reference contract | Inline for small views; local browser for larger ones |
+| Codex terminal without that contract | Local browser or browser panel |
+| Claude chat with a suitable inline widget tool | Embedded HTML fragment; local browser if the payload is unsuitable |
 | Claude Code, Cursor, Windsurf, Gemini CLI, GitHub Copilot | Local browser or browser panel |
 | Browser without a feedback bridge | Offline HTML with copy/export |
 
-Installing a skill does not add a widget tool to a harness. Claude Code installation and Claude chat widget availability are separate capabilities. A chat-only session without file access and command execution cannot run these helpers by installation alone.
+Installing a skill does not add rendering APIs to a harness. Codex's documented content-reference contract does not require a dedicated widget tool. Claude Code installation and Claude chat widget availability are separate capabilities. A chat-only session without file access and command execution cannot run these helpers by installation alone.
+
+If you explicitly request inline display and the Codex contract is available, the agent overrides automatic item-count and height rules. The inline payload limit still applies.
 
 All routes embed the same renderer and CSS. Claude's inline tool takes the complete HTML as a string, including about 82 KB of renderer plus view data, so it uses more model context than a file-based handoff. Its native rendering and feedback path have not yet been verified; browser fixtures use simulated host bridges. Follow the current host tool's instructions and limits.
 
@@ -141,7 +144,7 @@ If rendering is unavailable or fails, the agent provides the intended answer as 
 
 ### How feedback reaches the agent
 
-- **Codex inline:** **Send to chat** uses the native bridge when available.
+- **Codex inline:** **Send to chat** uses the native bridge when available. Inline display can work without the submission API; in that case, use Prepare message, Copy, or Export JSON to return feedback yourself.
 - **Claude inline:** **Add to chat** prepares the message through the host bridge; press Enter to send it.
 - **Local browser:** **Submit answers** or **Submit instructions** saves feedback locally. Return to chat and ask the agent to continue; the agent reads the saved feedback. Submission does not start an agent turn by itself.
 - **Offline file:** copy the prepared feedback or export JSON, then return it to the agent in chat.
@@ -187,7 +190,7 @@ Use `"light"` for light mode, or `null` to restore the harness default. Preserve
 
 - **Skill is not discovered:** check its installation path and restart the agent session. Verify the complete skill folder was installed.
 - **Node is missing:** install Node.js 22.20+ where the agent executes commands. The prebuilt renderer needs no npm install.
-- **Widget does not appear:** check actual tool availability and payload limits. Use the browser route when available, or continue in normal chat.
+- **Widget does not appear:** check the host's documented rendering contract, required tools, and payload limits. Codex does not need a separate widget tool when its content-reference contract is available. Use the browser route when available, or continue in normal chat.
 - **Browser feedback does not arrive:** use the server's HTTP URL rather than opening the file directly. Submit, then ask the agent to read the feedback file; local submission does not wake the agent.
 - **Settings fail after updating:** older installations may contain an obsolete `delivery` object or use the former `visual-response-design` skill name. See [migration guidance](skills/dynamic-visual-reply/references/renderer-contract.md#migrating-older-installations). Disable the old skill after checking the new installation to avoid duplicate discovery.
 
