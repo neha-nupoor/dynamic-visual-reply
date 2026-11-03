@@ -1,0 +1,104 @@
+{
+  "$schema": "../../config/schema/theme.schema.json",
+  "name": "report-blue",
+  "version": 1,
+  "fontFamily": "system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+  "type": {
+    "body": 16,
+    "small": 14,
+    "meta": 12,
+    "title": 36,
+    "titleCompact": 28,
+    "inlineTitle": 24,
+    "section": 18,
+    "lineHeight": 1.5,
+    "titleLineHeight": 1.25,
+    "titleTracking": "-0.025em"
+  },
+  "spacingUnit": 8,
+  "radius": {
+    "control": 8,
+    "surface": 12,
+    "chip": 4
+  },
+  "layout": {
+    "maxWidth": 1200,
+    "cardMinWidth": 220,
+    "flowMinWidth": 150,
+    "surfacePadding": 20,
+    "contentPadding": 32,
+    "contentPaddingCompact": 20,
+    "inlinePadding": 16
+  },
+  "control": {
+    "minHeight": 44,
+    "inputHeight": 44,
+    "paddingX": 14,
+    "paddingY": 8,
+    "inputPadding": [
+      8,
+      12
+    ],
+    "focusWidth": 2,
+    "focusOffset": 2
+  },
+  "table": {
+    "cellPadding": [
+      10,
+      12
+    ]
+  },
+  "light": {
+    "canvas": "#f4f5f8",
+    "surface": "#ffffff",
+    "text": "#222326",
+    "muted": "#59616f",
+    "divider": "#e2e4e9",
+    "controlBorder": "#7c8390",
+    "accent": "#365de8",
+    "onAccent": "#ffffff",
+    "selected": "#f1f4fd",
+    "hover": "#f0f2f6",
+    "success": "#267044",
+    "warning": "#825900",
+    "error": "#b52d35",
+    "inputFill": "#f4f5f8",
+    "inputFillActive": "#ffffff",
+    "inputBorder": "#7c8390",
+    "secondarySurface": "#f4f5f8",
+    "successFill": "#edf6f0",
+    "warningFill": "#fbf4e6",
+    "errorFill": "#fceff0",
+    "series1": "#365de8",
+    "series2": "#778cd1",
+    "series3": "#aab7df",
+    "series4": "#d7dce8"
+  },
+  "dark": {
+    "canvas": "#151a22",
+    "surface": "#1e2530",
+    "text": "#edf1f7",
+    "muted": "#b0bbcc",
+    "divider": "#3b4657",
+    "controlBorder": "#7c899c",
+    "accent": "#a9c2ff",
+    "onAccent": "#172b51",
+    "selected": "#283a5b",
+    "hover": "#2a3444",
+    "success": "#8bd5a5",
+    "warning": "#f0c66e",
+    "error": "#ffabb0",
+    "inputFill": "#2a3444",
+    "inputFillActive": "#1e2530",
+    "inputBorder": "#7c899c",
+    "secondarySurface": "#2a3444",
+    "successFill": "#233b2d",
+    "warningFill": "#3d3421",
+    "errorFill": "#452b32",
+    "series1": "#a9c2ff",
+    "series2": "#8299d3",
+    "series3": "#5d73ae",
+    "series4": "#3c4f7b"
+  },
+  "label": "Report Blue"
+}

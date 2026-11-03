@@ -13,6 +13,11 @@ See the [read-only example](skills/dynamic-visual-reply/assets/examples/read-onl
 
 One shared renderer, built with [Oat](https://github.com/knadh/oat) and [Preact](https://preactjs.com/), provides light and dark themes, neutral controls, 2 px corners, and brief CSS motion. The renderer is bundled with the skill—no CDN, API key, or separate service is needed.
 
+Prefer the blue-accent report style? The optional [Report Blue kit](skills/dynamic-visual-reply/references/report-kit.md)
+includes light/dark tokens and CSS-only metric cards, status labels, rows, legends
+and simple bars. It works with the existing theme loader and adds **zero JavaScript
+to the renderer bundle**. It includes no personal report data or monthly layout.
+
 ## When to use it
 
 Use a widget when several items need different responses. Keep short answers, prose, and overall feedback in chat.

@@ -175,6 +175,27 @@ test('host detection is a suggestion and explicit harness selection wins', () =>
   assert.equal(config.detectHarness({})[0], 'static');
   assert.equal(config.resolve({}, {harness: 'browser-local', env: {CLAUDECODE: '1'}, isolated: true}).harness.id, 'browser-local');
 });
+test('Report Blue uses the existing theme path and exports accessible light/dark roles', t => {
+  const themePath = path.join(config.ROOT, 'assets/report-kit/theme.json');
+  const resolved = context('codex', {theme: themePath});
+  assert.equal(resolved.theme.name, 'report-blue');
+  assert.deepEqual(config.contrastProblems(resolved.theme), []);
+  for (const mode of ['light', 'dark']) {
+    const c = resolved.theme[mode];
+    for (const role of ['success', 'warning', 'error'])
+      assert.ok(config.contrast(c[role], c[role + 'Fill']) >= 4.5, mode + ' ' + role);
+  }
+  const css = config.cssVariables(resolved.theme, 'system');
+  assert.ok(css.includes('--vr-series1: #365de8;'));
+  assert.ok(css.includes('--vr-series4: #3c4f7b;'));
+  assert.ok(css.includes(':root[data-theme="dark"]'));
+  const spec = {...example('cards'), readOnly: true};
+  const {html, result} = page(t, spec, resolved);
+  assert.equal(result.rendererHash, render.manifest().sha256);
+  assert.equal(block(html, 'theme').name, 'report-blue');
+  assert.equal(block(html, 'theme').light.series2, '#778cd1');
+  assert.equal(context().theme.name, 'generic');
+});
 test('generic and legacy theme names resolve to one readable theme', () => {
   for (const name of ['generic', 'base-web', 'neutral']) {
     const resolved = context('codex', {theme: name});

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Report Blue component sample</title>
+<!-- Generate report-tokens.css with the existing --theme-css helper; see references/report-kit.md. -->
+<link rel="stylesheet" href="report-tokens.css"><link rel="stylesheet" href="components.css"></head>
+<body><main class="dvr-report">
+  <h1>Project summary</h1><p class="dvr-muted">Fictional sample · basic components, no report logic</p>
+  <div class="dvr-grid">
+    <dl class="dvr-stat"><dt>Delivered items</dt><dd>8</dd><p>Verified against the project record.</p></dl>
+    <dl class="dvr-stat"><dt>Items in progress</dt><dd>3</dd><p>Milestones reached; follow-up remains.</p></dl>
+  </div>
+  <section class="dvr-section"><h2>Work mix</h2>
+    <div class="dvr-legend"><span><i class="dvr-swatch" data-series="1" aria-hidden="true"></i>Build · 40%</span><span><i class="dvr-swatch" data-series="2" aria-hidden="true"></i>Research · 30%</span><span><i class="dvr-swatch" data-series="3" aria-hidden="true"></i>Writing · 20%</span><span><i class="dvr-swatch" data-series="4" aria-hidden="true"></i>Admin · 10%</span></div>
+    <div class="dvr-meter" role="img" aria-label="Work mix: build 40%, research 30%, writing 20%, admin 10%"><span data-series="1" style="--share:40"></span><span data-series="2" style="--share:30"></span><span data-series="3" style="--share:20"></span><span data-series="4" style="--share:10"></span></div>
+  </section>
+  <section class="dvr-section"><h2>Outcomes</h2><ul class="dvr-list">
+    <li><span>Released the first working version.</span><span class="dvr-status" data-status="complete">Shipped</span></li>
+    <li><span>Collected user feedback for the next update.</span><span class="dvr-status" data-status="pending">In progress</span></li>
+    <li><span>Publication status has not been checked.</span><span class="dvr-status">Unverified</span></li>
+  </ul></section>
+</main></body></html>

@@ -54,7 +54,7 @@ Settings merge: shipped defaults → small built-in host defaults → user confi
 
 Settings cover theme/fallback, appearance, harness, enabled views, placement, feedback prompts/message format, and copy. `feedback.messageFormat` is `json`, `compact`, or `summary` (a readable line followed by JSON). `copy` can override selected labels/status messages. Claude's default button is **Add to chat**, with a status asking the user to press Enter.
 
-The single bundled theme is `config/theme.json`, named `generic`. It provides the approved spacious neutral appearance: monochrome actions, soft light backgrounds, visible borders, square content surfaces, 2 px controls, and labels above fields. Oat/native controls use the same tokens in both appearances. See [theme.md](theme.md).
+The default bundled theme is `config/theme.json`, named `generic`. It provides the approved spacious neutral appearance: monochrome actions, soft light backgrounds, visible borders, square content surfaces, 2 px controls, and labels above fields. Oat/native controls use the same tokens in both appearances. See [theme.md](theme.md).
 
 Custom themes can still be a JSON path, a folder containing `theme.json` or `assets/theme.json`, an inline object, or an installed pack name. Names are searched beside the skill, in `$DYNAMIC_VISUAL_REPLY_THEME_PATH`, and in common skill directories. Missing optional tokens inherit generic values. Legacy `base-web` and `neutral` names are aliases for `generic`; the compact duplicate has been removed. Old motion tokens are ignored. The split accent roles and `--vr-` CSS variables remain supported.
 

@@ -1,6 +1,9 @@
 # Generic theme
 
-The single bundled theme lives in `config/theme.json` and is named `generic`. Legacy `base-web` and `neutral` names resolve to this same file. It styles the shared Oat/Preact renderer with native controls and system fonts. Its approved treatment is monochrome actions, clear labels above controls, square content surfaces, and 2 px control/badge corners.
+The optional [Report Blue kit](report-kit.md) supplies the blue-accent report palette
+and CSS-only primitives. It is selected explicitly and does not replace this default.
+
+The default bundled theme lives in `config/theme.json` and is named `generic`. Legacy `base-web` and `neutral` names resolve to this same file. It styles the shared Oat/Preact renderer with native controls and system fonts. Its approved treatment is monochrome actions, clear labels above controls, square content surfaces, and 2 px control/badge corners.
 
 The original spacing, typography and dark palette were informed by Base Web 18.2.0 on October 29, 2026: [form controls](https://baseweb.design/components/form-control/), [border tokens](https://github.com/uber/baseweb/blob/main/src/themes/shared/borders.ts), and [input styles](https://github.com/uber/baseweb/blob/main/src/input/styled-components.ts). The library implementation is [Oat](https://oat.ink/); this preset does not load Uber's Base Web library.
 

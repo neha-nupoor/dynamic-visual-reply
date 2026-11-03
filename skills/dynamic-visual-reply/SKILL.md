@@ -83,6 +83,11 @@ Placement considers content size, available width, and theme sizes. Use `present
 
 ## Appearance and cost
 
+For requested report styling, the optional [Report Blue kit](references/report-kit.md)
+provides a portable light/dark palette and CSS-only metric cards, status labels,
+rows, legends and simple bars. Read that reference only when using this style.
+It uses the existing theme loader and adds no renderer JavaScript or report logic.
+
 By default, follow the harness appearance: Claude inline uses `host`; other surfaces use `system` (host light/dark markers when exposed, otherwise OS preference). Honor explicit appearance settings in the spec, flags, project, or user config before this fallback. Do not add appearance flags just to enforce the default; use them for a requested override. Both palettes use the same renderer. Use the configured theme pack; preserve an existing product's design system. User settings live at `~/.config/dynamic-visual-reply/config.json` (or `$DYNAMIC_VISUAL_REPLY_CONFIG`); project settings live in `.dynamic-visual-reply.json`. Theme, appearance, copy, and placement limits are settings. Host delivery is fixed in code, with thin adapters for feedback and drafts.
 
 Author only the spec; scripts assemble the prebuilt renderer. Do not regenerate or edit the bundle in a tool call. Claude's widget tool takes HTML as a string, so reading and passing its generated fragment uses model context; use a local browser when that cost or the tool limit makes inline delivery unsuitable. Browser interactions cost no model turn. Flows stay static with manual steps. Keep CSS transitions brief and honor reduced motion; no animation engine is included.
