@@ -47,6 +47,9 @@
 [data-dynamic-visual-reply-root] .vr-card {display:grid;align-content:start;gap:8px;padding:var(--vr-surface-padding);border:1px solid var(--vr-divider);border-radius:var(--vr-radius-surface);background:var(--oat-card);box-shadow:none;transition:background-color var(--oat-transition),border-color var(--oat-transition)}
 [data-dynamic-visual-reply-root] .vr-card.vr-selected,[data-dynamic-visual-reply-root] .vr-step.vr-selected {background:var(--vr-selected);border-color:var(--vr-accent-border)}
 [data-dynamic-visual-reply-root] .vr-card .vr-item-feedback {margin:0}
+[data-dynamic-visual-reply-root] .vr-cards>.vr-card {display:flex;flex-direction:column}
+[data-dynamic-visual-reply-root] .vr-cards .vr-card-actions {margin-top:auto}
+[data-dynamic-visual-reply-root] .vr-cards .vr-badge {align-self:flex-start}
 [data-dynamic-visual-reply-root] .vr-column {display:grid;align-content:start;gap:8px;border:1px solid var(--vr-divider);padding:12px;border-radius:var(--vr-radius-surface)}
 [data-dynamic-visual-reply-root] .vr-options {border:0;margin:0;padding:0}
 [data-dynamic-visual-reply-root] .vr-options legend {font-size:var(--vr-body);font-weight:600;margin-bottom:6px}

@@ -46,6 +46,8 @@ Never let the view replace the answer. The chat reply must stand on its own: sum
 
 Choose the view by the response you expect: `table` for many comparable records, `cards` for a few alternatives, `form` for several questions, `kanban` for moving items between stages. Use `flow` only when each step needs its own response; a plain explanation of a sequence stays in chat. Many items usually exceed the inline limits and open as a full browser page; that is expected, so do not shrink content to force inline.
 
+Cards stack full-width review items by default; read-only cards use a grid. Use `layout: "grid"` for short alternatives that benefit from comparison, or `layout: "stack"` for longer read-only items. Layout is independent of inline versus standalone placement. Keep titles and summaries short and put supporting evidence in `details`.
+
 ## Write scannable items
 
 - Front-load distinguishing words. Use short verb–object action labels or concise category names, with tense that reflects the item's actual state.

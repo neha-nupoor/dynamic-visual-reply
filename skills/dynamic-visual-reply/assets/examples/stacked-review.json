@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "viewId": "sample-stacked-review",
+  "view": "cards",
+  "title": "Review next actions",
+  "rows": [
+    {"id": "backup", "title": "Check the backup", "summary": "Verify the saved change and report where it is preserved.", "details": "Inspect the source and remote history. Return the commit link or the missing preservation step.", "recommended": true, "actionLabel": "Select backup check"},
+    {"id": "delivery", "title": "Check feedback delivery", "summary": "Confirm the next received reply contains the selected items and their notes.", "details": "A saved draft does not prove delivery. Compare the received feedback with the review choices.", "actionLabel": "Select delivery check"},
+    {"id": "usage", "title": "Inspect repeated work", "summary": "Find one supported explanation for repeated work and propose one bounded improvement.", "details": "Check the evidence before recommending a change. Report uncertainty when the source is incomplete.", "actionLabel": "Select investigation"}
+  ]
+}

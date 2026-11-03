@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import * as config from './visual-config.mjs';
+import {cardColumns} from '../assets/renderer/src/card-layout.mjs';
 const {ROOT, load, requireValue, object} = config;
 export {ROOT, load};
 export const VIEWS = ['table', 'cards', 'form', 'kanban', 'flow'];
@@ -94,7 +95,7 @@ export function resolveData(spec, source) {
 }
 export function applyPatch(spec, patch) {
   requireValue(object(patch), 'Patch must be an object');
-  const allowed = ['upsert', 'remove', 'title', 'context', 'revision', 'fields', 'nodes'];
+  const allowed = ['upsert', 'remove', 'title', 'context', 'revision', 'fields', 'nodes', 'layout'];
   requireValue(Object.keys(patch).every(key => allowed.includes(key)), 'Unknown patch operation');
   if (Object.hasOwn(patch, 'upsert') || Object.hasOwn(patch, 'remove')) {
     requireValue(['table', 'cards', 'kanban'].includes(spec.view), 'Row patches require a record view');
@@ -105,7 +106,7 @@ export function applyPatch(spec, patch) {
     for (const update of updates) rows.set(update.id, {...rows.get(update.id), ...update});
     spec.rows = [...rows.values()];
   }
-  for (const key of ['title', 'context', 'revision', 'fields', 'nodes']) if (Object.hasOwn(patch, key)) spec[key] = patch[key];
+  for (const key of ['title', 'context', 'revision', 'fields', 'nodes', 'layout']) if (Object.hasOwn(patch, key)) spec[key] = patch[key];
   if (!Object.hasOwn(patch, 'revision')) spec.revision = (spec.revision ?? 1) + 1;
   return validate(spec);
 }
@@ -123,20 +124,20 @@ export function placement(spec, width, height, {config: settingsConfig, theme} =
   requireValue(width >= 320 && height >= 240, 'Viewport must be at least 320 × 240');
   const budget = Math.min(settings.heightBudget.maxPx, Math.trunc(height * settings.heightBudget.fraction));
   const {type, layout, control, spacingUnit: unit} = theme;
-  const [cellY, cellX] = theme.table.cellPadding, pad = layout.inlinePadding, inner = width - 2 * pad - 8;
+  const [cellY, cellX] = theme.table.cellPadding, pad = layout.inlinePadding, inner = Math.max(1, Math.min(width, layout.maxWidth) - 2 * pad - 2);
   const char = type.small * .5, bodyLine = type.body * type.lineHeight, smallLine = type.small * type.lineHeight;
   const titleLine = type.inlineTitle * type.titleLineHeight, charsPerLine = Math.max(20, Math.trunc(inner / char));
   const contextLines = sum(['goal', 'next'].map(key => Math.ceil(length(spec.context?.[key] || '') / charsPerLine)));
   const titleLines = Math.max(1, Math.ceil(length(spec.title || '') / Math.max(20, Math.trunc((inner - 90) / (type.inlineTitle * .42)))));
   const actionRow = control.minHeight + 2 * unit;
-  const base = 2 * pad + titleLine + 2 * unit + actionRow + control.minHeight + smallLine + contextLines * smallLine + (titleLines - 1) * titleLine;
-  const feedbackBlock = smallLine + unit + control.inputHeight + control.minHeight;
+  const base = 2 * pad + titleLine + 2 * unit + (spec.readOnly ? 0 : actionRow + control.minHeight + smallLine) + contextLines * smallLine + (titleLines - 1) * titleLine;
+  const feedbackBlock = spec.readOnly ? 0 : smallLine + unit + control.inputHeight + control.minHeight;
   let estimatedWidth = 320, estimatedHeight, allowed, reason = 'Small view fits the estimated inline budget';
   const limit = settings.inlineLimits[spec.view];
   if (spec.view === 'table') {
     const rows = spec.rows || [], columns = spec.columns;
     const widths = columns.map(column => Math.max(90, Math.min(180, length(column.label) * char + 28)));
-    estimatedWidth = control.minHeight + 2 * cellX + 190 + sum(widths);
+    estimatedWidth = (spec.readOnly ? 0 : control.minHeight + 2 * cellX + 190) + sum(widths);
     const header = control.inputHeight + 2 * unit + control.minHeight + unit + smallLine + 2 * cellY;
     const rowHeights = rows.map(row => {
       const lines = Math.max(1, ...columns.map((column, index) => Math.ceil(length(row[column.key] ?? '') / Math.max(10, Math.trunc(widths[index] / char)))));
@@ -146,13 +147,17 @@ export function placement(spec, width, height, {config: settingsConfig, theme} =
     allowed = !!limit && rows.length <= limit.rows && columns.length <= limit.columns;
     if (!allowed) reason = limit ? 'Table exceeds ' + limit.rows + ' rows or ' + limit.columns + ' data columns' : 'Tables are standalone for this harness';
   } else if (spec.view === 'cards') {
-    const rows = spec.rows || [], across = Math.max(1, Math.min(2, Math.floor(inner / (layout.cardMinWidth + 15))));
-    const cardWidth = Math.max(layout.cardMinWidth, inner / across - 2 * unit);
-    const heights = rows.map(row => 2 * layout.surfacePadding + bodyLine + feedbackBlock + control.minHeight + 4 * unit
-      + bodyLine * Math.ceil((length(row.title || '') + length(row.summary || '')) / Math.max(20, Math.trunc(cardWidth / char))));
+    const rows = spec.rows || [], across = cardColumns(spec, inner, layout.cardMinWidth);
+    const cardWidth = (inner - (across - 1) * 8) / across - 2 * layout.surfacePadding - 2;
+    const cardChars = Math.max(1, Math.trunc(cardWidth / (type.body * .55)));
+    const lines = value => Math.max(1, Math.ceil(length(value || '') / cardChars));
+    const heights = rows.map(row => 2 * layout.surfacePadding + 2 + lines(row.title) * type.section * 1.4 + lines(row.summary) * bodyLine + 8
+      + (row.recommended ? type.meta * type.lineHeight + 12 : 0)
+      + (row.details ? control.minHeight + 8 : 0) + (row.source ? control.minHeight + 8 : 0)
+      + (spec.readOnly ? 0 : feedbackBlock + control.minHeight + 24));
     estimatedHeight = base;
-    for (let index = 0; index < rows.length; index += across) estimatedHeight += Math.max(0, ...heights.slice(index, index + across));
-    estimatedWidth = layout.cardMinWidth + 40;
+    for (let index = 0; index < rows.length; index += across) estimatedHeight += (index ? 8 : 0) + Math.max(0, ...heights.slice(index, index + across));
+    estimatedWidth = Math.min(inner, layout.cardMinWidth);
     allowed = !!limit && rows.length <= limit.items;
     if (!allowed) reason = limit ? 'Cards exceed ' + limit.items + ' items' : 'Cards are standalone for this harness';
   } else if (spec.view === 'form') {
