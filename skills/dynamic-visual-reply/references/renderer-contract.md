@@ -59,9 +59,11 @@ No additional dashboard/chart/timeline view type is implied.
 | Form | `fields:[{id,label,type?,value?,help?,options?}]`; text, textarea, number, checkbox, select, multiselect. Select values are option IDs; options use `{id,label}`. Multiselect options add `selected` and editable labels. |
 | Flow | `nodes:[{id,title,detail?}]`; static overview, manual step buttons, current detail and feedback. Legacy motion flags are ignored. |
 
+Cards accept `layout: "auto" | "stack" | "grid"` (default `auto`): reviews stack full-width items; read-only cards use a responsive grid. Explicit choices override those defaults without changing draft IDs or host delivery. Grid actions align at the bottom of their cards. Placement uses the same minimum-width/gap rules as the card grid, counts stacked items separately, and excludes review feedback/actions from read-only card estimates. Height remains an estimate of the initial collapsed details, not a measurement of the host viewport or expanded content.
+
 For record views, use `dataFile` instead of `rows` to load JSON (array or `{rows:[...]}`), CSV, or TSV. Relative paths resolve against the input spec. CSV/TSV require an `id` column; numeric table columns are converted to numbers.
 
-Each render writes `<output-stem>.spec.json`. Patches support `upsert` (merge rows by ID), `remove` (IDs), `title`, `context`, `revision`, `fields`, and `nodes`. Revision increments unless supplied.
+Each render writes `<output-stem>.spec.json`. Patches support `upsert` (merge rows by ID), `remove` (IDs), `title`, `context`, `revision`, `fields`, `nodes`, and card `layout`. Revision increments unless supplied.
 
 ## Settings and themes
 

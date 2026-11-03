@@ -59,6 +59,8 @@ Paths are relative to this skill. Keep the bundle unchanged during use.
    use the same browser renderer; never shorten content to force inline. Claude's
    full HTML handoff consumes context; use the browser when cost/limits require.
 
+Cards stack full-width review items by default; read-only cards use a grid. Use `layout: "grid"` for short alternatives that benefit from comparison, or `layout: "stack"` for longer read-only items. Layout is independent of inline versus standalone placement. Keep titles and summaries short and put supporting evidence in `details`.
+
 ## Delivery and state
 
 Keep the answer understandable in chat: summarize the contents and recommendation

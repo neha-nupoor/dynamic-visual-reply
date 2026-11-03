@@ -1,6 +1,7 @@
 import {Fragment,h,render} from 'preact';
 import {useEffect,useId,useRef,useState} from 'preact/hooks';
 import {merge,genericTheme,readJson,resolvePalette,rendererStyle} from './design-system.mjs';
+import {cardTracks} from './card-layout.mjs';
 import './renderer.css';
 // Named imports let the bundler keep only these keys of defaults.json, not distribution settings such as the theme.
 import {copy as defaultCopy,feedback as defaultFeedback} from '../../../config/defaults.json';
@@ -172,14 +173,14 @@ function App(){
       </div>}
     </>;
   }else if(spec.view==='cards'){
-    content=<div class="vr-grid">{rows.map(row=><article key={row.id} class={'vr-card'+(draft.selected.includes(row.id)?' vr-selected':'')}>
+    content=<div class="vr-grid vr-cards" style={{gridTemplateColumns:cardTracks(spec)}}>{rows.map(row=><article key={row.id} class={'vr-card'+(draft.selected.includes(row.id)?' vr-selected':'')}>
       <h3>{row.title||row.name||row.id}</h3>
       {row.recommended&&<span class="vr-badge vr-recommended">{t('recommended')}</span>}
       <p>{row.summary}</p>
       {row.details&&<details><summary>{t('moreDetail')}</summary><p class="vr-pre-wrap">{text(row.details)}</p></details>}
       {safeUrl(row.source)&&<a class="vr-button button ghost" href={row.source} target="_blank" rel="noreferrer">{t('source')}</a>}
       {itemFeedback(row.id)}
-      {!readOnly&&<div><Button aria-pressed={draft.selected.includes(row.id)} variant={draft.selected.includes(row.id)?'primary':'outlined'} onClick={()=>toggle(row.id)}>{draft.selected.includes(row.id)?t('selected'):row.actionLabel||t('select')}</Button></div>}
+      {!readOnly&&<div class="vr-card-actions"><Button aria-pressed={draft.selected.includes(row.id)} variant={draft.selected.includes(row.id)?'primary':'outlined'} onClick={()=>toggle(row.id)}>{draft.selected.includes(row.id)?t('selected'):row.actionLabel||t('select')}</Button></div>}
     </article>)}</div>;
   }else if(spec.view==='kanban'){
     const stages=spec.stages||['To review','In progress','Done'];
