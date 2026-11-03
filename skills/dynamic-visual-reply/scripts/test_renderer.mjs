@@ -11,6 +11,7 @@ import * as render from './render.mjs';
 import * as config from './visual-config.mjs';
 import {createPreviewServer} from './serve.mjs';
 import {report} from './doctor.mjs';
+import {cardLayout, cardColumns} from '../assets/renderer/src/card-layout.mjs';
 
 const example = name => config.load(path.join(config.ROOT, 'assets/examples', name + '.json'));
 const temporary = t => { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dynamic-visual-reply-')); t.after(() => fs.rmSync(dir, {recursive: true, force: true})); return dir; };
@@ -130,6 +131,36 @@ test('placement reflects theme control sizes and board limits', () => {
   assert.ok(render.placement(example('flow'), undefined, undefined, {theme: larger}).estimatedHeightPx > render.placement(example('flow')).estimatedHeightPx);
   const board = example('kanban'); board.rows = Array.from({length: 7}, (_, index) => ({id: 'r' + index, title: 'Item', stage: 'To review'}));
   assert.equal(render.placement(board).mode, 'standalone');
+});
+test('card layout defaults preserve explicit choices and use the CSS grid thresholds', () => {
+  const spec = example('cards');
+  assert.equal(cardLayout(spec), 'stack');
+  assert.equal(cardLayout({...spec, readOnly: true}), 'grid');
+  assert.equal(cardLayout({...spec, readOnly: true, layout: 'stack'}), 'stack');
+  assert.equal(cardLayout({...spec, layout: 'grid'}), 'grid');
+  assert.equal(cardLayout({...spec, layout: 'auto'}), 'stack');
+  assert.equal(cardColumns(spec, 1000, 220), 1);
+  const grid = {...spec, layout: 'grid'};
+  for (const [width, expected] of [[200, 1], [447, 1], [448, 2], [675, 2], [676, 3], [1200, 3]])
+    assert.equal(cardColumns(grid, width, 220), expected);
+  assert.equal(render.validate({...spec, layout: 'stack'}).layout, 'stack');
+  assert.throws(() => render.validate({...spec, layout: 'masonry'}));
+  assert.throws(() => render.validate({...example('table'), layout: 'stack'}));
+});
+test('card placement counts stacked rows, grid rows and visible review controls', t => {
+  const spec = example('cards'), grid = {...spec, layout: 'grid'};
+  assert.ok(render.placement(spec).estimatedHeightPx > render.placement(grid).estimatedHeightPx);
+  assert.ok(render.placement(grid, 680).estimatedHeightPx > render.placement(grid, 736).estimatedHeightPx);
+  assert.ok(render.placement({...grid, readOnly: true}).estimatedHeightPx < render.placement(grid).estimatedHeightPx);
+  const rich = structuredClone(spec);
+  rich.rows[0].recommended = true; rich.rows[0].source = 'https://example.com';
+  rich.rows[0].details = 'Supporting detail'; rich.rows[0].summary = 'Long summary '.repeat(100);
+  assert.ok(render.placement(rich).estimatedHeightPx > render.placement(spec).estimatedHeightPx);
+  const narrow = render.placement({...spec, rows: spec.rows.slice(0, 1)}, 320);
+  assert.ok(narrow.estimatedWidthPx <= 294);
+  const before = page(t, spec), patched = render.applyPatch(structuredClone(spec), {layout: 'grid'});
+  assert.equal(patched.layout, 'grid');
+  assert.equal(block(page(t, patched).html, 'spec').stateKey, block(before.html, 'spec').stateKey);
 });
 test('explicit presentation overrides placement and writes a spec snapshot', t => {
   const spec = example('table'); spec.presentation = 'inline';

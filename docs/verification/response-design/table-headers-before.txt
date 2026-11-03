@@ -1,0 +1,2 @@
+### Error
+Error: Split header words at 320px in codex-table-review.html: [{"label":"Select","width":32,"brokenWords":["Select"]},{"label":"Name ↑","width":48.140625,"brokenWords":["Name"]},{"label":"Score","width":26.546875,"brokenWords":["Score"]}]

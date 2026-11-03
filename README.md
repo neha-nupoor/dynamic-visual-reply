@@ -88,6 +88,18 @@ transfer size. The read-only token comparison above measures authored specs only
 
 ## Widget previews
 
+### Interactive HTML demo
+
+[Open the response-design explorer](docs/demos/response-design-explorer.html).
+Download the HTML file and open it in a browser. It is one self-contained file
+with inline CSS and JavaScript: no install, server, API key or external assets.
+GitHub shows the source rather than running interactive HTML inside this README.
+
+Choose among five recorded requests to inspect the selected format, the routing
+facts and counted text tokens. The controls run locally without model calls.
+The demo follows light/dark appearance with adaptive colors. Its sample outcomes
+come from the shared routing engine; it does not classify new free-text requests.
+
 ### Inside Codex
 
 Recorded in a real Codex chat: enter instructions for individual steps and use **Send to chat**. The clip shows the native widget and its button; the complete feedback receipt was verified separately in the same chat. It predates the compact spacing update; the component gallery below shows the current sizing.
@@ -172,6 +184,22 @@ The renderer is prebuilt, so normal use needs no npm install or build step. The 
 
 ## Install
 
+For proactive response-format selection, install the small router alongside the
+renderer:
+
+```sh
+npx skills add neha-nupoor/dynamic-visual-reply --skill response-design --skill dynamic-visual-reply
+```
+
+Add the short persistent entry rule from the
+[setup guide](skills/response-design/references/setup.md) to your host instructions.
+The router chooses a format and a reusable layout or custom visual path. The
+shared renderer checks its layouts; custom views use the host's UI workflow.
+Agents should proactively prefer useful visuals to long text when they clarify
+relationships, support exploration or reduce decision effort.
+Clear short prose requires no tool call. The shared policy also ships with the
+renderer for direct use and renderer-only installations.
+
 From the project where you want to use the skill:
 
 ```sh
@@ -200,7 +228,14 @@ Ask your agent:
 
 > Use dynamic-visual-reply to show these five proposals as a review table. Let me select proposals and add an instruction to each, then submit one batch.
 
-The agent chooses a view, writes a JSON spec, and runs the bundled helper. You review the widget and submit when ready. Stable record IDs keep your feedback attached to the right items across sorting, filtering, and compatible updates.
+The response-design skill selects a format and uses one of five shared layout
+profiles when suitable. Agents can also design their own useful layout through
+the custom-visual path, using the host's supported UI workflow. The agent writes the content spec and runs
+`render.mjs --route <route.json>` to enforce the selected view and mode. Direct
+spec-only rendering remains supported. You review the widget and submit when
+ready. Stable record IDs keep feedback attached through sorting, filtering and
+compatible updates. See the [verification report](docs/response-design-verification.md)
+for measured instruction sizes and the limits of cross-host testing.
 
 Your agent checks the current session's documented rendering contracts and available tools before choosing where to display a view:
 

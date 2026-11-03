@@ -1,110 +1,97 @@
 ---
 name: dynamic-visual-reply
-description: Render tables, cards, forms, boards, and flows for per-item feedback, or read-only views for requested reports and dense structured responses with many tables or comparable items. Keep ordinary prose and small comparisons in chat.
+description: Render the visual plan selected by response-design as tables, cards, forms, boards, or flows. Also handle direct requests for interactive reviews or read-only reports through the same routing policy.
 metadata:
   short-description: Shared UI for reviews and read-only reports
 ---
 
 # Dynamic Visual Reply
 
-## When to render
+## Route once
 
-Use review mode when the user needs to respond to several separate items, so one reply can carry instructions tied to stable IDs. Use read-only mode for requested visual reports or dense structured responses. Do not render UI merely because the skill is available, or because a visual would look nicer than text.
+Use the decision from `response-design`. For a direct request without a decision,
+use that installed skill first; if unavailable, run `scripts/route.mjs --help` and
+supply the described facts to the same engine. Authoring an already selected spec
+or applying existing feedback does not require another routing decision. Preserve
+explicit user choices. Read-only reports display facts; review mode collects drafts.
 
-For an explicitly requested report, dashboard, status board or visual summary that
-needs no response, use `readOnly: true` when its records fit the supported views.
-Read-only views keep browsing and source links, with no record selection, editing,
-comments, reviewed flags, draft persistence or submission controls. Do not turn
-known facts into an approval task. Ordinary simple comparisons still belong in chat.
-This mode does not add chart or timeline view types; use the installed visualization
-workflow for those parts while preserving existing charts and layout.
+## Render
 
-For a dense structured answer, proactively use `readOnly: true` when any of these
-thresholds applies to the planned response:
+Author JSON specs; Node.js 22.20+ assembles the prebuilt Oat/Preact bundle with
+native controls and scoped CSS. No package installation or public URL is needed.
+Paths are relative to this skill. Keep the bundle unchanged during use.
 
-- Two or more tables with at least 10 total data rows.
-- One table with at least 15 data rows.
-- At least 500 words with six or more comparable items that fit the supported views.
+1. Check actual tools and documented output contracts. A model/app name or
+   environment variable is insufficient. Display and chat submission are separate
+   capabilities. Read only the selected host guide:
 
-Use a compact table or grouped cards with browsing/details, and keep the main
-answer in one short chat paragraph. For this density trigger, prefer inline when
-the documented host contract exists: pass `--format inline` on Codex, retain
-pagination/details, and honor payload limits. Use the browser route if inline
-cannot fit. Length alone does not turn an essay, code listing, or narrative into
-records. Explicit user requests for text, Markdown or another format take priority.
-These are authoring rules, not a runtime word counter.
-
-For a feedback view, render when all three hold:
-
-1. There are three or more separate items, and the user will likely respond to each one differently.
-2. Each item fits a record shape: a row, card, form field, board card, or step.
-3. The user could not say what they want in one sentence.
-
-Stay in chat when there are one or two points, when feedback will be overall ("make it shorter"), or when the content is prose that needs inline comments; use a document with comments for that instead. A small comparison below the density thresholds belongs in a Markdown table. When the call is borderline, end the chat reply with a one-line offer, such as "Want a review view to mark these up?", instead of rendering. An explicit request for a view is always a trigger.
-
-Never let the view replace the answer. The chat reply must stand on its own: summarize what the view contains and what you recommend, so the user can answer in text and ignore the view. While a view works, do not repeat its full content in chat. If rendering is unavailable or fails, provide the intended content as an ordinary Markdown response so no information is stranded in the widget. Do not build a second HTML renderer as a fallback. Use Markdown for surrounding chat text and screenshot captions; do not wrap chat responses or images in raw HTML such as `<details>` or `<summary>`. Keep HTML inside the rendered widget file.
-
-Choose the view by the response you expect: `table` for many comparable records, `cards` for a few alternatives, `form` for several questions, `kanban` for moving items between stages. Use `flow` only when each step needs its own response; a plain explanation of a sequence stays in chat. Many items usually exceed the inline limits and open as a full browser page; that is expected, so do not shrink content to force inline.
-
-## Write scannable items
-
-- Front-load distinguishing words. Use short verb–object action labels or concise category names, with tense that reflects the item's actual state.
-- Give each peer group one repeatable structure, such as action and expected result. Keep option labels short; put supporting context in nearby text or expandable details where the view supports it.
-- Use one term per concept. Preserve meaningful distinctions such as Reviewed versus Approved and Sent versus Received; submission wording must match the delivery behavior.
-- Give peers comparable detail. Use differences in length, emphasis, or metadata to convey real differences; preserve important exceptions without inventing missing facts or forcing equal word counts.
-
-Adapted from [Five Principles for Generating Readable AI Text in Bulk](https://fsdatalab.github.io/blog/agent-text-at-scale/).
-
-## Render from a spec
-
-One prebuilt Oat/Preact renderer serves every host, with native HTML controls and scoped CSS inside the same bundle. Write content as JSON. Codex and browser handoffs use the generated file directly; Claude's string-based handoff is described below. Normal use requires Node.js 22.20+ and no package installation. Paths below are relative to this skill.
-
-1. Inspect the current session's tools and documented output contracts before choosing a surface. Codex inline is available when session instructions document the `visualize` content-reference contract (for example through the installed visualize skill); it does not require a separate widget tool. Read that contract before using it. Other inline hosts require their actual widget tool and its current HTML/JavaScript support and payload limits. A model name, app name, or environment variable alone is not proof. Inline display and chat submission are separate capabilities; absent submission APIs do not prevent inline display. If inline rendering is unavailable, use the browser route when interaction is useful and local commands plus a browser are available; otherwise answer in normal Markdown. Run `node <skill-dir>/scripts/doctor.mjs --harness <id>` once when setup is uncertain. Its checks cover files and settings, not a live host bridge. Read only the relevant host reference:
-
-   | Surface | Harness | Reference |
+   | Surface | Harness | Guide |
    | --- | --- | --- |
-   | Codex inline | `codex` | [codex.md](references/harness/codex.md) |
-   | Claude widget tool accepting inline HTML/JavaScript | `claude-inline` | [claude-inline.md](references/harness/claude-inline.md) |
-   | Claude Code, Cursor, Windsurf, Gemini CLI, or another agent with a browser | `browser-local`, `claude-code` | [browser-local.md](references/harness/browser-local.md) |
-   | HTML file without a bridge | `static` | [static.md](references/harness/static.md) |
+   | Documented visualize content-reference contract; no dedicated tool needed | `codex` | [Codex](references/harness/codex.md) |
+   | Actual HTML/JavaScript widget tool and adequate payload limit | `claude-inline` | [Claude inline](references/harness/claude-inline.md) |
+   | Commands and browser; includes Cursor, Windsurf, Gemini CLI, Copilot | `browser-local`, `claude-code` | [Browser](references/harness/browser-local.md) |
+   | Offline HTML with copy/export | `static` | [Static](references/harness/static.md) |
 
-2. Write a spec with `schemaVersion:1`, a stable `viewId`, `view`, and `title`:
+   Without inline support, use an available browser when useful, otherwise Markdown.
+   For uncertain setup, run `node scripts/doctor.mjs --harness <id>` once; it checks
+   files/settings, not a live bridge. Claude Code differs from Claude inline.
+2. Write `schemaVersion:1`, stable `viewId`, selected `view`, and `title`:
 
-   Add `readOnly: true` for a report; omission or `false` preserves review behavior.
-   A read-only `form` shows labeled values instead of disabled form controls.
-   See `assets/examples/read-only-cards.json` for a compact summary.
-
-   | View | Content |
+   | View | Data |
    | --- | --- |
-   | `table` | `columns:[{key,label}]`, `rows:[{id,...}]` |
-   | `cards` | `rows:[{id,title,summary}]` |
-   | `form` | `fields:[{id,label,type,value}]` |
-   | `kanban` | `rows:[{id,title,stage}]`, optional `stages` |
-   | `flow` | `nodes:[{id,title,detail}]`; manually selected steps |
+   | table | `columns:[{key,label}]`, `rows:[{id,...}]` |
+   | cards | `rows:[{id,title,summary}]` |
+   | form | `fields:[{id,label,type,value}]` |
+   | kanban | `rows:[{id,title,stage}]`, optional `stages` |
+   | flow | `nodes:[{id,title,detail}]`; static, manual steps |
 
-3. Run `node <skill-dir>/scripts/render.mjs --spec <spec.json> --out <view.html> --harness <id>`. Every output embeds the same renderer and CSS; no public URL is needed. For an explicit inline request, use `--harness codex --format inline` when the Codex output contract is available; this overrides the automatic card-count/height thresholds while preserving the payload size check. Follow the returned `handoff`: emit the complete Codex `contentReference` unchanged on its own line in the final response, pass the complete generated Claude fragment unchanged to its widget tool, or run the local server command. Claude's string-based handoff includes the full bundle; use the browser route if the tool's payload limit cannot accommodate it. Larger Codex/Claude views use the same local browser. If rendering fails, return the intended answer in normal Markdown; other agents need no custom integration.
+   Set `readOnly:true` for reports; omission/false retains review behavior.
+   Read-only forms show labeled values. Keep IDs and peer structures stable.
+   Front-load distinguishing words; use short, state-accurate actions and consistent
+   terms. Preserve exceptions/evidence and comparable detail without invented facts
+   or forced equal lengths.
+3. Run `node scripts/render.mjs --spec <spec.json> --route <route.json> --out <view.html> --harness <id>`.
+   The route enforces view/mode and prefers Codex inline for dense answers.
+   Spec-only calls remain supported. For requested inline, use `--format inline`
+   when supported; payload limits remain. Follow the handoff: emit the complete
+   Codex `contentReference` on its own final-response line, pass the complete Claude
+   fragment unchanged to its widget tool, or run the server command. Large views
+   use the same browser renderer; never shorten content to force inline. Claude's
+   full HTML handoff consumes context; use the browser when cost/limits require.
 
-Examples are in `assets/examples/`; `--catalog` lists them. Read [renderer-contract.md](references/renderer-contract.md) for extra fields, existing datasets, patches, configuration, or maintenance. The schema defines valid input; the helper adds cross-record checks such as unique IDs.
+Cards stack full-width review items by default; read-only cards use a grid. Use `layout: "grid"` for short alternatives that benefit from comparison, or `layout: "stack"` for longer read-only items. Layout is independent of inline versus standalone placement. Keep titles and summaries short and put supporting evidence in `details`.
 
-## Preserve the interaction
+## Delivery and state
 
-Review mode supports deliberate batch feedback, a primary submit action, draft state, preview, copy/export fallback, and undo. Keep IDs stable across compatible updates. UI changes are drafts; they do not change authoritative task data. Acknowledge only feedback actually received. In Claude, **Add to chat** fills the message box and the user presses Enter. Local browser feedback is saved to a file for the agent to read when asked.
+Keep the answer understandable in chat: summarize the contents and recommendation
+without duplicating the full view. If rendering fails, provide all intended content
+in Markdown; do not build another HTML renderer. Surrounding chat and captions use
+Markdown; HTML belongs inside the widget.
 
-Read-only mode renders the supplied spec without loading review drafts, subscribing
-to incoming drafts, saving state or sending feedback. Sorting, filtering, paging,
-column visibility, detail expansion and flow-step navigation are local browsing only.
+Review supports batch submission, drafts, preview, copy/export and undo. UI edits
+remain drafts; selection/instructions survive paging. Acknowledge only received
+feedback. Claude Add to chat fills the composer; users press Enter. Browser
+submission saves a file, read when the user resumes, without starting a turn.
+Read-only loads/subscribes/saves no drafts or feedback; sorting, filtering, paging,
+columns, details and flow navigation are local browsing only.
 
-Placement considers content size, available width, and theme sizes. Use `presentation` or `--format inline|standalone` when the conversation needs a different placement. For large tables, pagination keeps the displayed page manageable; selection and instructions survive page changes. Use `dataFile` for an existing JSON/CSV/TSV dataset and `--patch` for small updates instead of regenerating data.
+## Conditional details
 
-## Appearance and cost
+- Existing JSON/CSV/TSV datasets, patches, extra fields, configuration or placement:
+  [renderer contract](references/renderer-contract.md). Prefer `dataFile` and
+  `--patch` over regenerating data. `--catalog` lists examples in `assets/examples/`.
+- Appearance: preserve the configured theme/product design. Explicit spec/flag/
+  project/user choices precede defaults (`host` for Claude inline, `system`
+  elsewhere, OS fallback). Omit redundant appearance flags. Settings:
+  `~/.config/dynamic-visual-reply/config.json` or `$DYNAMIC_VISUAL_REPLY_CONFIG`,
+  and project `.dynamic-visual-reply.json`. Delivery stays in code.
+- Requested Report Blue styling: [Report Blue kit](references/report-kit.md),
+  CSS-only palettes, metrics, statuses, rows, legends and bars; no chart/timeline
+  view or report engine is added. Use the visualization workflow for charts.
+- Code changes: read [UI behavior](references/ui-behavior.md) and the renderer
+  contract's maintenance section. Rebuild changed renderer/defaults, run
+  `node --test scripts/test_renderer.mjs scripts/test_adapters.mjs`, and inspect
+  changed interactions in a browser. Keep flows manual, CSS transitions brief and
+  reduced-motion support intact. Mocked adapters do not prove live host delivery.
 
-For requested report styling, the optional [Report Blue kit](references/report-kit.md)
-provides a portable light/dark palette and CSS-only metric cards, status labels,
-rows, legends and simple bars. Read that reference only when using this style.
-It uses the existing theme loader and adds no renderer JavaScript or report logic.
-
-By default, follow the harness appearance: Claude inline uses `host`; other surfaces use `system` (host light/dark markers when exposed, otherwise OS preference). Honor explicit appearance settings in the spec, flags, project, or user config before this fallback. Do not add appearance flags just to enforce the default; use them for a requested override. Both palettes use the same renderer. Use the configured theme pack; preserve an existing product's design system. User settings live at `~/.config/dynamic-visual-reply/config.json` (or `$DYNAMIC_VISUAL_REPLY_CONFIG`); project settings live in `.dynamic-visual-reply.json`. Theme, appearance, copy, and placement limits are settings. Host delivery is fixed in code, with thin adapters for feedback and drafts.
-
-Author only the spec; scripts assemble the prebuilt renderer. Do not regenerate or edit the bundle in a tool call. Claude's widget tool takes HTML as a string, so reading and passing its generated fragment uses model context; use a local browser when that cost or the tool limit makes inline delivery unsuitable. Browser interactions cost no model turn. Flows stay static with manual steps. Keep CSS transitions brief and honor reduced motion; no animation engine is included.
-
-For code changes, read [ui-behavior.md](references/ui-behavior.md), rebuild the bundle, run `node --test scripts/test_renderer.mjs scripts/test_adapters.mjs`, and inspect the changed interactions in a browser. Do not claim live host submission is verified by mocked adapter tests.
+Writing guidance adapted from [Five Principles](https://fsdatalab.github.io/blog/agent-text-at-scale/).

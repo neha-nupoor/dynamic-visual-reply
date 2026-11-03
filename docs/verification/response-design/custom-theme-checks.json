@@ -1,0 +1,70 @@
+{
+  "checks": 8,
+  "minimumContrast": 5.68,
+  "results": [
+    {
+      "width": 736,
+      "host": "light",
+      "os": "dark",
+      "expected": "light",
+      "minimumContrast": 5.68,
+      "textNodes": 16
+    },
+    {
+      "width": 736,
+      "host": "dark",
+      "os": "light",
+      "expected": "dark",
+      "minimumContrast": 5.86,
+      "textNodes": 16
+    },
+    {
+      "width": 736,
+      "host": "light dark",
+      "os": "light",
+      "expected": "light",
+      "minimumContrast": 5.68,
+      "textNodes": 16
+    },
+    {
+      "width": 736,
+      "host": "light dark",
+      "os": "dark",
+      "expected": "dark",
+      "minimumContrast": 5.86,
+      "textNodes": 16
+    },
+    {
+      "width": 320,
+      "host": "light",
+      "os": "dark",
+      "expected": "light",
+      "minimumContrast": 5.68,
+      "textNodes": 16
+    },
+    {
+      "width": 320,
+      "host": "dark",
+      "os": "light",
+      "expected": "dark",
+      "minimumContrast": 5.86,
+      "textNodes": 16
+    },
+    {
+      "width": 320,
+      "host": "light dark",
+      "os": "light",
+      "expected": "light",
+      "minimumContrast": 5.68,
+      "textNodes": 16
+    },
+    {
+      "width": 320,
+      "host": "light dark",
+      "os": "dark",
+      "expected": "dark",
+      "minimumContrast": 5.86,
+      "textNodes": 16
+    }
+  ]
+}

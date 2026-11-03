@@ -1,0 +1,11 @@
+{
+  "checks": 30,
+  "widths": [
+    320,
+    375,
+    736
+  ],
+  "splitWords": 0,
+  "pageOverflow": false,
+  "nativeBridges": false
+}

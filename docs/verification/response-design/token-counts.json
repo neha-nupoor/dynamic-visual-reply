@@ -1,0 +1,18 @@
+{
+  "tokenizer": "o200k_base",
+  "tiktoken": "0.9.0",
+  "baseline": "8da82a8",
+  "tokens": {
+    "old_entrypoint": 2420,
+    "new_router": 586,
+    "new_renderer": 1261,
+    "combined_entrypoints": 1847,
+    "route_help": 428,
+    "entry_rule": 41,
+    "old_codex_path": 3068,
+    "new_codex_path": 2495,
+    "new_codex_with_help": 2923,
+    "custom_visual_reference": 347
+  },
+  "scope": "Text counts only; excludes reasoning, tool envelopes, specs and billing."
+}

@@ -1,0 +1,68 @@
+{
+  "checks": 12,
+  "results": [
+    {
+      "view": "table",
+      "width": 736,
+      "colorScheme": "light"
+    },
+    {
+      "view": "cards",
+      "width": 736,
+      "colorScheme": "light"
+    },
+    {
+      "view": "form",
+      "width": 736,
+      "colorScheme": "light"
+    },
+    {
+      "view": "table",
+      "width": 736,
+      "colorScheme": "dark"
+    },
+    {
+      "view": "cards",
+      "width": 736,
+      "colorScheme": "dark"
+    },
+    {
+      "view": "form",
+      "width": 736,
+      "colorScheme": "dark"
+    },
+    {
+      "view": "table",
+      "width": 320,
+      "colorScheme": "light"
+    },
+    {
+      "view": "cards",
+      "width": 320,
+      "colorScheme": "light"
+    },
+    {
+      "view": "form",
+      "width": 320,
+      "colorScheme": "light"
+    },
+    {
+      "view": "table",
+      "width": 320,
+      "colorScheme": "dark"
+    },
+    {
+      "view": "cards",
+      "width": 320,
+      "colorScheme": "dark"
+    },
+    {
+      "view": "form",
+      "width": 320,
+      "colorScheme": "dark"
+    }
+  ],
+  "errors": [],
+  "nativeSubmissionVerified": false,
+  "checksSource": "tests/inline_components_browser_checks.js"
+}

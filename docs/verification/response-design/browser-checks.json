@@ -1,0 +1,10 @@
+{
+  "checks": 100,
+  "matchingLayouts": 20,
+  "widths": [
+    680,
+    390
+  ],
+  "fixtures": 50,
+  "nativeBridges": false
+}

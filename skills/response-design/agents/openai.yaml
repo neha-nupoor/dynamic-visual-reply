@@ -1,0 +1,4 @@
+interface:
+  display_name: "Response Design"
+  short_description: "Choose a useful, consistent response format"
+  default_prompt: "Use $response-design to choose the response format and route a visual reply through the shared renderer."

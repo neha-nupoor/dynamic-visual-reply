@@ -30,10 +30,13 @@
 [data-dynamic-visual-reply-root] .vr-badge {display:inline-flex;padding:2px 6px;border-radius:var(--vr-radius-chip);background:var(--vr-hover);color:var(--vr-muted);font-size:var(--vr-meta);font-weight:600}
 [data-dynamic-visual-reply-root] .vr-recommended {background:var(--vr-selected);color:var(--vr-on-selected)}
 [data-dynamic-visual-reply-root] .vr-toolbar {margin-bottom:12px;align-items:end}
-[data-dynamic-visual-reply-root] .vr-table-wrap {overflow-x:auto}
+[data-dynamic-visual-reply-root] .vr-table-wrap {max-width:100%;overflow-x:auto}
 [data-dynamic-visual-reply-root] table {width:100%;margin:0;border-collapse:collapse;font-size:var(--vr-small)}
 [data-dynamic-visual-reply-root] th,[data-dynamic-visual-reply-root] td {padding:var(--vr-cell-padding);vertical-align:top;border-bottom:1px solid var(--vr-divider)}
 [data-dynamic-visual-reply-root] thead th {background:var(--vr-hover);color:var(--vr-muted);font-weight:600;text-align:start}
+[data-dynamic-visual-reply-root] .vr-app thead th,[data-dynamic-visual-reply-root] .vr-app th .vr-sort {overflow-wrap:normal;word-break:normal}
+[data-dynamic-visual-reply-root] .vr-data-column {min-width:120px}
+[data-dynamic-visual-reply-root] .vr-select-column {min-width:64px}
 [data-dynamic-visual-reply-root] th .vr-sort {font:inherit;min-height:32px;padding:0;text-align:inherit;justify-content:start}
 [data-dynamic-visual-reply-root] .vr-number {text-align:right;font-variant-numeric:tabular-nums}
 [data-dynamic-visual-reply-root] .vr-edit-cell {min-width:110px}
@@ -47,6 +50,9 @@
 [data-dynamic-visual-reply-root] .vr-card {display:grid;align-content:start;gap:8px;padding:var(--vr-surface-padding);border:1px solid var(--vr-divider);border-radius:var(--vr-radius-surface);background:var(--oat-card);box-shadow:none;transition:background-color var(--oat-transition),border-color var(--oat-transition)}
 [data-dynamic-visual-reply-root] .vr-card.vr-selected,[data-dynamic-visual-reply-root] .vr-step.vr-selected {background:var(--vr-selected);border-color:var(--vr-accent-border)}
 [data-dynamic-visual-reply-root] .vr-card .vr-item-feedback {margin:0}
+[data-dynamic-visual-reply-root] .vr-cards>.vr-card {display:flex;flex-direction:column}
+[data-dynamic-visual-reply-root] .vr-cards .vr-card-actions {margin-top:auto}
+[data-dynamic-visual-reply-root] .vr-cards .vr-badge {align-self:flex-start}
 [data-dynamic-visual-reply-root] .vr-column {display:grid;align-content:start;gap:8px;border:1px solid var(--vr-divider);padding:12px;border-radius:var(--vr-radius-surface)}
 [data-dynamic-visual-reply-root] .vr-options {border:0;margin:0;padding:0}
 [data-dynamic-visual-reply-root] .vr-options legend {font-size:var(--vr-body);font-weight:600;margin-bottom:6px}

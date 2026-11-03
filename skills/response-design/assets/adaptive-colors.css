@@ -1,0 +1,16 @@
+/* Inherit the host's active scheme; keep the outer conversation surface transparent. */
+[data-response-design-custom] {
+  color-scheme: inherit;
+  --rd-surface: light-dark(#ffffff, #1e2530);
+  --rd-soft: light-dark(#f4f5f8, #1e2530);
+  --rd-text: light-dark(#222326, #edf1f7);
+  --rd-muted: light-dark(#59616f, #b0bbcc);
+  --rd-line: light-dark(#e2e4e9, #3b4657);
+  --rd-control-border: light-dark(#7c8390, #7c899c);
+  --rd-blue: light-dark(#365de8, #a9c2ff);
+  --rd-selected: light-dark(#f1f4fd, #283a5b);
+  color: var(--rd-text);
+}
+[data-response-design-custom] :where(h1,h2,h3,label,p,pre,select,strong) {
+  color: var(--rd-text);
+}
