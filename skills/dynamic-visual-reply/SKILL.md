@@ -1,6 +1,6 @@
 ---
 name: dynamic-visual-reply
-description: Render tables, cards, forms, boards, and flows for per-item feedback, or read-only views for explicitly requested visual reports and summaries. Keep ordinary prose and simple comparisons in chat.
+description: Render tables, cards, forms, boards, and flows for per-item feedback, or read-only views for requested reports and dense structured responses with many tables or comparable items. Keep ordinary prose and small comparisons in chat.
 metadata:
   short-description: Shared UI for reviews and read-only reports
 ---
@@ -9,7 +9,7 @@ metadata:
 
 ## When to render
 
-Use review mode when the user needs to respond to several separate items, so one reply can carry instructions tied to stable IDs. Use read-only mode for requested visual reports. Do not render UI merely because the skill is available, or because a visual would look nicer than text.
+Use review mode when the user needs to respond to several separate items, so one reply can carry instructions tied to stable IDs. Use read-only mode for requested visual reports or dense structured responses. Do not render UI merely because the skill is available, or because a visual would look nicer than text.
 
 For an explicitly requested report, dashboard, status board or visual summary that
 needs no response, use `readOnly: true` when its records fit the supported views.
@@ -19,13 +19,28 @@ known facts into an approval task. Ordinary simple comparisons still belong in c
 This mode does not add chart or timeline view types; use the installed visualization
 workflow for those parts while preserving existing charts and layout.
 
+For a dense structured answer, proactively use `readOnly: true` when any of these
+thresholds applies to the planned response:
+
+- Two or more tables with at least 10 total data rows.
+- One table with at least 15 data rows.
+- At least 500 words with six or more comparable items that fit the supported views.
+
+Use a compact table or grouped cards with browsing/details, and keep the main
+answer in one short chat paragraph. For this density trigger, prefer inline when
+the documented host contract exists: pass `--format inline` on Codex, retain
+pagination/details, and honor payload limits. Use the browser route if inline
+cannot fit. Length alone does not turn an essay, code listing, or narrative into
+records. Explicit user requests for text, Markdown or another format take priority.
+These are authoring rules, not a runtime word counter.
+
 For a feedback view, render when all three hold:
 
 1. There are three or more separate items, and the user will likely respond to each one differently.
 2. Each item fits a record shape: a row, card, form field, board card, or step.
 3. The user could not say what they want in one sentence.
 
-Stay in chat when there are one or two points, when feedback will be overall ("make it shorter"), or when the content is prose that needs inline comments; use a document with comments for that instead. A comparison with nothing to respond to belongs in a markdown table. When the call is borderline, end the chat reply with a one-line offer, such as "Want a review view to mark these up?", instead of rendering. An explicit request for a view is always a trigger.
+Stay in chat when there are one or two points, when feedback will be overall ("make it shorter"), or when the content is prose that needs inline comments; use a document with comments for that instead. A small comparison below the density thresholds belongs in a Markdown table. When the call is borderline, end the chat reply with a one-line offer, such as "Want a review view to mark these up?", instead of rendering. An explicit request for a view is always a trigger.
 
 Never let the view replace the answer. The chat reply must stand on its own: summarize what the view contains and what you recommend, so the user can answer in text and ignore the view. While a view works, do not repeat its full content in chat. If rendering is unavailable or fails, provide the intended content as an ordinary Markdown response so no information is stranded in the widget. Do not build a second HTML renderer as a fallback. Use Markdown for surrounding chat text and screenshot captions; do not wrap chat responses or images in raw HTML such as `<details>` or `<summary>`. Keep HTML inside the rendered widget file.
 

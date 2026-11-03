@@ -23,7 +23,12 @@ to the renderer bundle**. It includes no personal report data or monthly layout.
 Use a widget when several items need different responses. Keep short answers, prose, and overall feedback in chat.
 
 Read-only mode also supports explicitly requested visual summaries and status
-boards. It does not add chart or timeline view types; keep those in their existing
+boards. It also applies proactively to dense structured answers: two tables with
+at least 10 total data rows, one table with at least 15 rows, or a response of at
+least 500 words containing six comparable items. The agent uses a compact inline
+view where the host supports it, with a short answer in chat. These are skill
+authoring rules; explicit format requests take priority. Long prose stays in chat.
+It does not add chart or timeline view types; keep those in their existing
 visualization workflow rather than replacing them with review controls.
 
 | View | Useful for |
@@ -40,17 +45,46 @@ Selections and edits stay drafts until you submit them. Submitting sends instruc
 
 The agent writes a JSON spec; the Node helper supplies the existing UI. The table below estimates the tokens in each bundled example's spec, without optional JSON whitespace.
 
-| Widget | Example size | Estimated spec tokens |
-| --- | --- | ---: |
-| [Table](skills/dynamic-visual-reply/assets/examples/table.json) | 4 records, 3 columns | 169 |
-| [Cards](skills/dynamic-visual-reply/assets/examples/cards.json) | 3 cards | 139 |
-| [Form](skills/dynamic-visual-reply/assets/examples/form.json) | 4 fields | 175 |
-| [Board](skills/dynamic-visual-reply/assets/examples/kanban.json) | 3 items | 83 |
-| [Flow](skills/dynamic-visual-reply/assets/examples/flow.json) | 4 steps | 111 |
+| View | Example size | Review spec tokens | Read-only spec tokens |
+| --- | --- | ---: | ---: |
+| [Table](skills/dynamic-visual-reply/assets/examples/table.json) | 4 records, 3 columns | 169 | 174 |
+| [Cards](skills/dynamic-visual-reply/assets/examples/cards.json) | 3 cards | 139 | 144 |
+| [Form](skills/dynamic-visual-reply/assets/examples/form.json) | 4 fields | 175 | 180 |
+| [Board](skills/dynamic-visual-reply/assets/examples/kanban.json) | 3 items | 83 | 88 |
+| [Flow](skills/dynamic-visual-reply/assets/examples/flow.json) | 4 steps | 111 | 116 |
 
-Counted on October 30, 2026, with [js-tiktoken](https://github.com/dqbd/tiktoken/tree/main/js) 1.0.21 and the `o200k_base` encoding. These are **spec-text estimates, not measured total tokens per widget**. They exclude chat context, skill instructions, reasoning, tool calls, captions, and feedback replies. Model tokenizers, formatting, and content length can change the counts. No usability or percentage token-savings comparison was measured.
+Recounted November 3, 2026 with Python `tiktoken` 0.9.0 and `o200k_base`.
+For each bundled example, serialize parsed JSON with `json.dumps(spec,
+separators=(",", ":"), ensure_ascii=False)` and count encoded tokens. The read-only
+column uses the identical spec with `"readOnly": true` added: **5 extra spec tokens**.
+This is a matched content comparison; removing unused review fields may reduce a
+real report's spec. The separate [read-only cards example](skills/dynamic-visual-reply/assets/examples/read-only-cards.json)
+contains two records and uses **89 spec tokens**.
+
+These are **spec-text counts, not measured total model consumption**. They exclude
+chat context, loaded skill instructions, reasoning, tool calls, captions and
+feedback. Different tokenizers and content change the counts. No total-token
+savings or usability comparison was measured. Read-only mode removes feedback
+controls and draft calls; it still embeds the same renderer bundle.
 
 Running the Node renderer uses **zero model tokens**. Codex and local browser routes use generated files directly. Claude's inline route also passes the complete generated HTML through model context, so the spec counts alone do not describe that route's cost. No token-counting package is required to install or use the skill.
+
+## Size of read-only and Report Blue additions
+
+Compared with commit `502c904`, before these additions:
+
+| Shipped asset | Before | After | Increase |
+| --- | ---: | ---: | ---: |
+| Shared renderer JavaScript, uncompressed | 82,426 bytes | 83,756 bytes | 1,330 bytes (1.61%) |
+| Optional Report Blue component CSS | 0 | 3,432 bytes | 3,432 bytes |
+| Optional Report Blue theme JSON | 0 | 2,542 bytes | 2,542 bytes |
+
+Read-only behavior accounts for the JavaScript increase. Palette and CSS primitives
+add zero renderer JavaScript. Optional theme/CSS assets total 5,974 bytes on disk;
+generated HTML includes the exported token CSS rather than the theme JSON file.
+The 2,449-byte sample HTML and README screenshots are documentation assets, outside
+the renderer bundle. These byte counts do not measure model tokens or compressed
+transfer size. The read-only token comparison above measures authored specs only.
 
 ## Widget previews
 
