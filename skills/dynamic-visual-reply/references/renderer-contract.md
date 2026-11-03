@@ -6,6 +6,8 @@ Use Node.js built-ins to hydrate the prebuilt bundle. Author specs rather than r
 
 ```sh
 node <skill-dir>/scripts/render.mjs --spec <input.json> --out <view.html> --harness codex
+node <skill-dir>/scripts/route.mjs --facts <facts.json> --out <route.json>
+node <skill-dir>/scripts/render.mjs --spec <input.json> --route <route.json> --out <view.html> --harness codex
 node <skill-dir>/scripts/render.mjs --spec <previous.spec.json> --patch <changes.json> --out <view.html> --harness codex
 node <skill-dir>/scripts/render.mjs --print-config --harness codex
 node <skill-dir>/scripts/render.mjs --theme-css <theme.css>
@@ -13,6 +15,19 @@ node <skill-dir>/scripts/doctor.mjs --harness claude-inline
 ```
 
 The result JSON reports output `path`, resolved `spec` snapshot, `format`, `placement`, `harness`, `theme`, bundle/spec byte counts, and `handoff`. Byte counts are not model token counts.
+
+`response-design` owns format selection through the shared `route.mjs` policy;
+`--help` documents its facts, precedence and preserved density/review thresholds.
+The executable stays in this skill for renderer-only installations. A saved
+visual route fixes `<view>-v1` and read-only/review mode. `--route` rejects a spec
+with a different view or conflicting explicit mode, and prefers Codex inline for
+dense replies unless the spec/flags select placement. Existing payload limits
+remain enforced. No route means the existing spec-only API. All five profiles
+use the unchanged components; they do not constrain domain column names. The
+agent preserves field/column/stage order for repeated tasks. Different hosts may
+use different display surfaces and truthful submission wording; they do not
+change the profile. See the sibling response-design skill's setup guide for the
+short persistent rule and host integration.
 
 Every output embeds the same Oat/Preact bundle and CSS. Codex inline returns the existing `contentReference`; Claude inline returns a generated fragment for `show_widget`, with no external script or public URL. Claude's string-based handoff includes the full bundle and uses model context. For Codex, verify the session documents the `visualize` content-reference output contract; a dedicated widget tool is not required. For tool-based inline hosts, check the actual native tool, its current HTML/JavaScript support, and payload limits before selecting inline delivery. Display support does not imply a working chat submission bridge. Environment detection is only a suggestion. Larger views use `serve.mjs` and save feedback locally. Cursor, Windsurf, Gemini CLI, and other terminal/IDE agents use `browser-local`; Claude Code uses `claude-code`; `static` produces an offline HTML file with copy/export. If rendering is unavailable or fails, provide the intended content in normal Markdown. Use the browser route when interaction remains useful and that route is available; do not add a second HTML renderer as a fallback. Host routing is fixed.
 

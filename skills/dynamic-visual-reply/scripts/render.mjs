@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import * as config from './visual-config.mjs';
+import {applyRoute} from './route.mjs';
 const {ROOT, load, requireValue, object} = config;
 export {ROOT, load};
 export const VIEWS = ['table', 'cards', 'form', 'kanban', 'flow'];
@@ -229,7 +230,12 @@ export function handoff(context, out, kind, size) {
   if (['browser-local', 'claude-code'].includes(id)) return {type: 'serve', command: 'node "' + path.join(ROOT, 'scripts/serve.mjs') + '" "' + out + '" --port 0'};
   return {type: 'file', path: out};
 }
-export function render(spec, out, mode = 'auto', viewportWidth, viewportHeight, {context = defaultContext()} = {}) {
+export function render(spec, out, mode = 'auto', viewportWidth, viewportHeight, {context = defaultContext(), route} = {}) {
+  const routedInline = !!route?.preferInline && mode === 'auto' && !spec.presentation && context.harness.id === 'codex';
+  if (route) {
+    spec = applyRoute(spec, route);
+    if (routedInline) mode = 'inline';
+  }
   validate(spec); out = path.resolve(out);
   requireValue(context.config.views.enabled.includes(spec.view), 'View ' + JSON.stringify(spec.view) + ' is disabled by configuration (views.enabled)');
   const requested = mode !== 'auto' ? mode : spec.presentation || 'auto';
@@ -253,7 +259,7 @@ export function render(spec, out, mode = 'auto', viewportWidth, viewportHeight, 
   let body = fragment(spec, context, appearance, info);
   const sizeLimit = context.config.placement.maxInlineBytes;
   if (decision.mode === 'inline' && bytes(body) >= sizeLimit) {
-    requireValue(requested === 'auto', 'Inline UI exceeds ' + sizeLimit + ' bytes; reduce the dataset or use standalone');
+    requireValue(requested === 'auto' || routedInline, 'Inline UI exceeds ' + sizeLimit + ' bytes; reduce the dataset or use standalone');
     Object.assign(decision, {mode: 'standalone', reason: 'Payload exceeds the inline file-size limit'});
     if (['codex', 'claude-inline'].includes(context.harness.id)) {
       context = context.switch('browser-local'); Object.assign(result, {harness: 'browser-local', delivery: 'embed'});
@@ -267,10 +273,10 @@ export function render(spec, out, mode = 'auto', viewportWidth, viewportHeight, 
   return result;
 }
 export function main() {
-  const strings = ['spec', 'patch', 'out', 'format', 'harness', 'theme', 'appearance', 'viewport-width', 'viewport-height', 'theme-css'];
+  const strings = ['spec', 'patch', 'route', 'out', 'format', 'harness', 'theme', 'appearance', 'viewport-width', 'viewport-height', 'theme-css'];
   const options = Object.fromEntries(strings.map(key => [key, {type: 'string'}]));
   const {values: args} = config.parseCli({...options, 'print-config': {type: 'boolean'}, catalog: {type: 'boolean'}});
-  if (args.help) { console.log('Usage: node render.mjs --spec <spec.json> --out <view.html> [--harness <id>] [--format auto|inline|standalone]\nOptions: --patch --theme --appearance light|dark|system|host --viewport-width --viewport-height --print-config --theme-css --catalog'); return; }
+  if (args.help) { console.log('Usage: node render.mjs --spec <spec.json> --out <view.html> [--route <route.json>] [--harness <id>] [--format auto|inline|standalone]\nOptions: --patch --theme --appearance light|dark|system|host --viewport-width --viewport-height --print-config --theme-css --catalog'); return; }
   if (args.catalog) {
     console.log(JSON.stringify({schemaVersion: 1, views: VIEWS, harnesses: config.harnessIds(), contract: path.join(ROOT, 'references/renderer-contract.md'),
       schemas: path.join(ROOT, 'config/schema'), examples: path.join(ROOT, 'assets/examples')})); return;
@@ -288,6 +294,6 @@ export function main() {
   const source = path.resolve(args.spec), spec = validate(resolveData(load(source), source));
   if (args.patch) applyPatch(spec, load(args.patch));
   const dimension = key => { if (args[key] === undefined) return undefined; const number = Number(args[key]); requireValue(Number.isInteger(number), key + ' must be an integer'); return number; };
-  console.log(JSON.stringify(render(spec, args.out, args.format || 'auto', dimension('viewport-width'), dimension('viewport-height'), {context})));
+  console.log(JSON.stringify(render(spec, args.out, args.format || 'auto', dimension('viewport-width'), dimension('viewport-height'), {context, route: args.route ? load(args.route) : undefined})));
 }
 if (config.isMain(import.meta.url)) config.runCli(main);

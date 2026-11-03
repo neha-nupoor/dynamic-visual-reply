@@ -1,0 +1,188 @@
+[
+  {
+    "id": "short",
+    "prompt": "Explain what an API is in two short sentences.",
+    "expected": {
+      "target": "markdown"
+    }
+  },
+  {
+    "id": "short-paraphrase",
+    "prompt": "Give me a brief plain-language definition of an API.",
+    "expected": {
+      "target": "markdown"
+    }
+  },
+  {
+    "id": "compare",
+    "prompt": "Compare these four tools briefly in chat. I only want to read the differences.",
+    "expected": {
+      "target": "markdown"
+    }
+  },
+  {
+    "id": "compare-paraphrase",
+    "prompt": "Give me a small comparison of four tools in brief chat text; I am not reviewing individual entries.",
+    "expected": {
+      "target": "markdown"
+    }
+  },
+  {
+    "id": "cards",
+    "prompt": "Present four proposals so I can mark a different instruction on each one. One overall reply will not cover them.",
+    "expected": {
+      "target": "visual",
+      "view": "cards",
+      "readOnly": false
+    }
+  },
+  {
+    "id": "cards-paraphrase",
+    "prompt": "I have four alternative proposals. Build a review where I can give each alternative its own separate response.",
+    "expected": {
+      "target": "visual",
+      "view": "cards",
+      "readOnly": false
+    }
+  },
+  {
+    "id": "form",
+    "prompt": "Collect answers to three independent setup questions, with one field per question, and let me submit them together.",
+    "expected": {
+      "target": "visual",
+      "view": "form",
+      "readOnly": false
+    }
+  },
+  {
+    "id": "form-paraphrase",
+    "prompt": "Ask me three separate configuration questions in a form so each answer stays attached to its question.",
+    "expected": {
+      "target": "visual",
+      "view": "form",
+      "readOnly": false
+    }
+  },
+  {
+    "id": "report",
+    "prompt": "Show a read-only status board for these five task records, grouped by their current stages. No approval or editing is needed.",
+    "expected": {
+      "target": "visual",
+      "view": "kanban",
+      "readOnly": true
+    }
+  },
+  {
+    "id": "report-paraphrase",
+    "prompt": "Create a visual report of five tasks organized into stages. I only need to browse their current state.",
+    "expected": {
+      "target": "visual",
+      "view": "kanban",
+      "readOnly": true
+    }
+  },
+  {
+    "id": "text-override",
+    "prompt": "Compare 20 records in a Markdown table. Use Markdown only, even though this is a large comparison.",
+    "expected": {
+      "target": "markdown"
+    }
+  },
+  {
+    "id": "text-override-paraphrase",
+    "prompt": "Keep this entirely as text: a comparison table containing 20 rows.",
+    "expected": {
+      "target": "markdown"
+    }
+  },
+  {
+    "id": "dense",
+    "prompt": "Prepare an answer containing one table of 15 comparable records. I only need to read it; there is no requested format override.",
+    "expected": {
+      "target": "visual",
+      "view": "table",
+      "readOnly": true
+    }
+  },
+  {
+    "id": "dense-paraphrase",
+    "prompt": "Your planned answer has 15 data rows in one table. These are comparable items and require no feedback. Choose a useful format.",
+    "expected": {
+      "target": "visual",
+      "view": "table",
+      "readOnly": true
+    }
+  },
+  {
+    "id": "narrative",
+    "prompt": "Write a 700-word essay explaining how recursion works. It is a continuous explanation, not a set of records.",
+    "expected": {
+      "target": "markdown"
+    }
+  },
+  {
+    "id": "narrative-paraphrase",
+    "prompt": "Explain recursion in about 700 words of connected prose rather than comparable items.",
+    "expected": {
+      "target": "markdown"
+    }
+  },
+  {
+    "id": "chart",
+    "prompt": "Plot these monthly numerical values as a line chart.",
+    "expected": {
+      "target": "visualization"
+    }
+  },
+  {
+    "id": "chart-paraphrase",
+    "prompt": "Make a chart that shows this metric changing over time.",
+    "expected": {
+      "target": "visualization"
+    }
+  },
+  {
+    "id": "document",
+    "prompt": "Review this prose document with comments anchored to the paragraphs that need edits.",
+    "expected": {
+      "target": "document"
+    }
+  },
+  {
+    "id": "document-paraphrase",
+    "prompt": "I need inline comments on this essay, tied to specific passages.",
+    "expected": {
+      "target": "document"
+    }
+  },
+  {
+    "id": "custom",
+    "prompt": "Create a custom interactive explanation with linked code, a queue diagram, and execution controls. A table, cards, form, board, or plain step list cannot express this interaction. Design the layout that fits.",
+    "expected": {
+      "target": "custom-visual",
+      "readOnly": true
+    }
+  },
+  {
+    "id": "custom-paraphrase",
+    "prompt": "Design your own UI for this explanation: linked source code and execution queues with step controls. The five standard record views do not fit. This is for exploration, not feedback.",
+    "expected": {
+      "target": "custom-visual",
+      "readOnly": true
+    }
+  },
+  {
+    "id": "custom-text-override",
+    "prompt": "Describe that custom interactive layout in plain text only. Do not render a UI for this answer.",
+    "expected": {
+      "target": "markdown"
+    }
+  },
+  {
+    "id": "proactive-relationships",
+    "prompt": "Help me see the causal relationships in this complex system with a diagram, rather than a long textual explanation.",
+    "expected": {
+      "target": "visualization"
+    }
+  }
+]
