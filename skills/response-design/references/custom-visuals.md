@@ -18,6 +18,12 @@ responsive layout, source links, and explicit empty/error states. Prefer simple
 controls and details over an overloaded canvas. Verify the rendered view and its
 main interaction on the actual surface where available.
 
+For transparent inline views, inherit the host's active color scheme instead of
+forcing light mode. Use paired `light-dark()` colors for text, surfaces and controls;
+[adaptive-colors.css](../assets/adaptive-colors.css) is a small portable example.
+An opaque standalone page can have its own explicit appearance. Check contrast
+against the actual backdrop in both host modes, including when host and OS differ.
+
 Keep repeated task structure stable: reuse an existing custom artifact or template
 and update its data instead of redesigning it each time. A useful new layout can
 become a reusable template later; no new template is required on every reply.
