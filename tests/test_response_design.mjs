@@ -16,6 +16,27 @@ for (const c of cases) test('routing: ' + c.id, () => {
   assert.deepEqual(route(JSON.parse(JSON.stringify(c.facts))), actual, 'stable across serialization and repeat calls');
 });
 
+test('dense routes preserve feedback mode regardless of other visual triggers', () => {
+  for (const feedback of ['none', 'overall', 'per-item']) for (const singleReply of [undefined, false, true])
+    for (const visualBenefit of [false, true]) for (const visualReport of [false, true]) {
+      const facts = {intent: 'compare', recordLike: true, items: 2, tableRows: [15], feedback, visualBenefit, visualReport,
+        ...(singleReply === undefined ? {} : {singleReply})};
+      const decision = route(facts);
+      assert.equal(decision.target, 'visual');
+      assert.equal(decision.readOnly, feedback !== 'per-item', JSON.stringify(facts));
+    }
+});
+
+test('automatic comparison cards require a known positive small item count', () => {
+  for (const [items, expected] of [[undefined, 'table'], [0, 'table'], [1, 'cards'], [2, 'cards'], [4, 'cards'], [5, 'table'], [15, 'table']]) {
+    const facts = {intent: 'compare', recordLike: true, tableRows: [15], ...(items === undefined ? {} : {items})};
+    const decision = route(facts);
+    assert.equal(decision.view, expected, JSON.stringify(facts));
+    assert.equal(decision.readOnly, true);
+    assert.equal(route({...facts, view: 'cards'}).view, 'cards', 'explicit view still wins');
+  }
+});
+
 test('invalid facts fail rather than silently changing a route', () => {
   for (const facts of [null, [], {items: true}, {items: -1}, {words: 1.5}, {recordLike: 'true'}, {tableRows: [3, '7']},
     {format: 'html'}, {view: 'chart'}, {feedback: 'yes'}, {harness: 'codex'}, {unrecognized: true},

@@ -46,10 +46,10 @@ export function route(facts) {
   if (f.customLayout && !f.view) return custom();
   if (!explicit && proactive && f.recordLike !== true) return {target: 'visualization', reason: 'visual-benefit'};
   if (!explicit && f.recordLike !== true) return chat('unsupported-shape');
-  const readOnly = explicit || f.visualReport || proactive ? f.feedback !== 'per-item' : !review;
+  const readOnly = f.feedback !== 'per-item';
   const view = f.view || (f.intent === 'questions' ? 'form' : f.intent === 'stages' ? 'kanban'
     : f.intent === 'steps' && !readOnly ? 'flow'
-    : f.intent === 'compare' && f.items <= LIMITS.smallAlternatives ? 'cards' : 'table');
+    : f.intent === 'compare' && f.items > 0 && f.items <= LIMITS.smallAlternatives ? 'cards' : 'table');
   return {target: 'visual', view, profile: view + '-v1', readOnly,
     preferInline: dense, reason: explicit ? 'requested-view' : f.visualReport ? 'requested-report' : review ? 'item-feedback' : dense ? 'density' : 'visual-benefit'};
 }
@@ -75,7 +75,7 @@ automatic customLayout requires a nonempty customReason. Explicit custom request
 Missing facts default to explain/none/auto, zero counts, and no affirmative shape/feedback evidence.
 Precedence: explicit format > requested view > prose comments > requested supported report > review/density > Markdown.
 Use format=other for any other explicit format (JSON, CSV, code, etc.); follow that request.
-Explicit views bypass automatic thresholds. Reports without per-item feedback are read-only.
+Explicit views bypass automatic thresholds. Any selected visual retains per-item feedback; otherwise it is read-only.
 Review: >=${LIMITS.reviewItems} records, per-item feedback, and singleReply=false. Overall feedback stays in chat unless report/density applies.
 Density (recordLike=true): one table >=${LIMITS.tableRows} rows, >=2 tables totaling >=${LIMITS.multiTableRows} rows,
 or >=${LIMITS.words} words with >=${LIMITS.comparableItems} comparable items. Narrative length alone does not qualify.
@@ -83,7 +83,7 @@ Borderline review stays in chat with an offer; definite density still applies.
 Meaningful visualBenefit can proactively route shorter records or explanatory visuals.
 Custom requests or justified customLayout route to custom-visual, outside the fixed renderer.
 Profiles: questions=form-v1; stages=kanban-v1; reviewed steps=flow-v1;
-compare <=${LIMITS.smallAlternatives} items=cards-v1; otherwise table-v1. Explicit view wins.
+compare with a known 1-${LIMITS.smallAlternatives} items=cards-v1; otherwise table-v1. Explicit view wins.
 Host names do not affect routing. The renderer checks actual display capabilities and placement.
 Counts are authoring estimates; do not draft a long answer just to measure them.`;
 }

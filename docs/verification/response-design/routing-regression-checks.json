@@ -1,0 +1,22 @@
+{
+  "checks": 40,
+  "fixtures": 20,
+  "widths": [
+    320,
+    736
+  ],
+  "matchingLayouts": 6,
+  "nativeBridges": false,
+  "beforeFix": "Both new Node regression tests failed against 41d72683aab41d228e2d31bd2f619783861b9dcc",
+  "nodeTests": {
+    "passed": 92,
+    "regressionTests": 2,
+    "feedbackCombinations": 36,
+    "comparisonCounts": 7
+  },
+  "source": "tests/routing_regression_browser_checks.js",
+  "existingLayoutBrowserChecks": 100,
+  "readOnlyDraftChecks": 5,
+  "reviewDraftCheck": 1,
+  "fixtureCommand": "node tests/response_design_browser_fixtures.mjs <dir> --routing-regressions"
+}

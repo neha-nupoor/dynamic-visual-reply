@@ -42,6 +42,34 @@ layout/interaction checks and the existing read-only checks. Live examples passe
 page overflow. Host bridges remain simulated; no new native submission claim is
 made. After the header repair, targeted table checks cover all adapter IDs/modes.
 
+## Routing regression repair
+
+Two additional regressions failed before the repair and now pass. Once a visual
+is selected, `feedback: "per-item"` retains review controls regardless of density,
+`singleReply`, or other visual triggers. Automatic comparison cards require a
+known count of one to four items; missing/zero counts use a table. Explicit views
+still win. The normal thresholds for deciding whether to render remain intact.
+
+Current checks: 92 Node tests, 40 targeted browser cases across five adapter IDs
+at 320/736px, the existing 100 layout/interaction cases, and read-only draft
+isolation checks pass. The targeted cases cover both density feedback variants,
+missing comparison counts, and read-only reports. Reproduce their fixtures with:
+
+```sh
+node tests/response_design_browser_fixtures.mjs /tmp/routing-regressions --routing-regressions
+```
+
+Serve that directory on loopback and run `tests/routing_regression_browser_checks.js`
+with the browser automation tool. Results are in
+[routing-regression-checks.json](verification/response-design/routing-regression-checks.json).
+
+PR #11 was checked again at the head listed above with a clean tracked checkout:
+39 Node tests and 12 browser cases across auto/grid review cards and auto/stack
+read-only cards at 375/736/1100px pass. Selection, deselection, notes/reviewed draft
+restoration, aligned grid actions, and structured feedback were checked. No new
+bugs were found. Host submission remains simulated. See
+[pr11-followup-browser.json](verification/response-design/pr11-followup-browser.json).
+
 ## Real examples
 
 The conversation rendered two examples from the actual routing engine:
