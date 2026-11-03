@@ -10,6 +10,7 @@
     "viewId": {"type": "string", "pattern": "\\S"},
     "view": {"enum": ["table", "cards", "form", "kanban", "flow"]},
     "title": {"type": "string"},
+    "readOnly": {"type": "boolean", "default": false},
     "context": {
       "type": "object",
       "properties": {"goal": {"type": "string"}, "next": {"type": "string"}}

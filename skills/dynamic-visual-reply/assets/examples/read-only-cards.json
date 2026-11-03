@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "viewId": "sample-monthly-summary",
+  "view": "cards",
+  "readOnly": true,
+  "title": "Monthly summary",
+  "rows": [
+    {"id": "software", "title": "Software", "summary": "Personal app launched.", "details": "Shipped to production; follow-on improvements remain open."},
+    {"id": "career", "title": "Career", "summary": "Interview practice progressed.", "details": "Coached practice is recorded; independent performance remains untested."}
+  ]
+}

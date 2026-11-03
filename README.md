@@ -4,11 +4,22 @@
 
 Dynamic Visual Reply is an agent skill that turns multi-item reviews into interactive tables, cards, forms, boards, and step views. Select items, edit values, and attach instructions to individual records, then send one batch of feedback to your agent.
 
+For a visual report that needs no response, set `"readOnly": true`. The same
+components show the supplied facts without selection, editing, comments or feedback
+controls. Sorting, filtering, paging, source links, details and flow navigation
+remain available. Saved review drafts are not loaded, and browsing does not save
+drafts or call the host's submission API. Forms display labeled values.
+See the [read-only example](skills/dynamic-visual-reply/assets/examples/read-only-cards.json).
+
 One shared renderer, built with [Oat](https://github.com/knadh/oat) and [Preact](https://preactjs.com/), provides light and dark themes, neutral controls, 2 px corners, and brief CSS motion. The renderer is bundled with the skill—no CDN, API key, or separate service is needed.
 
 ## When to use it
 
 Use a widget when several items need different responses. Keep short answers, prose, and overall feedback in chat.
+
+Read-only mode also supports explicitly requested visual summaries and status
+boards. It does not add chart or timeline view types; keep those in their existing
+visualization workflow rather than replacing them with review controls.
 
 | View | Useful for |
 | --- | --- |

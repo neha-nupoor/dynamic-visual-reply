@@ -29,6 +29,17 @@ test('all five samples satisfy the schema and cross-record contract', () => {
     assert.deepEqual(config.schemaErrors(spec, config.load(path.join(config.SCHEMA_DIR, 'spec.schema.json'))), []);
   }
 });
+test('read-only is opt-in, boolean, and retained in every view and host', t => {
+  for (const view of render.VIEWS) {
+    assert.equal(example(view).readOnly, undefined);
+    for (const harness of ['codex', 'claude-inline', 'browser-local', 'static']) {
+      const spec = {...example(view), readOnly: true};
+      assert.equal(render.validate(spec).readOnly, true);
+      assert.equal(block(page(t, spec, context(harness)).html, 'spec').readOnly, true);
+    }
+    assert.throws(() => render.validate({...example(view), readOnly: 'true'}));
+  }
+});
 test('schema rejects boolean numbers, invalid fields, shapes, reserved IDs and duplicate IDs', () => {
   const broken = [];
   const mutate = (view, fn) => { const spec = example(view); fn(spec); broken.push(spec); };

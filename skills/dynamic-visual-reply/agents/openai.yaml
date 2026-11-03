@@ -1,4 +1,4 @@
 interface:
   display_name: "Dynamic Visual Reply"
-  short_description: "Shared UI for reviews and batch feedback"
-  default_prompt: "Use $dynamic-visual-reply to render an interactive review from a JSON spec, preserving the configured theme and editable batch feedback."
+  short_description: "Shared UI for reviews and read-only reports"
+  default_prompt: "Use $dynamic-visual-reply to render the requested review or read-only report from a JSON spec, preserving the configured theme."

@@ -26,6 +26,16 @@ Other flags: `--format auto|inline|standalone`, `--theme`, `--appearance light|d
 
 Keep `viewId` stable for compatible task/dataset updates; use a new ID for unrelated content. Optional fields: `revision` (default 1), `context:{goal,next}`, `feedbackPrompt`, `appearance`, `presentation`. Record/column/field/option/node IDs are unique, nonempty strings. Content is text rather than HTML; source links accept HTTP(S) only.
 
+Set `readOnly: true` on any supported view for a report. Default is `false`.
+Read-only mode uses the same components and theme but removes record selection,
+editing, comments, reviewed state, feedback and submit/undo controls. Supplied
+values are authoritative: saved review drafts are neither loaded nor applied,
+incoming draft subscriptions are not registered, and draft/save/submit APIs are
+not called. Local browsing remains available (search/filter/sort/page/columns,
+details, source links and flow-step navigation). A form becomes a semantic
+label/value summary, including explicit false and zero. Browse state is ephemeral.
+No additional dashboard/chart/timeline view type is implied.
+
 | View | Fields and behavior |
 | --- | --- |
 | Table | `columns:[{key,label,type?,editable?}]`, `rows:[{id,...}]`; type is `text` or `number`. Optional `filterKey` and `pageSize` (1–100, default 20). Search, sorting, column visibility, paging, selection, row instructions, reviewed flags, cell editing, shared instructions, and undo. Select visible acts on the current page; select all matches spans pages. |

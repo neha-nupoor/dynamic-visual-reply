@@ -2,6 +2,20 @@
 
 Read when building, changing, or reviewing components and feedback delivery. These requirements apply to reusable implementations.
 
+### Read-only reports
+
+`readOnly: true` overrides the review controls described below. Render supplied
+values without applying saved edits or loading/subscribing to review drafts. Hide
+record selection, editable cells/fields, stage changes, per-item instructions,
+reviewed flags, shared instructions, feedback, undo, submission and draft receipts.
+Do not call draft persistence or submission APIs in this mode. Form values are
+semantic labeled text, preserving zero, false, selected option labels and unknowns.
+Keep useful local browsing: sorting, search, filters, paging, column visibility,
+source links, detail expansion and flow-step navigation. Verify that these actions
+leave source values unchanged and make no host draft or feedback calls.
+
+The remaining interaction requirements apply to review mode, the default.
+
 ### Tables and batch feedback
 
 - Provide sorting, useful filters or search, multi-select, and a feedback textarea for each record. Include selection counts, **Select visible** and **Deselect visible**, and a shared instruction field for selected records.

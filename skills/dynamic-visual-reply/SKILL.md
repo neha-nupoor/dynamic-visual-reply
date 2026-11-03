@@ -1,17 +1,25 @@
 ---
 name: dynamic-visual-reply
-description: Render interactive tables, cards, forms, boards, and flows when the user will likely respond to several separate items (approve, edit, choose, or instruct per item), so they can reply once with feedback tied to stable IDs instead of quoting or highlighting multiple places in chat. Keep one or two points, overall feedback, and prose in chat.
+description: Render tables, cards, forms, boards, and flows for per-item feedback, or read-only views for explicitly requested visual reports and summaries. Keep ordinary prose and simple comparisons in chat.
 metadata:
-  short-description: Shared UI for reviews and batch feedback
+  short-description: Shared UI for reviews and read-only reports
 ---
 
 # Dynamic Visual Reply
 
 ## When to render
 
-The purpose is per-item feedback. Render a view when you expect the user to respond to several separate places, so they reply once with instructions tied to stable IDs instead of quoting or highlighting each spot in chat. Do not render UI merely because the skill is available, or because a visual would look nicer than text.
+Use review mode when the user needs to respond to several separate items, so one reply can carry instructions tied to stable IDs. Use read-only mode for requested visual reports. Do not render UI merely because the skill is available, or because a visual would look nicer than text.
 
-Render only when all three hold:
+For an explicitly requested report, dashboard, status board or visual summary that
+needs no response, use `readOnly: true` when its records fit the supported views.
+Read-only views keep browsing and source links, with no record selection, editing,
+comments, reviewed flags, draft persistence or submission controls. Do not turn
+known facts into an approval task. Ordinary simple comparisons still belong in chat.
+This mode does not add chart or timeline view types; use the installed visualization
+workflow for those parts while preserving existing charts and layout.
+
+For a feedback view, render when all three hold:
 
 1. There are three or more separate items, and the user will likely respond to each one differently.
 2. Each item fits a record shape: a row, card, form field, board card, or step.
@@ -47,6 +55,10 @@ One prebuilt Oat/Preact renderer serves every host, with native HTML controls an
 
 2. Write a spec with `schemaVersion:1`, a stable `viewId`, `view`, and `title`:
 
+   Add `readOnly: true` for a report; omission or `false` preserves review behavior.
+   A read-only `form` shows labeled values instead of disabled form controls.
+   See `assets/examples/read-only-cards.json` for a compact summary.
+
    | View | Content |
    | --- | --- |
    | `table` | `columns:[{key,label}]`, `rows:[{id,...}]` |
@@ -61,7 +73,11 @@ Examples are in `assets/examples/`; `--catalog` lists them. Read [renderer-contr
 
 ## Preserve the interaction
 
-Every view supports deliberate batch feedback, a primary submit action, draft state, preview, copy/export fallback, and undo. Keep IDs stable across compatible updates. UI changes are drafts; they do not change authoritative task data. Acknowledge only feedback actually received. In Claude, **Add to chat** fills the message box and the user presses Enter. Local browser feedback is saved to a file for the agent to read when asked.
+Review mode supports deliberate batch feedback, a primary submit action, draft state, preview, copy/export fallback, and undo. Keep IDs stable across compatible updates. UI changes are drafts; they do not change authoritative task data. Acknowledge only feedback actually received. In Claude, **Add to chat** fills the message box and the user presses Enter. Local browser feedback is saved to a file for the agent to read when asked.
+
+Read-only mode renders the supplied spec without loading review drafts, subscribing
+to incoming drafts, saving state or sending feedback. Sorting, filtering, paging,
+column visibility, detail expansion and flow-step navigation are local browsing only.
 
 Placement considers content size, available width, and theme sizes. Use `presentation` or `--format inline|standalone` when the conversation needs a different placement. For large tables, pagination keeps the displayed page manageable; selection and instructions survive page changes. Use `dataFile` for an existing JSON/CSV/TSV dataset and `--patch` for small updates instead of regenerating data.
 
