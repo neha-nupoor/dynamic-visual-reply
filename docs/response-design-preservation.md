@@ -1,5 +1,9 @@
 # Compaction coverage
 
+The unchanged-runtime statement below covers routing commit `756dc30`. The
+subsequent PR #11 integration and header fix are documented separately in
+[PR integration and examples](pr11-integration-and-examples.md).
+
 Baseline: main commit `8da82a8`, 1,708 words in the old visual skill entrypoint.
 Runtime bundle, CSS, adapter implementations, schemas, configuration defaults,
 examples, draft keys and feedback formats are unchanged.

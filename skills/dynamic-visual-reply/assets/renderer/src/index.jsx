@@ -154,9 +154,9 @@ function App(){
         {matched.length>size&&<Button onClick={()=>update({...draft,selected:[...new Set([...draft.selected,...matched.map(row=>row.id)])]})}>{t('table.selectAllMatches',{count:matched.length})}</Button>}
       </div>}
       <div class="vr-table-wrap"><table aria-label={spec.title}>
-        <thead><tr>{!readOnly&&<th scope="col">{t('table.selectColumn')}</th>}{visibleColumns.map(col=><th key={col.key} scope="col" class={col.type==='number'?'vr-number':undefined} aria-sort={sort.key===col.key?(sort.ascending?'ascending':'descending'):'none'}>
+        <thead><tr>{!readOnly&&<th scope="col" class="vr-select-column">{t('table.selectColumn')}</th>}{visibleColumns.map(col=><th key={col.key} scope="col" class={'vr-data-column'+(col.type==='number'?' vr-number':'')} aria-sort={sort.key===col.key?(sort.ascending?'ascending':'descending'):'none'}>
           <Button className="vr-sort" onClick={()=>setSort({key:col.key,ascending:sort.key===col.key?!sort.ascending:true})}>{col.label}{sort.key===col.key&&<span aria-hidden="true">{sort.ascending?' ↑':' ↓'}</span>}</Button>
-        </th>)}{!readOnly&&<th scope="col">{t('table.feedbackColumn')}</th>}</tr></thead>
+        </th>)}{!readOnly&&<th scope="col" class="vr-feedback-cell">{t('table.feedbackColumn')}</th>}</tr></thead>
         <tbody>{visible.map(row=><tr key={row.id} class={draft.selected.includes(row.id)?'vr-selected':undefined}>
           {!readOnly&&<td><input class="vr-checkbox" type="checkbox" checked={draft.selected.includes(row.id)} aria-label={t('select')+' '+row.id} onChange={()=>toggle(row.id)}/></td>}
           {visibleColumns.map(col=><td key={col.key} class={col.type==='number'?'vr-number':undefined}>{col.editable&&!readOnly?

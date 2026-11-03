@@ -22,6 +22,7 @@ The remaining interaction requirements apply to review mode, the default.
 - Add dashboard features when they help: stable headers and identifiers, sensible numeric alignment, column visibility or resizing, grouping, pagination for large datasets, and source/detail access. Avoid loading every possible control into small tables.
 - Distinguish visible rows from all filtered records when selecting or applying an action. Preview the exact batch scope and include stable record IDs, selected values, and attached feedback in the submitted instruction.
 - Preserve drafts, selection, and reviewed state through sorting and filtering. Key edits to stable IDs. Do not rebuild focused inputs on each keystroke or silently truncate instructions.
+- Keep header words whole at narrow widths. Preserve usable column widths and scroll within the table container when needed; page-overflow checks alone do not establish readable headers. Keep placement estimates consistent with those minimum widths.
 
 ### Forms, choices, cards, and actions
 

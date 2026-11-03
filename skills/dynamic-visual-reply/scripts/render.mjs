@@ -137,8 +137,9 @@ export function placement(spec, width, height, {config: settingsConfig, theme} =
   const limit = settings.inlineLimits[spec.view];
   if (spec.view === 'table') {
     const rows = spec.rows || [], columns = spec.columns;
-    const widths = columns.map(column => Math.max(90, Math.min(180, length(column.label) * char + 28)));
-    estimatedWidth = (spec.readOnly ? 0 : control.minHeight + 2 * cellX + 190) + sum(widths);
+    const widths = columns.map(column => Math.max(column.editable && !spec.readOnly ? Math.max(120, 110 + 2 * cellX) : 120,
+      Math.min(180, length(column.label) * char + 28)));
+    estimatedWidth = (spec.readOnly ? 0 : Math.max(64, control.minHeight + 2 * cellX) + 190) + sum(widths);
     const header = control.inputHeight + 2 * unit + control.minHeight + unit + smallLine + 2 * cellY;
     const rowHeights = rows.map(row => {
       const lines = Math.max(1, ...columns.map((column, index) => Math.ceil(length(row[column.key] ?? '') / Math.max(10, Math.trunc(widths[index] / char)))));

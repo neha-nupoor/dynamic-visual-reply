@@ -1,5 +1,9 @@
 # Response design verification — November 3, 2026
 
+This records the original routing commit `756dc30`. For the current combination
+with PR #11, table-header repair and live examples, see
+[PR integration and examples](pr11-integration-and-examples.md).
+
 Response-design selects the response format before drafting. Shared views use a
 saved route, and `render.mjs --route` enforces its view/mode. Agents may instead
 choose custom-visual and design a layout through supported host UI tools when

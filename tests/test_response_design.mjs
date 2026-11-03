@@ -6,7 +6,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import {route, applyRoute} from '../skills/dynamic-visual-reply/scripts/route.mjs';
-import {ROOT, render, load, BUNDLE} from '../skills/dynamic-visual-reply/scripts/render.mjs';
+import {ROOT, render, load, BUNDLE, placement} from '../skills/dynamic-visual-reply/scripts/render.mjs';
 import {resolve, harnessIds} from '../skills/dynamic-visual-reply/scripts/visual-config.mjs';
 
 const cases = load(fileURLToPath(new URL('./response_design_cases.json', import.meta.url)));
@@ -96,4 +96,11 @@ test('entrypoints stay below the old 1708-word core, with relevant host referenc
     for (const match of text.matchAll(/\]\(([^)]+)\)/g)) if (!match[1].includes('://'))
       assert.ok(fs.existsSync(path.resolve(dir, match[1])), 'reachable reference: ' + match[1]);
   }
+});
+
+test('narrow three-column tables use standalone instead of compressing readable headers', () => {
+  const spec = {...load(path.join(ROOT, 'assets/examples/table.json')), readOnly: true};
+  spec.rows = spec.rows.slice(0, 1);
+  assert.equal(placement(spec, 320, 900).mode, 'standalone');
+  assert.equal(placement(spec, 736, 900).mode, 'inline');
 });
