@@ -107,6 +107,23 @@ sand and rose for additional data categories.
 
 ![Report Blue outcome rows with shipped, in-progress, blocked, and unverified labels](docs/media/report-blue-status.png)
 
+### Eight-color palette
+
+The full Report Blue palette, shown inline in Codex in both appearances:
+
+![Report Blue light palette with all eight named data colors and hex codes](docs/media/report-blue-palette-light.png)
+
+![Report Blue dark palette with all eight named data colors and hex codes](docs/media/report-blue-palette-dark.png)
+
+### Custom monthly report example
+
+A custom read-only monthly dashboard shown inline in Codex. This report inspired
+Report Blue's colors and basic components. Its timeline and monthly layout were
+composed separately; they are not built-in shared renderer views. The screenshot
+shows the surrounding Codex conversation as captured.
+
+![Custom October monthly report inside a Codex chat, with milestone cards, a timeline, and wins](docs/media/monthly-dashboard-inline.png)
+
 ### Component gallery
 
 These screenshots show all five views using fictional release tasks. They use the shared renderer in a local preview with a labeled simulated chat bridge.
