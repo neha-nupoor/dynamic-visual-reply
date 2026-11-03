@@ -49,6 +49,11 @@
     "messageFormat": "json"
   },
   "copy": {
+    "readOnly": "Read only",
+    "notProvided": "Not provided",
+    "noneSelected": "None selected",
+    "yes": "Yes",
+    "no": "No",
     "badge": "Draft → preview → feedback",
     "goal": "Goal:",
     "next": "Next:",

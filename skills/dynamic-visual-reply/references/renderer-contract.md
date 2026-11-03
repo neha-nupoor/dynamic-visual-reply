@@ -26,6 +26,16 @@ Other flags: `--format auto|inline|standalone`, `--theme`, `--appearance light|d
 
 Keep `viewId` stable for compatible task/dataset updates; use a new ID for unrelated content. Optional fields: `revision` (default 1), `context:{goal,next}`, `feedbackPrompt`, `appearance`, `presentation`. Record/column/field/option/node IDs are unique, nonempty strings. Content is text rather than HTML; source links accept HTTP(S) only.
 
+Set `readOnly: true` on any supported view for a report. Default is `false`.
+Read-only mode uses the same components and theme but removes record selection,
+editing, comments, reviewed state, feedback and submit/undo controls. Supplied
+values are authoritative: saved review drafts are neither loaded nor applied,
+incoming draft subscriptions are not registered, and draft/save/submit APIs are
+not called. Local browsing remains available (search/filter/sort/page/columns,
+details, source links and flow-step navigation). A form becomes a semantic
+label/value summary, including explicit false and zero. Browse state is ephemeral.
+No additional dashboard/chart/timeline view type is implied.
+
 | View | Fields and behavior |
 | --- | --- |
 | Table | `columns:[{key,label,type?,editable?}]`, `rows:[{id,...}]`; type is `text` or `number`. Optional `filterKey` and `pageSize` (1–100, default 20). Search, sorting, column visibility, paging, selection, row instructions, reviewed flags, cell editing, shared instructions, and undo. Select visible acts on the current page; select all matches spans pages. |
@@ -44,7 +54,7 @@ Settings merge: shipped defaults → small built-in host defaults → user confi
 
 Settings cover theme/fallback, appearance, harness, enabled views, placement, feedback prompts/message format, and copy. `feedback.messageFormat` is `json`, `compact`, or `summary` (a readable line followed by JSON). `copy` can override selected labels/status messages. Claude's default button is **Add to chat**, with a status asking the user to press Enter.
 
-The single bundled theme is `config/theme.json`, named `generic`. It provides the approved spacious neutral appearance: monochrome actions, soft light backgrounds, visible borders, square content surfaces, 2 px controls, and labels above fields. Oat/native controls use the same tokens in both appearances. See [theme.md](theme.md).
+The default bundled theme is `config/theme.json`, named `generic`. It provides the approved spacious neutral appearance: monochrome actions, soft light backgrounds, visible borders, square content surfaces, 2 px controls, and labels above fields. Oat/native controls use the same tokens in both appearances. See [theme.md](theme.md).
 
 Custom themes can still be a JSON path, a folder containing `theme.json` or `assets/theme.json`, an inline object, or an installed pack name. Names are searched beside the skill, in `$DYNAMIC_VISUAL_REPLY_THEME_PATH`, and in common skill directories. Missing optional tokens inherit generic values. Legacy `base-web` and `neutral` names are aliases for `generic`; the compact duplicate has been removed. Old motion tokens are ignored. The split accent roles and `--vr-` CSS variables remain supported.
 

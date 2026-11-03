@@ -63,6 +63,9 @@
 [data-dynamic-visual-reply-root] .vr-feedback-actions {margin-block:12px}
 [data-dynamic-visual-reply-root] .vr-receipt {margin-top:8px}
 [data-dynamic-visual-reply-root] .vr-pre-wrap {white-space:pre-wrap}
+[data-dynamic-visual-reply-root] .vr-readonly-fields {display:grid;gap:16px;margin:0}
+[data-dynamic-visual-reply-root] .vr-readonly-fields dt {font-weight:600;margin-bottom:4px}
+[data-dynamic-visual-reply-root] .vr-readonly-fields dd {margin:0;overflow-wrap:anywhere}
 [data-dynamic-visual-reply-root] .vr-sr-only {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 @media(min-width:600px) {[data-dynamic-visual-reply-root] .vr-app{padding:var(--vr-padding)}[data-dynamic-visual-reply-root] h2{font-size:var(--vr-title)}}
 @media(prefers-reduced-motion:reduce) {

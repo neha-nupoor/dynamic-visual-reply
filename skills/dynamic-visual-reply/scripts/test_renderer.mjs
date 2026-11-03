@@ -29,6 +29,17 @@ test('all five samples satisfy the schema and cross-record contract', () => {
     assert.deepEqual(config.schemaErrors(spec, config.load(path.join(config.SCHEMA_DIR, 'spec.schema.json'))), []);
   }
 });
+test('read-only is opt-in, boolean, and retained in every view and host', t => {
+  for (const view of render.VIEWS) {
+    assert.equal(example(view).readOnly, undefined);
+    for (const harness of ['codex', 'claude-inline', 'browser-local', 'static']) {
+      const spec = {...example(view), readOnly: true};
+      assert.equal(render.validate(spec).readOnly, true);
+      assert.equal(block(page(t, spec, context(harness)).html, 'spec').readOnly, true);
+    }
+    assert.throws(() => render.validate({...example(view), readOnly: 'true'}));
+  }
+});
 test('schema rejects boolean numbers, invalid fields, shapes, reserved IDs and duplicate IDs', () => {
   const broken = [];
   const mutate = (view, fn) => { const spec = example(view); fn(spec); broken.push(spec); };
@@ -163,6 +174,32 @@ test('host detection is a suggestion and explicit harness selection wins', () =>
   assert.equal(config.detectHarness({CODEX_HOME: '/tmp'})[0], 'codex');
   assert.equal(config.detectHarness({})[0], 'static');
   assert.equal(config.resolve({}, {harness: 'browser-local', env: {CLAUDECODE: '1'}, isolated: true}).harness.id, 'browser-local');
+});
+test('Report Blue uses the existing theme path and exports accessible light/dark roles', t => {
+  const themePath = path.join(config.ROOT, 'assets/report-kit/theme.json');
+  const resolved = context('codex', {theme: themePath});
+  assert.equal(resolved.theme.name, 'report-blue');
+  assert.deepEqual(config.contrastProblems(resolved.theme), []);
+  for (const mode of ['light', 'dark']) {
+    const c = resolved.theme[mode];
+    for (const role of ['success', 'warning', 'error'])
+      assert.ok(config.contrast(c[role], c[role + 'Fill']) >= 4.5, mode + ' ' + role);
+  }
+  const css = config.cssVariables(resolved.theme, 'system');
+  assert.ok(css.includes('--vr-series1: #365de8;'));
+  assert.ok(css.includes('--vr-series4: #3c4f7b;'));
+  assert.ok(css.includes(':root[data-theme="dark"]'));
+  for (const mode of ['light', 'dark']) {
+    const series = Array.from({length: 8}, (_, i) => resolved.theme[mode]['series' + (i + 1)]);
+    assert.equal(new Set(series).size, 8);
+    series.forEach((color, i) => assert.ok(css.includes('--vr-series' + (i + 1) + ': ' + color + ';')));
+  }
+  const spec = {...example('cards'), readOnly: true};
+  const {html, result} = page(t, spec, resolved);
+  assert.equal(result.rendererHash, render.manifest().sha256);
+  assert.equal(block(html, 'theme').name, 'report-blue');
+  assert.equal(block(html, 'theme').light.series2, '#778cd1');
+  assert.equal(context().theme.name, 'generic');
 });
 test('generic and legacy theme names resolve to one readable theme', () => {
   for (const name of ['generic', 'base-web', 'neutral']) {

@@ -4,11 +4,32 @@
 
 Dynamic Visual Reply is an agent skill that turns multi-item reviews into interactive tables, cards, forms, boards, and step views. Select items, edit values, and attach instructions to individual records, then send one batch of feedback to your agent.
 
+For a visual report that needs no response, set `"readOnly": true`. The same
+components show the supplied facts without selection, editing, comments or feedback
+controls. Sorting, filtering, paging, source links, details and flow navigation
+remain available. Saved review drafts are not loaded, and browsing does not save
+drafts or call the host's submission API. Forms display labeled values.
+See the [read-only example](skills/dynamic-visual-reply/assets/examples/read-only-cards.json).
+
 One shared renderer, built with [Oat](https://github.com/knadh/oat) and [Preact](https://preactjs.com/), provides light and dark themes, neutral controls, 2 px corners, and brief CSS motion. The renderer is bundled with the skill—no CDN, API key, or separate service is needed.
+
+Prefer the blue-accent report style? The optional [Report Blue kit](skills/dynamic-visual-reply/references/report-kit.md)
+includes eight coordinated data colors in light/dark themes and CSS-only metric cards, status labels, rows, legends
+and simple bars. It works with the existing theme loader and adds **zero JavaScript
+to the renderer bundle**. It includes no personal report data or monthly layout.
 
 ## When to use it
 
 Use a widget when several items need different responses. Keep short answers, prose, and overall feedback in chat.
+
+Read-only mode also supports explicitly requested visual summaries and status
+boards. It also applies proactively to dense structured answers: two tables with
+at least 10 total data rows, one table with at least 15 rows, or a response of at
+least 500 words containing six comparable items. The agent uses a compact inline
+view where the host supports it, with a short answer in chat. These are skill
+authoring rules; explicit format requests take priority. Long prose stays in chat.
+It does not add chart or timeline view types; keep those in their existing
+visualization workflow rather than replacing them with review controls.
 
 | View | Useful for |
 | --- | --- |
@@ -24,17 +45,46 @@ Selections and edits stay drafts until you submit them. Submitting sends instruc
 
 The agent writes a JSON spec; the Node helper supplies the existing UI. The table below estimates the tokens in each bundled example's spec, without optional JSON whitespace.
 
-| Widget | Example size | Estimated spec tokens |
-| --- | --- | ---: |
-| [Table](skills/dynamic-visual-reply/assets/examples/table.json) | 4 records, 3 columns | 169 |
-| [Cards](skills/dynamic-visual-reply/assets/examples/cards.json) | 3 cards | 139 |
-| [Form](skills/dynamic-visual-reply/assets/examples/form.json) | 4 fields | 175 |
-| [Board](skills/dynamic-visual-reply/assets/examples/kanban.json) | 3 items | 83 |
-| [Flow](skills/dynamic-visual-reply/assets/examples/flow.json) | 4 steps | 111 |
+| View | Example size | Review spec tokens | Read-only spec tokens |
+| --- | --- | ---: | ---: |
+| [Table](skills/dynamic-visual-reply/assets/examples/table.json) | 4 records, 3 columns | 169 | 174 |
+| [Cards](skills/dynamic-visual-reply/assets/examples/cards.json) | 3 cards | 139 | 144 |
+| [Form](skills/dynamic-visual-reply/assets/examples/form.json) | 4 fields | 175 | 180 |
+| [Board](skills/dynamic-visual-reply/assets/examples/kanban.json) | 3 items | 83 | 88 |
+| [Flow](skills/dynamic-visual-reply/assets/examples/flow.json) | 4 steps | 111 | 116 |
 
-Counted on October 30, 2026, with [js-tiktoken](https://github.com/dqbd/tiktoken/tree/main/js) 1.0.21 and the `o200k_base` encoding. These are **spec-text estimates, not measured total tokens per widget**. They exclude chat context, skill instructions, reasoning, tool calls, captions, and feedback replies. Model tokenizers, formatting, and content length can change the counts. No usability or percentage token-savings comparison was measured.
+Recounted November 3, 2026 with Python `tiktoken` 0.9.0 and `o200k_base`.
+For each bundled example, serialize parsed JSON with `json.dumps(spec,
+separators=(",", ":"), ensure_ascii=False)` and count encoded tokens. The read-only
+column uses the identical spec with `"readOnly": true` added: **5 extra spec tokens**.
+This is a matched content comparison; removing unused review fields may reduce a
+real report's spec. The separate [read-only cards example](skills/dynamic-visual-reply/assets/examples/read-only-cards.json)
+contains two records and uses **89 spec tokens**.
+
+These are **spec-text counts, not measured total model consumption**. They exclude
+chat context, loaded skill instructions, reasoning, tool calls, captions and
+feedback. Different tokenizers and content change the counts. No total-token
+savings or usability comparison was measured. Read-only mode removes feedback
+controls and draft calls; it still embeds the same renderer bundle.
 
 Running the Node renderer uses **zero model tokens**. Codex and local browser routes use generated files directly. Claude's inline route also passes the complete generated HTML through model context, so the spec counts alone do not describe that route's cost. No token-counting package is required to install or use the skill.
+
+## Size of read-only and Report Blue additions
+
+Compared with commit `502c904`, before these additions:
+
+| Shipped asset | Before | After | Increase |
+| --- | ---: | ---: | ---: |
+| Shared renderer JavaScript, uncompressed | 82,426 bytes | 83,756 bytes | 1,330 bytes (1.61%) |
+| Optional Report Blue component CSS | 0 | 3,432 bytes | 3,432 bytes |
+| Optional Report Blue theme JSON | 0 | 2,542 bytes | 2,542 bytes |
+
+Read-only behavior accounts for the JavaScript increase. Palette and CSS primitives
+add zero renderer JavaScript. Optional theme/CSS assets total 5,974 bytes on disk;
+generated HTML includes the exported token CSS rather than the theme JSON file.
+The 2,449-byte sample HTML and README screenshots are documentation assets, outside
+the renderer bundle. These byte counts do not measure model tokens or compressed
+transfer size. The read-only token comparison above measures authored specs only.
 
 ## Widget previews
 
@@ -45,6 +95,34 @@ Recorded in a real Codex chat: enter instructions for individual steps and use *
 ![Native Codex widget interaction](docs/media/codex-inline-demo.gif)
 
 The demo agent received instructions for `onboarding`, `shortcuts`, and `export` with their IDs intact. This verifies the Codex route; Claude's native route remains unverified.
+
+### Read-only Report Blue
+
+Captured inline in Codex with sample data. The optional CSS kit supplies metric
+cards, bars, legends, rows and status labels with no feedback controls. These
+screenshots show the original four blues; the kit also includes muted teal, plum,
+sand and rose for additional data categories.
+
+![Report Blue colors, metric cards, and a bar with its legend](docs/media/report-blue-cards.png)
+
+![Report Blue outcome rows with shipped, in-progress, blocked, and unverified labels](docs/media/report-blue-status.png)
+
+### Eight-color palette
+
+The full Report Blue palette, shown inline in Codex in both appearances:
+
+![Report Blue light palette with all eight named data colors and hex codes](docs/media/report-blue-palette-light.png)
+
+![Report Blue dark palette with all eight named data colors and hex codes](docs/media/report-blue-palette-dark.png)
+
+### Custom monthly report example
+
+A custom read-only monthly dashboard shown inline in Codex. This report inspired
+Report Blue's colors and basic components. Its timeline and monthly layout were
+composed separately; they are not built-in shared renderer views. The screenshot
+shows the surrounding Codex conversation as captured.
+
+![Custom October monthly report inside a Codex chat, with milestone cards, a timeline, and wins](docs/media/monthly-dashboard-inline.png)
 
 ### Component gallery
 

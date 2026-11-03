@@ -15,7 +15,7 @@ node <skill-dir>/scripts/render.mjs --spec <spec.json> --out <view.html> --harne
 - **Inline** (`handoff.type: "contentReference"`): the output embeds the full bundle, so it works offline. Put the returned `contentReference` verbatim on its own line in your final response, preserving its delimiter glyphs (`visualize{"path":"/absolute/path/view.html"}`). Plain `visualize{...}` text does not render a widget. Do not paste the HTML or wrap the reference in a Markdown link or code fence.
 - **Standalone** (`handoff.type: "serve"`): run the returned `command` (it starts `serve.mjs` on loopback), open the printed URL in a browser panel, and keep the server alive while the user reviews.
 
-For an explicit inline request, pass `--format inline`; automatic placement otherwise sends more than two cards or tall content to a browser. The override still enforces the inline payload limit. Save the fragment to the session's writable visualization directory, or its task-owned `work/` directory. Keep small demos compact; do not silently substitute browser placement for an explicit inline request.
+For an explicit inline request or the skill's dense-response trigger, pass `--format inline`; automatic placement otherwise sends more than two cards or tall content to a browser. The override still enforces the inline payload limit. Save the fragment to the session's writable visualization directory, or its task-owned `work/` directory. Keep small demos compact; do not silently substitute browser placement for an explicit inline request.
 
 ## Feedback
 

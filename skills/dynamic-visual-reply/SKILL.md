@@ -1,23 +1,46 @@
 ---
 name: dynamic-visual-reply
-description: Render interactive tables, cards, forms, boards, and flows when the user will likely respond to several separate items (approve, edit, choose, or instruct per item), so they can reply once with feedback tied to stable IDs instead of quoting or highlighting multiple places in chat. Keep one or two points, overall feedback, and prose in chat.
+description: Render tables, cards, forms, boards, and flows for per-item feedback, or read-only views for requested reports and dense structured responses with many tables or comparable items. Keep ordinary prose and small comparisons in chat.
 metadata:
-  short-description: Shared UI for reviews and batch feedback
+  short-description: Shared UI for reviews and read-only reports
 ---
 
 # Dynamic Visual Reply
 
 ## When to render
 
-The purpose is per-item feedback. Render a view when you expect the user to respond to several separate places, so they reply once with instructions tied to stable IDs instead of quoting or highlighting each spot in chat. Do not render UI merely because the skill is available, or because a visual would look nicer than text.
+Use review mode when the user needs to respond to several separate items, so one reply can carry instructions tied to stable IDs. Use read-only mode for requested visual reports or dense structured responses. Do not render UI merely because the skill is available, or because a visual would look nicer than text.
 
-Render only when all three hold:
+For an explicitly requested report, dashboard, status board or visual summary that
+needs no response, use `readOnly: true` when its records fit the supported views.
+Read-only views keep browsing and source links, with no record selection, editing,
+comments, reviewed flags, draft persistence or submission controls. Do not turn
+known facts into an approval task. Ordinary simple comparisons still belong in chat.
+This mode does not add chart or timeline view types; use the installed visualization
+workflow for those parts while preserving existing charts and layout.
+
+For a dense structured answer, proactively use `readOnly: true` when any of these
+thresholds applies to the planned response:
+
+- Two or more tables with at least 10 total data rows.
+- One table with at least 15 data rows.
+- At least 500 words with six or more comparable items that fit the supported views.
+
+Use a compact table or grouped cards with browsing/details, and keep the main
+answer in one short chat paragraph. For this density trigger, prefer inline when
+the documented host contract exists: pass `--format inline` on Codex, retain
+pagination/details, and honor payload limits. Use the browser route if inline
+cannot fit. Length alone does not turn an essay, code listing, or narrative into
+records. Explicit user requests for text, Markdown or another format take priority.
+These are authoring rules, not a runtime word counter.
+
+For a feedback view, render when all three hold:
 
 1. There are three or more separate items, and the user will likely respond to each one differently.
 2. Each item fits a record shape: a row, card, form field, board card, or step.
 3. The user could not say what they want in one sentence.
 
-Stay in chat when there are one or two points, when feedback will be overall ("make it shorter"), or when the content is prose that needs inline comments; use a document with comments for that instead. A comparison with nothing to respond to belongs in a markdown table. When the call is borderline, end the chat reply with a one-line offer, such as "Want a review view to mark these up?", instead of rendering. An explicit request for a view is always a trigger.
+Stay in chat when there are one or two points, when feedback will be overall ("make it shorter"), or when the content is prose that needs inline comments; use a document with comments for that instead. A small comparison below the density thresholds belongs in a Markdown table. When the call is borderline, end the chat reply with a one-line offer, such as "Want a review view to mark these up?", instead of rendering. An explicit request for a view is always a trigger.
 
 Never let the view replace the answer. The chat reply must stand on its own: summarize what the view contains and what you recommend, so the user can answer in text and ignore the view. While a view works, do not repeat its full content in chat. If rendering is unavailable or fails, provide the intended content as an ordinary Markdown response so no information is stranded in the widget. Do not build a second HTML renderer as a fallback. Use Markdown for surrounding chat text and screenshot captions; do not wrap chat responses or images in raw HTML such as `<details>` or `<summary>`. Keep HTML inside the rendered widget file.
 
@@ -47,6 +70,10 @@ One prebuilt Oat/Preact renderer serves every host, with native HTML controls an
 
 2. Write a spec with `schemaVersion:1`, a stable `viewId`, `view`, and `title`:
 
+   Add `readOnly: true` for a report; omission or `false` preserves review behavior.
+   A read-only `form` shows labeled values instead of disabled form controls.
+   See `assets/examples/read-only-cards.json` for a compact summary.
+
    | View | Content |
    | --- | --- |
    | `table` | `columns:[{key,label}]`, `rows:[{id,...}]` |
@@ -61,11 +88,20 @@ Examples are in `assets/examples/`; `--catalog` lists them. Read [renderer-contr
 
 ## Preserve the interaction
 
-Every view supports deliberate batch feedback, a primary submit action, draft state, preview, copy/export fallback, and undo. Keep IDs stable across compatible updates. UI changes are drafts; they do not change authoritative task data. Acknowledge only feedback actually received. In Claude, **Add to chat** fills the message box and the user presses Enter. Local browser feedback is saved to a file for the agent to read when asked.
+Review mode supports deliberate batch feedback, a primary submit action, draft state, preview, copy/export fallback, and undo. Keep IDs stable across compatible updates. UI changes are drafts; they do not change authoritative task data. Acknowledge only feedback actually received. In Claude, **Add to chat** fills the message box and the user presses Enter. Local browser feedback is saved to a file for the agent to read when asked.
+
+Read-only mode renders the supplied spec without loading review drafts, subscribing
+to incoming drafts, saving state or sending feedback. Sorting, filtering, paging,
+column visibility, detail expansion and flow-step navigation are local browsing only.
 
 Placement considers content size, available width, and theme sizes. Use `presentation` or `--format inline|standalone` when the conversation needs a different placement. For large tables, pagination keeps the displayed page manageable; selection and instructions survive page changes. Use `dataFile` for an existing JSON/CSV/TSV dataset and `--patch` for small updates instead of regenerating data.
 
 ## Appearance and cost
+
+For requested report styling, the optional [Report Blue kit](references/report-kit.md)
+provides a portable light/dark palette and CSS-only metric cards, status labels,
+rows, legends and simple bars. Read that reference only when using this style.
+It uses the existing theme loader and adds no renderer JavaScript or report logic.
 
 By default, follow the harness appearance: Claude inline uses `host`; other surfaces use `system` (host light/dark markers when exposed, otherwise OS preference). Honor explicit appearance settings in the spec, flags, project, or user config before this fallback. Do not add appearance flags just to enforce the default; use them for a requested override. Both palettes use the same renderer. Use the configured theme pack; preserve an existing product's design system. User settings live at `~/.config/dynamic-visual-reply/config.json` (or `$DYNAMIC_VISUAL_REPLY_CONFIG`); project settings live in `.dynamic-visual-reply.json`. Theme, appearance, copy, and placement limits are settings. Host delivery is fixed in code, with thin adapters for feedback and drafts.
 
