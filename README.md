@@ -14,7 +14,7 @@ See the [read-only example](skills/dynamic-visual-reply/assets/examples/read-onl
 One shared renderer, built with [Oat](https://github.com/knadh/oat) and [Preact](https://preactjs.com/), provides light and dark themes, neutral controls, 2 px corners, and brief CSS motion. The renderer is bundled with the skill—no CDN, API key, or separate service is needed.
 
 Prefer the blue-accent report style? The optional [Report Blue kit](skills/dynamic-visual-reply/references/report-kit.md)
-includes light/dark tokens and CSS-only metric cards, status labels, rows, legends
+includes eight coordinated data colors in light/dark themes and CSS-only metric cards, status labels, rows, legends
 and simple bars. It works with the existing theme loader and adds **zero JavaScript
 to the renderer bundle**. It includes no personal report data or monthly layout.
 
@@ -61,6 +61,17 @@ Recorded in a real Codex chat: enter instructions for individual steps and use *
 ![Native Codex widget interaction](docs/media/codex-inline-demo.gif)
 
 The demo agent received instructions for `onboarding`, `shortcuts`, and `export` with their IDs intact. This verifies the Codex route; Claude's native route remains unverified.
+
+### Read-only Report Blue
+
+Captured inline in Codex with sample data. The optional CSS kit supplies metric
+cards, bars, legends, rows and status labels with no feedback controls. These
+screenshots show the original four blues; the kit also includes muted teal, plum,
+sand and rose for additional data categories.
+
+![Report Blue colors, metric cards, and a bar with its legend](docs/media/report-blue-cards.png)
+
+![Report Blue outcome rows with shipped, in-progress, blocked, and unverified labels](docs/media/report-blue-status.png)
 
 ### Component gallery
 

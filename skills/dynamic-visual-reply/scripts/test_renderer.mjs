@@ -189,6 +189,11 @@ test('Report Blue uses the existing theme path and exports accessible light/dark
   assert.ok(css.includes('--vr-series1: #365de8;'));
   assert.ok(css.includes('--vr-series4: #3c4f7b;'));
   assert.ok(css.includes(':root[data-theme="dark"]'));
+  for (const mode of ['light', 'dark']) {
+    const series = Array.from({length: 8}, (_, i) => resolved.theme[mode]['series' + (i + 1)]);
+    assert.equal(new Set(series).size, 8);
+    series.forEach((color, i) => assert.ok(css.includes('--vr-series' + (i + 1) + ': ' + color + ';')));
+  }
   const spec = {...example('cards'), readOnly: true};
   const {html, result} = page(t, spec, resolved);
   assert.equal(result.rendererHash, render.manifest().sha256);

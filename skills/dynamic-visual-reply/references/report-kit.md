@@ -33,10 +33,24 @@ do not add document tags. The stylesheet is not added to the shared JS bundle.
 
 - Surfaces: white content, cool-neutral secondary surfaces, near-black text.
 - Accent: `#365DE8` for actions/links; pale blue for selected content.
-- Series: `--vr-series1` through `--vr-series4` retain the report's light blue-to-grey
-  palette: `#365DE8`, `#778CD1`, `#AAB7DF`, `#D7DCE8`. The theme provides dark variants.
+- Series: `--vr-series1` through `--vr-series8` have matching `data-series="1"`
+  through `"8"` swatches and bars, with light and dark variants. The original four
+  blue-to-grey colors remain; muted teal, plum, sand and rose extend the palette.
 - Outcomes: success, warning and error text/fill pairs are for real status, not decoration.
 
+| Series | Color | Light | Dark |
+| --- | --- | --- | --- |
+| 1 | Accent blue | #365DE8 | #A9C2FF |
+| 2 | Soft blue | #778CD1 | #8299D3 |
+| 3 | Pale blue | #AAB7DF | #5D73AE |
+| 4 | Blue grey | #D7DCE8 | #3C4F7B |
+| 5 | Muted teal | #5B9296 | #84B8BA |
+| 6 | Muted plum | #9380AD | #B4A0CF |
+| 7 | Warm sand | #BF9B64 | #D6B780 |
+| 8 | Dusty rose | #B67D91 | #D2A0B1 |
+
+For distinct categories, start with series 1, 5, 6, 7 and 8 before adding the
+closely related blues. Keep semantic status colors separate from category colors.
 Use stable series meanings within a chart. Keep labels and values on neutral
 surfaces, not on the pale series fills. The pale tones are not guaranteed to meet
 non-text contrast against every surface or adjacent tone: preserve direct labels,

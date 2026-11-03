@@ -72,7 +72,11 @@
     "series1": "#365de8",
     "series2": "#778cd1",
     "series3": "#aab7df",
-    "series4": "#d7dce8"
+    "series4": "#d7dce8",
+    "series5": "#5b9296",
+    "series6": "#9380ad",
+    "series7": "#bf9b64",
+    "series8": "#b67d91"
   },
   "dark": {
     "canvas": "#151a22",
@@ -98,7 +102,11 @@
     "series1": "#a9c2ff",
     "series2": "#8299d3",
     "series3": "#5d73ae",
-    "series4": "#3c4f7b"
+    "series4": "#3c4f7b",
+    "series5": "#84b8ba",
+    "series6": "#b4a0cf",
+    "series7": "#d6b780",
+    "series8": "#d2a0b1"
   },
   "label": "Report Blue"
 }

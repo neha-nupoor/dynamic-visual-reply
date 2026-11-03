@@ -29,6 +29,10 @@
 .dvr-report [data-series="2"] {--dvr-series:var(--vr-series2)}
 .dvr-report [data-series="3"] {--dvr-series:var(--vr-series3)}
 .dvr-report [data-series="4"] {--dvr-series:var(--vr-series4)}
+.dvr-report [data-series="5"] { --dvr-series:var(--vr-series5)}
+.dvr-report [data-series="6"] { --dvr-series:var(--vr-series6)}
+.dvr-report [data-series="7"] { --dvr-series:var(--vr-series7)}
+.dvr-report [data-series="8"] { --dvr-series:var(--vr-series8)}
 .dvr-report .dvr-meter {display:flex;height:20px;overflow:hidden;background:var(--vr-secondary-surface);border-radius:3px}
 .dvr-report .dvr-meter>span {display:block;height:100%;flex:none;width:clamp(0%,calc(var(--share,0)*1%),100%);background:var(--dvr-series,var(--vr-series1))}
 @media(max-width:480px) {.dvr-report{padding:16px}.dvr-report h1{font-size:28px}}
