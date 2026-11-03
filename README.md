@@ -88,6 +88,18 @@ transfer size. The read-only token comparison above measures authored specs only
 
 ## Widget previews
 
+### Interactive HTML demo
+
+[Open the response-design explorer](docs/demos/response-design-explorer.html).
+Download the HTML file and open it in a browser. It is one self-contained file
+with inline CSS and JavaScript: no install, server, API key or external assets.
+GitHub shows the source rather than running interactive HTML inside this README.
+
+Choose among five recorded requests to inspect the selected format, the routing
+facts and counted text tokens. The controls run locally without model calls.
+The demo follows light/dark appearance with adaptive colors. Its sample outcomes
+come from the shared routing engine; it does not classify new free-text requests.
+
 ### Inside Codex
 
 Recorded in a real Codex chat: enter instructions for individual steps and use **Send to chat**. The clip shows the native widget and its button; the complete feedback receipt was verified separately in the same chat. It predates the compact spacing update; the component gallery below shows the current sizing.
