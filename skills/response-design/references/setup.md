@@ -13,11 +13,15 @@ can use the identical policy. It has no runtime packages or model calls.
 
 ## Persistent entry rule
 
-Add this short rule to the host's existing instructions:
+Add this short opt-in rule to the host's existing instructions:
 
-> Before substantive replies, use response-design to choose the format. Keep clear
-> short prose in chat. Load dynamic-visual-reply only for its selected layouts or
-> existing visual feedback. Honor explicit user format requests.
+> When a reply will present 3+ comparable items, records, questions or steps, or
+> the user asks for a visual/interactive review, use response-design to choose the
+> format. Pass `inline:false` in Claude Code, Cursor and terminal CLIs; `inline:true`
+> in the Codex app and Claude widget hosts. Honor explicit user format requests.
+
+Other replies skip the router entirely. `inline:false` keeps automatic read-only
+views in Markdown with a one-line offer instead of opening a browser tab.
 
 Codex: user/project `AGENTS.md`. Claude Code: user/project `CLAUDE.md`.
 Cursor: User Rules or `.cursor/rules/response-design.mdc` with `alwaysApply: true`.

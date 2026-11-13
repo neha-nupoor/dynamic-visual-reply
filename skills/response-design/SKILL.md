@@ -1,6 +1,6 @@
 ---
 name: response-design
-description: Choose text, a document, a visualization, or a consistent visual-reply layout before drafting comparisons, reports, questions, or item reviews. Run the small format check before substantive replies when configured as a default.
+description: Choose text, a document, a visualization, or a consistent visual-reply layout before drafting comparisons, reports, questions, or item reviews. Use when a reply presents 3+ comparable items, records, questions or steps, or a visual/interactive review is requested.
 ---
 
 # Response Design
@@ -30,7 +30,8 @@ standalone renderer invocation. If unavailable, provide usable Markdown.
    (planned row counts), `words`, `borderline`. Counts describe the planned answer;
    narrative length alone does not establish records. Charts/timelines use
    `format:"visualization"`; inline prose comments use `proseComments:true`.
-   Mark uncertain reviews `borderline:true`; preserve unknowns.
+   Mark uncertain reviews `borderline:true`; preserve unknowns. `inline`: false in
+   Claude Code, Cursor, terminal CLIs; true in Codex app, Claude widget hosts.
    When existing views cannot express the needed interaction, set `customLayout:true`
    and explain why in `customReason`. An explicit custom request uses `format:"custom"`.
 2. Run `node <visual-skill>/scripts/route.mjs --facts <facts.json> --out <route.json>`.
@@ -38,7 +39,7 @@ standalone renderer invocation. If unavailable, provide usable Markdown.
 3. Follow `target`. For `visual`, load `dynamic-visual-reply` and pass
    `--route <route.json>` to its renderer without deciding again. Other targets
    use the requested/document/visualization workflow, with Markdown fallback.
-   `offerReview:true` means a one-line offer in chat. Keep the answer understandable
+   `offerReview:true` means a one-line visual-view offer in chat. Keep the answer understandable
    without a view. Preserve field/column/stage/item order for compatible updates.
 
 For `custom-visual`, agents may design their own layout. Read
