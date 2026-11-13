@@ -206,11 +206,30 @@ export function runtimeConfig(context, appearance, rendererHash) {
   if (appearance === 'host' && context.harness.id === 'claude-inline') result.hostPalette = config.HOST_PALETTE;
   return result;
 }
-export function fragment(spec, context, appearance, info) {
+/** Inline fragments may load the byte-identical bundle by URL + SRI instead of embedding ~85 KB. Standalone pages always embed. */
+export function rendererUrl(context, info) {
+  const source = context.config.rendererSource || {};
+  if (source.mode !== 'cdn' || !source.url) return null;
+  return source.url.replaceAll('{hash12}', info.sha256.slice(0, 12)).replaceAll('{sha256}', info.sha256);
+}
+// If the bundle cannot load (offline, blocked CDN, unpublished ref, SRI mismatch), list the items so the view never stays blank.
+const LOADER_FALLBACK = '(function(){setTimeout(function(){var r=document.querySelector("[data-dynamic-visual-reply-root]");if(!r||r.childElementCount)return;' +
+  'var s={};try{s=JSON.parse(document.querySelector("[data-dynamic-visual-reply-spec]").textContent)}catch(e){}' +
+  'var items=(s.rows||s.fields||s.nodes||[]).map(function(x){return x.title||x.label||x.name||x.id});' +
+  'var d=document.createElement("div");d.style.cssText="font:14px system-ui;padding:12px 0";' +
+  'var p=document.createElement("p");p.textContent="The review view could not load its renderer. Ask the agent to open it in the browser instead.";d.appendChild(p);' +
+  'var u=document.createElement("ul");items.forEach(function(t){var l=document.createElement("li");l.textContent=t;u.appendChild(l)});d.appendChild(u);r.appendChild(d)},6000)})();';
+export function fragment(spec, context, appearance, info, {kind = 'fragment'} = {}) {
   const parts = ['<div data-dynamic-visual-reply-root></div>',
     '<script type="application/json" data-dynamic-visual-reply-config>' + jsonForHtml(runtimeConfig(context, appearance, info.sha256)) + '</script>',
     '<script type="application/json" data-dynamic-visual-reply-theme>' + jsonForHtml(config.diff(context.theme, load(config.THEME_FILE))) + '</script>',
     '<script type="application/json" data-dynamic-visual-reply-spec>' + jsonForHtml(spec) + '</script>'];
+  const url = kind === 'fragment' && context.harness.id === 'claude-inline' ? rendererUrl(context, info) : null;
+  if (url) {
+    parts.push('<script>' + LOADER_FALLBACK + '</script>');
+    parts.push('<script src="' + url.replace(/"/g, '%22') + '" integrity="' + info.sri + '" crossorigin="anonymous" data-dynamic-visual-reply-runtime-url></script>');
+    return parts.join('\n') + '\n';
+  }
   const bundle = fs.readFileSync(BUNDLE, 'utf8');
   requireValue(!bundle.toLowerCase().includes('</script'), 'Bundle contains an unsafe closing script tag');
   parts.push('<script data-dynamic-visual-reply-runtime>\n' + bundle + '\n</script>');
@@ -250,7 +269,7 @@ export function render(spec, out, mode = 'auto', viewportWidth, viewportHeight, 
   const limit = context.config.placement.maxSpecBytes;
   if (requested === 'auto' && decision.mode === 'inline' && limit && bytes(jsonForHtml(spec)) > limit)
     Object.assign(decision, {mode: 'standalone', reason: 'Spec exceeds ' + limit + ' bytes, the inline size limit for this harness'});
-  const info = manifest();
+  const info = manifest(), requestedHarness = context.harness.id;
   if (decision.mode === 'standalone' && ['codex', 'claude-inline'].includes(context.harness.id)) context = context.switch('browser-local');
   spec.resolvedPresentation = decision;
   spec.stateKey = createHash('sha256').update(info.draftVersion + ':' + spec.viewId + ':' + spec.view).digest('hex').slice(0, 24);
@@ -262,7 +281,7 @@ export function render(spec, out, mode = 'auto', viewportWidth, viewportHeight, 
   const result = {harness: context.harness.id, theme: context.theme.name, view: spec.view, rendererHash: info.sha256,
     specBytes: bytes(data), rendererBytes: info.bytes, delivery: 'embed', spec: snapshot, placement: decision};
   let kind = decision.mode === 'inline' && ['codex', 'claude-inline'].includes(context.harness.id) ? 'fragment' : 'document';
-  let body = fragment(spec, context, appearance, info);
+  let body = fragment(spec, context, appearance, info, {kind});
   const sizeLimit = context.config.placement.maxInlineBytes;
   if (decision.mode === 'inline' && bytes(body) >= sizeLimit) {
     requireValue(requested === 'auto' || routedInline, 'Inline UI exceeds ' + sizeLimit + ' bytes; reduce the dataset or use standalone');
@@ -270,11 +289,15 @@ export function render(spec, out, mode = 'auto', viewportWidth, viewportHeight, 
     if (['codex', 'claude-inline'].includes(context.harness.id)) {
       context = context.switch('browser-local'); Object.assign(result, {harness: 'browser-local', delivery: 'embed'});
     }
-    kind = 'document'; body = fragment(spec, context, appearance, info);
+    kind = 'document'; body = fragment(spec, context, appearance, info, {kind});
   }
   const output = wrap(body, kind, spec, context, appearance);
   fs.writeFileSync(out, output);
+  if (kind === 'fragment' && /data-dynamic-visual-reply-runtime-url/.test(body)) result.delivery = 'url';
   Object.assign(result, {path: out, format: decision.mode, output: kind, handoff: handoff(context, out, kind, bytes(output))});
+  if (result.harness !== requestedHarness)
+    result.switched = {from: requestedHarness, to: result.harness, reason: decision.reason,
+      override: 'Pass --format inline to keep ' + requestedHarness + ' (payload limits still apply), or split the review.'};
   if (result.handoff.type === 'contentReference') result.contentReference = result.handoff.value;
   return result;
 }

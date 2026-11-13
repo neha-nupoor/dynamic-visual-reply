@@ -76,7 +76,8 @@ test('all profiles retain identical content, theme, runtime and state keys on al
         if (!reference) reference = snapshot;
         assert.deepEqual(snapshot, reference, harness + '/' + view);
         const html = fs.readFileSync(result.path, 'utf8');
-        assert.ok(html.includes(runtime), 'same checked-in runtime');
+        if (result.delivery === 'url') assert.ok(html.includes('integrity="' + load(path.join(ROOT, 'assets/renderer/dist/manifest.json')).sri + '"'), 'same runtime by SRI');
+        else assert.ok(html.includes(runtime), 'same checked-in runtime');
         assert.equal(result.view, view);
         assert.equal(result.theme, 'generic');
       }

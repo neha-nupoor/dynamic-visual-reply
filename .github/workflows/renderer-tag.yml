@@ -1,0 +1,24 @@
+name: Publish renderer tag
+# Claude inline widgets load the bundle from jsDelivr at @renderer-<first 12 hex of sha256>,
+# verified by the manifest's SRI hash. Create that immutable tag whenever the bundle changes.
+on:
+  push:
+    branches: [main]
+    paths: [skills/dynamic-visual-reply/assets/renderer/dist/**]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify bundle and tag it
+        run: |
+          manifest=skills/dynamic-visual-reply/assets/renderer/dist/manifest.json
+          sha=$(node -p "require('./$manifest').sha256")
+          actual=$(sha256sum skills/dynamic-visual-reply/assets/renderer/dist/renderer.js | cut -d' ' -f1)
+          test "$sha" = "$actual" || { echo "renderer.js does not match manifest"; exit 1; }
+          tag="renderer-${sha:0:12}"
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then echo "$tag exists"; exit 0; fi
+          git tag "$tag" && git push origin "refs/tags/$tag"

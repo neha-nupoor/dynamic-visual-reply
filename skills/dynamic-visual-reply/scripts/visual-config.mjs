@@ -20,6 +20,7 @@ export const HARNESSES = {
 export const CLAUDE_CONFIG = {
   appearance: 'host',
   placement: {viewport: {width: 680, height: 900}, maxSpecBytes: 24000},
+  rendererSource: {mode: 'cdn'},
   feedback: {messageFormat: 'summary'},
   copy: {submit: {message: 'Add to chat'}, feedbackSubmit: {message: 'Add feedback to chat'},
     status: {submitted: 'Added to your message box. Press Enter to send it.'}},

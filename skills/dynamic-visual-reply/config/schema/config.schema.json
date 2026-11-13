@@ -30,7 +30,7 @@
         "heightBudget": {
           "type": "object",
           "additionalProperties": false,
-          "properties": {"maxPx": {"type": "integer", "minimum": 120}, "fraction": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}}
+          "properties": {"maxPx": {"type": "integer", "minimum": 120}, "fraction": {"type": "number", "exclusiveMinimum": 0, "maximum": 2}}
         },
         "inlineLimits": {
           "type": "object",
@@ -45,6 +45,15 @@
         },
         "maxInlineBytes": {"type": "integer", "minimum": 1000},
         "maxSpecBytes": {"type": ["integer", "null"], "minimum": 200}
+      }
+    },
+    "rendererSource": {
+      "description": "How inline fragments load the renderer. embed inlines the bundle; cdn loads the byte-identical bundle from url with the manifest's SRI hash. Standalone pages and Codex always embed.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {"enum": ["embed", "cdn"]},
+        "url": {"description": "Immutable bundle URL. {hash12} and {sha256} expand from the local manifest.", "type": "string", "pattern": "^https://"}
       }
     },
     "feedback": {

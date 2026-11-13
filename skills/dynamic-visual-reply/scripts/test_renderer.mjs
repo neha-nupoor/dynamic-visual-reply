@@ -115,8 +115,11 @@ test('patches merge fields, retain other rows, remove records and increment revi
   assert.throws(() => render.applyPatch(spec, {unknown: true}), /Unknown patch/);
 });
 test('placement respects compact geometry, item limits and viewport bounds', () => {
-  for (const [view, mode] of Object.entries({table: 'standalone', cards: 'standalone', form: 'standalone', kanban: 'inline', flow: 'inline'}))
-    assert.equal(render.placement(example(view)).mode, mode);
+  for (const view of ['table', 'cards', 'form', 'kanban', 'flow']) assert.equal(render.placement(example(view)).mode, 'inline', view);
+  const cards = example('cards'); cards.rows = Array.from({length: 5}, (_, index) => ({id: 'c' + index, title: 'Card', summary: 'Short'}));
+  assert.equal(render.placement(cards).mode, 'standalone');
+  const tall = example('table'); tall.rows = Array.from({length: 9}, (_, index) => ({id: 'r' + index, name: 'Row'}));
+  assert.equal(render.placement(tall).mode, 'standalone');
   const table = example('table'); table.rows = table.rows.slice(0, 1);
   assert.equal(render.placement(table).mode, 'inline');
   assert.equal(render.placement(table, 360).mode, 'standalone');
@@ -172,11 +175,18 @@ test('all appearances and hosts embed the identical runtime and keep draft keys 
   const expectedKey = createHash('sha256').update('1.0.0:sample-review:table').digest('hex').slice(0, 24);
   for (const harness of config.harnessIds()) for (const appearance of ['light', 'dark', 'system', 'host']) {
     const {result, html} = page(t, example('table'), context(harness, {appearance}));
-    assert.equal(result.delivery, 'embed'); assert.equal(result.rendererHash, render.manifest().sha256);
+    assert.equal(result.rendererHash, render.manifest().sha256);
     assert.equal(block(html, 'spec').stateKey, expectedKey);
     assert.equal(block(html, 'config').appearance, appearance);
     assert.equal(block(html, 'config').rendererHash, render.manifest().sha256);
-    assert.ok(!html.includes('<script src='));
+    if (harness === 'claude-inline') {
+      const info = render.manifest();
+      assert.equal(result.delivery, 'url'); assert.ok(Buffer.byteLength(html) < 6000);
+      assert.ok(html.includes('@renderer-' + info.sha256.slice(0, 12) + '/') && html.includes('integrity="' + info.sri + '"'));
+      assert.ok(!html.includes('<script data-dynamic-visual-reply-runtime>'));
+      continue;
+    }
+    assert.equal(result.delivery, 'embed'); assert.ok(!html.includes('<script src='));
     assert.equal(html.split('<script data-dynamic-visual-reply-runtime>\n')[1].split('\n</script>')[0], fs.readFileSync(render.BUNDLE, 'utf8'));
   }
 });
@@ -189,10 +199,21 @@ test('Codex and Claude handoffs preserve native adapters and different submissio
     else assert.equal(block(html, 'config').copy.submit.message, 'Add to chat');
   }
 });
+test('Claude inline can opt back into the embedded bundle; standalone pages always embed', t => {
+  const embedded = page(t, example('flow'), context('claude-inline', {rendererSource: {mode: 'embed'}}));
+  assert.equal(embedded.result.delivery, 'embed'); assert.ok(embedded.html.includes('<script data-dynamic-visual-reply-runtime>'));
+  const standalone = page(t, example('flow'), context('claude-inline'), 'standalone');
+  assert.equal(standalone.result.delivery, 'embed'); assert.ok(!standalone.html.includes('<script src='));
+  const custom = page(t, example('flow'), context('claude-inline', {rendererSource: {url: 'https://cdn.jsdelivr.net/gh/a/b@{sha256}/r.js'}}));
+  assert.ok(custom.html.includes('@' + render.manifest().sha256 + '/r.js'));
+  assert.throws(() => context('claude-inline', {rendererSource: {url: 'http://insecure.example/r.js'}}), /does not match/);
+});
 test('large inline views and byte limits route to the same browser feedback path', t => {
+  const big = example('table'); big.rows = Array.from({length: 9}, (_, index) => ({id: 'r' + index, name: 'Row ' + index}));
   for (const harness of ['codex', 'claude-inline']) {
-    const {result, html} = page(t, example('table'), context(harness), 'auto');
+    const {result, html} = page(t, structuredClone(big), context(harness), 'auto');
     assert.equal(result.harness, 'browser-local'); assert.equal(result.handoff.type, 'serve');
+    assert.deepEqual([result.switched.from, result.switched.to], [harness, 'browser-local']);
     assert.match(result.handoff.command, /^node ".*serve\.mjs"/); assert.ok(html.startsWith('<!doctype html>'));
     assert.equal(block(html, 'config').adapter, 'browser-local');
   }
@@ -299,11 +320,12 @@ test('new hash feedback and legacy version feedback share schemaVersion 1', () =
     assert.deepEqual(config.schemaErrors({...feedback, source}, schema), []);
   assert.ok(config.schemaErrors({...feedback, source: {rendererHash: 'bad'}}, schema).length);
 });
-test('doctor checks every harness locally without implying native bridge verification', t => {
+test('doctor checks every harness locally without implying native bridge verification', async t => {
   const dir = temporary(t), user = path.join(dir, 'settings.json'); write(user, {});
   for (const harness of config.harnessIds()) {
-    const result = report({harness}, {HOME: dir, DYNAMIC_VISUAL_REPLY_CONFIG: user});
-    assert.equal(result.ok, true); assert.equal(result.delivery.mode, 'embed'); assert.equal(result.harness.runtimeVerified, false);
+    const result = await report({harness}, {HOME: dir, DYNAMIC_VISUAL_REPLY_CONFIG: user});
+    assert.equal(result.ok, true); assert.equal(result.delivery.mode, harness === 'claude-inline' ? 'url' : 'embed');
+    assert.equal(result.delivery.urlCheck, null); assert.equal(result.harness.runtimeVerified, false);
   }
 });
 test('packaged helper runs with no npm install and no Python executable on PATH', t => {
@@ -364,7 +386,7 @@ test('local server handles idle connections and saves the exact feedback envelop
 
 test('explicit Codex inline overrides card-count placement but preserves payload limits', t => {
   const spec = {schemaVersion: 1, viewId: 'inline-cards', view: 'cards', title: 'Review ideas',
-    rows: ['a', 'b', 'c'].map(id => ({id, title: id, summary: 'An idea to review'}))};
+    rows: ['a', 'b', 'c', 'd', 'e'].map(id => ({id, title: id, summary: 'An idea to review'}))};
   assert.equal(page(t, spec, context('codex'), 'auto').result.handoff.type, 'serve');
   const {result, html} = page(t, spec, context('codex'), 'inline');
   assert.equal(result.harness, 'codex');

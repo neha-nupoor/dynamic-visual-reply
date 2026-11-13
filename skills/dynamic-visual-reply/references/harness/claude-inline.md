@@ -3,16 +3,17 @@
 Use this route only when the current session actually exposes a widget tool such as `show_widget` that accepts inline HTML and JavaScript. Inspect its current instructions and payload limits first. A Claude model or app name alone does not establish that the tool exists.
 
 ```sh
-node <skill-dir>/scripts/doctor.mjs --harness claude-inline
 node <skill-dir>/scripts/render.mjs --spec <spec.json> --out <view.html> --harness claude-inline
 ```
 
-The generated fragment embeds the identical Oat/Preact renderer and CSS used by Codex and the local browser. No external script, CDN, public URL, or delivery configuration is used. Local manifest hashes verify the bundle before rendering. File checks do not prove execution in the native host.
+For `handoff.type: show_widget`, read the output file (about 2–5 KB) and pass its complete contents unchanged as `widget_code`. The fragment holds the spec plus a script tag that loads the identical renderer bundle from jsDelivr (`@renderer-<hash12>`, an immutable tag) with the manifest's SRI hash, so the browser refuses any bytes that differ from the local bundle. The widget sandbox allows `cdn.jsdelivr.net`. If the bundle cannot load, the fragment lists the items and asks the user to request the browser view; then use the [browser route](browser-local.md).
 
-For `handoff.type: show_widget`, read the generated output file and pass its complete contents unchanged as `widget_code`, following the tool's current instructions. The shared bundle is about 82 KB before spec data; this string-based handoff consumes model context. Do not rewrite, truncate, or regenerate it. If the tool cannot accommodate or run it, use the local browser when interaction remains useful; otherwise provide the intended content in ordinary Markdown. For `handoff.type: serve`, follow [browser-local.md](browser-local.md).
+`node <skill-dir>/scripts/doctor.mjs --harness claude-inline --check-url` confirms the URL serves the matching bundle. Offline or unpublished: set `"rendererSource": {"mode": "embed"}` in settings to inline the full ~85 KB bundle instead; that passes it through model context.
 
-Claude Code (including its desktop Code tab) auto-detects as `claude-code` and uses the browser path. Larger views use it too. When no widget tool is available, do not attempt an inline call. If rendering fails or no suitable browser is available, answer in normal Markdown instead of creating a second HTML fallback.
+If `result.switched` is present, the view was too large for inline and was prepared for the browser; say so, or re-render with `--format inline` when the user wants it inline. For `handoff.type: serve`, follow [browser-local.md](browser-local.md).
+
+Claude Code (including its desktop Code tab) auto-detects as `claude-code` and uses the browser path. When no widget tool is available, do not attempt an inline call. If rendering fails or no suitable browser is available, answer in normal Markdown instead of creating a second HTML fallback.
 
 **Add to chat** fills the user's message box through `sendPrompt`; the user presses Enter. The message contains a readable summary and JSON feedback. Saving drafts uses localStorage only when the sandbox permits it. Acknowledge the feedback actually received. If the host lacks the submission bridge, use the widget's copy/export controls or the browser route.
 
-The configured theme applies. Appearance defaults to `host`, using Claude's available CSS colors and light/dark markers with theme/OS fallbacks. Explicit appearance choices from the spec, flags, project, or user configuration take priority; omit extra flags when following the default. Explicit light/dark stays fixed. All Oat CSS is included in the bundle.
+Appearance defaults to `host`, using Claude's CSS colors with theme/OS fallbacks. Explicit spec, flag, project or user settings take priority (an `appearance` in `~/.config/dynamic-visual-reply/config.json` overrides `host`).
