@@ -69,7 +69,7 @@ checks enforce the chosen standard plan; they do not restrict other UI workflows
 From the repository root:
 
 ```sh
-node --test skills/dynamic-visual-reply/scripts/test_renderer.mjs skills/dynamic-visual-reply/scripts/test_adapters.mjs tests/test_response_design.mjs
+node --test skills/dynamic-visual-reply/scripts/test_renderer.mjs skills/dynamic-visual-reply/scripts/test_adapters.mjs skills/dynamic-visual-reply/scripts/test_serve.mjs tests/test_response_design.mjs
 node tests/response_design_browser_fixtures.mjs /tmp/response-design-fixtures
 ```
 

@@ -101,7 +101,7 @@ Without a bridge, copy/export remains available. Codex snapshots above approxima
 cd <skill-dir>/assets/renderer
 npm ci --ignore-scripts --no-audit --no-fund
 npm run build
-node --test ../../scripts/test_renderer.mjs ../../scripts/test_adapters.mjs
+node --test ../../scripts/test_renderer.mjs ../../scripts/test_adapters.mjs ../../scripts/test_serve.mjs
 ```
 
 Git commits identify skill revisions. The manifest records SHA-256, SRI, bytes, adapters, and draftVersion; builds have no separate release number. Rebuild after renderer/default changes, then commit and push the reviewed source, bundle, and manifest together. Keep exact dependency pins and the lockfile. Change compatibility markers (schemaVersion, theme format version, draftVersion) only for incompatible data changes; ordinary updates preserve saved drafts.

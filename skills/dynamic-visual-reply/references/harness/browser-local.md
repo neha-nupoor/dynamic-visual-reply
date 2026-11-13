@@ -19,3 +19,5 @@ Run the returned `handoff.command`. It starts `serve.mjs` on `127.0.0.1` with a 
 ## Wake on submit
 
 If the host notifies you when a background command exits (Claude Code `run_in_background`, or the equivalent in other agents), append `--once` to `handoff.command` and run it in the background. After the first saved submission it prints `{"event":"submitted","feedback":"<path>"}` and exits 0; that exit wakes you, so read the feedback file and continue without waiting for the user. Optional `--timeout <seconds>` exits 3 with `{"event":"timeout",...}` if nothing arrives. Without such notification, use the flow above.
+
+Cursor: pass `--harness browser-local` if auto-detection reports `static`. Install the skills under `.cursor/skills/` (or `.claude/skills/`) plus an always-on `.cursor/rules/*.mdc` rule. Headless `cursor-agent` needs `cursor-agent login` or `CURSOR_API_KEY`. Scripted/headless runs (`claude -p`, `cursor-agent -p`): use `--once` or `--timeout`, or a background server keeps the run open.

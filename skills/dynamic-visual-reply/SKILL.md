@@ -90,7 +90,7 @@ columns, details and flow navigation are local browsing only.
   view or report engine is added. Use the visualization workflow for charts.
 - Code changes: read [UI behavior](references/ui-behavior.md) and the renderer
   contract's maintenance section. Rebuild changed renderer/defaults, run
-  `node --test scripts/test_renderer.mjs scripts/test_adapters.mjs`, and inspect
+  `node --test scripts/test_*.mjs`, and inspect
   changed interactions in a browser. Keep flows manual, CSS transitions brief and
   reduced-motion support intact. Mocked adapters do not prove live host delivery.
 
