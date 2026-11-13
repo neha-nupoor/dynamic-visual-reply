@@ -17,17 +17,16 @@ Add this short opt-in rule to the host's existing instructions:
 
 > When a reply will present 3+ comparable items, records, questions or steps, or
 > the user asks for a visual/interactive review, use response-design to choose the
-> format. Pass `inline:false` in Claude Code, Cursor and terminal CLIs; `inline:true`
-> in the Codex app. Honor explicit user format requests.
+> format. Pass `inline:true` in the Codex app and `inline:false` in Claude Code.
+> Honor explicit user format requests.
 
 Other replies skip the router entirely. `inline:false` keeps automatic read-only
 views in Markdown with a one-line offer instead of opening a browser tab.
 
 Codex: user/project `AGENTS.md`. Claude Code: user/project `CLAUDE.md`.
-Cursor: User Rules or `.cursor/rules/response-design.mdc` with `alwaysApply: true`.
-Windsurf: its global rules or an always-on workspace rule. Gemini CLI: `GEMINI.md`.
-Copilot: `.github/copilot-instructions.md` where supported. Verify the rule is
-loaded on the actual host; discovery of SKILL.md alone is not guaranteed activation.
+Other agents are not supported; there the skill answers in Markdown. Verify the
+rule is loaded on the actual host; discovery of SKILL.md alone is not guaranteed
+activation.
 Replace existing ADHD/design-system pointers that bypass routing with a pointer
 to response-design. Preserve their language, clarification, and appearance rules.
 

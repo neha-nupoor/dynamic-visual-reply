@@ -209,7 +209,6 @@ test('host detection is a suggestion and explicit harness selection wins', () =>
   assert.equal(config.detectHarness({CLAUDECODE: '1', CODEX_HOME: '/tmp'})[0], 'claude-code');
   assert.equal(config.detectHarness({CODEX_HOME: '/tmp'})[0], 'codex');
   assert.equal(config.detectHarness({})[0], 'static');
-  assert.equal(config.detectHarness({CURSOR_TRACE_ID: 'x'})[0], 'browser-local');
   assert.equal(config.resolve({}, {harness: 'browser-local', env: {CLAUDECODE: '1'}, isolated: true}).harness.id, 'browser-local');
 });
 test('Report Blue uses the existing theme path and exports accessible light/dark roles', t => {

@@ -1,8 +1,8 @@
 # Local browser panel (`serve.mjs`)
 
-Harnesses: `browser-local` (any agent that can run Node and open a browser) and `claude-code` (Claude Code in a terminal or the desktop app's Code tab, detected from `CLAUDECODE`). Adapter: `scripts/adapters/browser.js`.
+Harnesses: `browser-local` (Codex views too large for inline) and `claude-code` (Claude Code in a terminal or the desktop app's Code tab, detected from `CLAUDECODE`). Adapter: `scripts/adapters/browser.js`.
 
-Use this route for Claude Code, for Codex views too large for inline, and for Cursor, Windsurf, Gemini CLI, or any other agent that can run Node and open a browser. Every view is a standalone page with the same bundle embedded; no native integration or public URL is required. It works offline. Appearance defaults to `system`; a standalone browser page follows OS preference unless host light/dark markers are exposed. Explicit user/project appearance choices and requested overrides take priority.
+Use this route for Claude Code and for Codex views too large for inline. Every view is a standalone page with the same bundle embedded; no native integration or public URL is required. It works offline. Appearance defaults to `system`; a standalone browser page follows OS preference unless host light/dark markers are exposed. Explicit user/project appearance choices and requested overrides take priority.
 
 ## Render and serve
 
@@ -27,4 +27,4 @@ If the host notifies you when a background command exits (Claude Code `run_in_ba
 - Open the printed URL in the desktop app's browser pane when one exists; in a terminal, give the user the URL.
 - Optional install: `/plugin marketplace add neha-nupoor/dynamic-visual-reply`, then `/plugin install dynamic-visual-reply@dynamic-visual-reply`.
 
-Cursor: auto-detected from `CURSOR_AGENT` (set by `cursor-agent`); pass `--harness browser-local` if detection reports `static`. Install the skills under `~/.cursor/skills/` or `.cursor/skills/` (the skills CLI links them there) plus an always-on `.cursor/rules/*.mdc` rule. Headless `cursor-agent` needs `cursor-agent login` or `CURSOR_API_KEY`. Scripted/headless runs (`claude -p`, `cursor-agent -p`): use `--once` or `--timeout`, or a background server keeps the run open.
+Headless runs (`claude -p`): use `--once` or `--timeout`, or a background server keeps the run open.

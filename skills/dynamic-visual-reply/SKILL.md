@@ -21,19 +21,19 @@ Author JSON specs; Node.js 22.20+ assembles the prebuilt Oat/Preact bundle with
 native controls and scoped CSS. No package installation or public URL is needed.
 Paths are relative to this skill. Keep the bundle unchanged during use.
 
-1. Check actual tools and documented output contracts. A model/app name or
-   environment variable is insufficient. Display and chat submission are separate
-   capabilities. Read only the selected host guide:
+1. Pick the host. This skill supports two, and reads only that host's guide:
 
-   | Surface | Harness | Guide |
+   | Host | Harness | Guide |
    | --- | --- | --- |
-   | Documented visualize content-reference contract; no dedicated tool needed | `codex` | [Codex](references/harness/codex.md) |
-   | Commands and browser; includes Cursor, Windsurf, Gemini CLI, Copilot | `browser-local`, `claude-code` | [Browser](references/harness/browser-local.md) |
-   | Offline HTML with copy/export | `static` | [Static](references/harness/static.md) |
+   | Codex app: inline widget in chat | `codex` | [Codex](references/harness/codex.md) |
+   | Claude Code, desktop or terminal: local browser page | `claude-code` | [Browser](references/harness/browser-local.md) |
 
-   Without inline support, use an available browser when useful, otherwise Markdown.
-   For uncertain setup, run `node scripts/doctor.mjs --harness <id>` once; it checks
-   files/settings, not a live bridge. Claude Code uses the browser route.
+   Codex views too large for inline also open as a browser page. In any other
+   agent, answer in Markdown and add one line: "Interactive review views work in
+   the Codex app and Claude Code." Keep routing internals out of replies: never
+   mention harnesses, content references, output contracts or missing tools. If a
+   view opens in the browser, give the link; otherwise just answer. For uncertain
+   setup, run `node scripts/doctor.mjs --harness <id>` once.
 2. Write `schemaVersion:1`, stable `viewId`, selected `view`, and `title`:
 
    | View | Data |
