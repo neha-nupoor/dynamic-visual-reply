@@ -134,6 +134,6 @@
     "form": {
       "editableOption": "Editable option"
     },
-    "localSubmitHelp": "Submit here, then return to chat and ask the agent to continue."
+    "localSubmitHelp": "Submit here. If the agent is not waiting on this page, tell it in chat that you are done."
   }
 }
