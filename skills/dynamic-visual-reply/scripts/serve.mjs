@@ -10,7 +10,7 @@ export const BRIDGE = '<script>\nwindow.dynamicVisualReplySave = async function(
   "  const response = await fetch('/api/feedback', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});\n" +
   '  const result = await response.json();\n  if(!response.ok) throw new Error(result.error || \'Feedback save failed\');\n  return result;\n};\n</script>\n';
 
-export function createPreviewServer(html, feedback) {
+export function createPreviewServer(html, feedback, {onSaved} = {}) {
   html = path.resolve(html);
   requireValue(existsFile(html) && fs.readFileSync(html, 'utf8').toLowerCase().includes('<!doctype html>'),
     'Serve a file generated with --format standalone');
@@ -55,19 +55,35 @@ export function createPreviewServer(html, feedback) {
         fs.renameSync(temporary, feedback);
       } finally { fs.rmSync(temporary, {force: true}); }
       respond(200, {saved: true, path: feedback});
+      if (onSaved) response.writableFinished ? onSaved(feedback) : response.once('finish', () => onSaved(feedback));
     } catch (error) { request.resume(); respond(400, {error: error.message}); }
   });
   return {server, feedback};
 }
 export async function main() {
-  const {values: args, positionals} = parseCli({port: {type: 'string', default: '0'}, feedback: {type: 'string'}}, process.argv.slice(2), true);
-  if (args.help) { console.log('Usage: node serve.mjs <standalone.html> [--port 0] [--feedback <receipt.json>]'); return; }
+  const {values: args, positionals} = parseCli({port: {type: 'string', default: '0'}, feedback: {type: 'string'},
+    once: {type: 'boolean'}, timeout: {type: 'string'}}, process.argv.slice(2), true);
+  if (args.help) { console.log('Usage: node serve.mjs <standalone.html> [--port 0] [--feedback <receipt.json>] [--once] [--timeout <seconds>]\n' +
+    '  --once     exit 0 after the first saved submission, printing {"event":"submitted","feedback":<path>}\n' +
+    '  --timeout  exit 3 printing {"event":"timeout",...} if nothing is submitted within <seconds>'); return; }
   requireValue(positionals.length === 1, 'Provide one standalone HTML file');
   const port = Number(args.port);
   requireValue(Number.isInteger(port) && port >= 0 && port <= 65535, 'Port must be between 0 and 65535');
-  const {server, feedback} = createPreviewServer(positionals[0], args.feedback);
+  const timeout = args.timeout === undefined ? 0 : Number(args.timeout);
+  requireValue(Number.isFinite(timeout) && timeout > 0 || args.timeout === undefined, 'Timeout must be a positive number of seconds');
+  let timer, finished = false;
+  const stop = (event, code) => {
+    if (finished) return; finished = true; clearTimeout(timer);
+    process.exitCode = code;
+    server.closeAllConnections(); server.close();
+    process.stdout.write(JSON.stringify(event) + '\n', () => setTimeout(() => process.exit(code), 50).unref());
+  };
+  const onSaved = file => { clearTimeout(timer); if (args.once) stop({event: 'submitted', feedback: file}, 0); };
+  const {server, feedback} = createPreviewServer(positionals[0], args.feedback, {onSaved});
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', resolve); });
-  console.log(JSON.stringify({url: 'http://127.0.0.1:' + server.address().port + '/', feedback, pidHint: 'Stop this process to close the preview server'}));
-  for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => { server.closeAllConnections(); server.close(); });
+  console.log(JSON.stringify({url: 'http://127.0.0.1:' + server.address().port + '/', feedback,
+    ...(args.once ? {once: true} : {}), ...(timeout ? {timeout} : {}), pidHint: 'Stop this process to close the preview server'}));
+  if (timeout) timer = setTimeout(() => stop({event: 'timeout', feedback, seconds: timeout}, 3), timeout * 1000);
+  for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => { clearTimeout(timer); server.closeAllConnections(); server.close(); });
 }
 if (isMain(import.meta.url)) runCli(main);
