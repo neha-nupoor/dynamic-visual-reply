@@ -6,7 +6,6 @@
   "context": {"goal": "Compare components and return one batch of instructions", "next": "Select items and attach feedback"},
   "columns": [{"key":"name","label":"Component"},{"key":"status","label":"State"},{"key":"effort","label":"Sample effort","type":"number","editable":true}],
   "filterKey": "status",
-  "pageSize": 3,
   "rows": [
     {"id":"table","name":"Interactive table","status":"Accepted","effort":1},
     {"id":"cards","name":"Cards","status":"Review","effort":2},

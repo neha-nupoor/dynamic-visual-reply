@@ -115,8 +115,11 @@ test('patches merge fields, retain other rows, remove records and increment revi
   assert.throws(() => render.applyPatch(spec, {unknown: true}), /Unknown patch/);
 });
 test('placement respects compact geometry, item limits and viewport bounds', () => {
-  for (const [view, mode] of Object.entries({table: 'standalone', cards: 'standalone', form: 'standalone', kanban: 'inline', flow: 'inline'}))
-    assert.equal(render.placement(example(view)).mode, mode);
+  for (const view of ['table', 'cards', 'form', 'kanban', 'flow']) assert.equal(render.placement(example(view)).mode, 'inline', view);
+  const cards = example('cards'); cards.rows = Array.from({length: 5}, (_, index) => ({id: 'c' + index, title: 'Card', summary: 'Short'}));
+  assert.equal(render.placement(cards).mode, 'standalone');
+  const tall = example('table'); tall.rows = Array.from({length: 9}, (_, index) => ({id: 'r' + index, name: 'Row'}));
+  assert.equal(render.placement(tall).mode, 'standalone');
   const table = example('table'); table.rows = table.rows.slice(0, 1);
   assert.equal(render.placement(table).mode, 'inline');
   assert.equal(render.placement(table, 360).mode, 'standalone');
@@ -172,11 +175,11 @@ test('all appearances and hosts embed the identical runtime and keep draft keys 
   const expectedKey = createHash('sha256').update('1.0.0:sample-review:table').digest('hex').slice(0, 24);
   for (const harness of config.harnessIds()) for (const appearance of ['light', 'dark', 'system', 'host']) {
     const {result, html} = page(t, example('table'), context(harness, {appearance}));
-    assert.equal(result.delivery, 'embed'); assert.equal(result.rendererHash, render.manifest().sha256);
+    assert.equal(result.rendererHash, render.manifest().sha256);
     assert.equal(block(html, 'spec').stateKey, expectedKey);
     assert.equal(block(html, 'config').appearance, appearance);
     assert.equal(block(html, 'config').rendererHash, render.manifest().sha256);
-    assert.ok(!html.includes('<script src='));
+    assert.equal(result.delivery, 'embed'); assert.ok(!html.includes('<script src='));
     assert.equal(html.split('<script data-dynamic-visual-reply-runtime>\n')[1].split('\n</script>')[0], fs.readFileSync(render.BUNDLE, 'utf8'));
   }
 });
@@ -190,9 +193,11 @@ test('Codex and Claude handoffs preserve native adapters and different submissio
   }
 });
 test('large inline views and byte limits route to the same browser feedback path', t => {
+  const big = example('table'); big.rows = Array.from({length: 9}, (_, index) => ({id: 'r' + index, name: 'Row ' + index}));
   for (const harness of ['codex', 'claude-inline']) {
-    const {result, html} = page(t, example('table'), context(harness), 'auto');
+    const {result, html} = page(t, structuredClone(big), context(harness), 'auto');
     assert.equal(result.harness, 'browser-local'); assert.equal(result.handoff.type, 'serve');
+    assert.deepEqual([result.switched.from, result.switched.to], [harness, 'browser-local']);
     assert.match(result.handoff.command, /^node ".*serve\.mjs"/); assert.ok(html.startsWith('<!doctype html>'));
     assert.equal(block(html, 'config').adapter, 'browser-local');
   }
@@ -204,6 +209,7 @@ test('host detection is a suggestion and explicit harness selection wins', () =>
   assert.equal(config.detectHarness({CLAUDECODE: '1', CODEX_HOME: '/tmp'})[0], 'claude-code');
   assert.equal(config.detectHarness({CODEX_HOME: '/tmp'})[0], 'codex');
   assert.equal(config.detectHarness({})[0], 'static');
+  assert.equal(config.detectHarness({CURSOR_TRACE_ID: 'x'})[0], 'browser-local');
   assert.equal(config.resolve({}, {harness: 'browser-local', env: {CLAUDECODE: '1'}, isolated: true}).harness.id, 'browser-local');
 });
 test('Report Blue uses the existing theme path and exports accessible light/dark roles', t => {
@@ -299,10 +305,10 @@ test('new hash feedback and legacy version feedback share schemaVersion 1', () =
     assert.deepEqual(config.schemaErrors({...feedback, source}, schema), []);
   assert.ok(config.schemaErrors({...feedback, source: {rendererHash: 'bad'}}, schema).length);
 });
-test('doctor checks every harness locally without implying native bridge verification', t => {
+test('doctor checks every harness locally without implying native bridge verification', async t => {
   const dir = temporary(t), user = path.join(dir, 'settings.json'); write(user, {});
   for (const harness of config.harnessIds()) {
-    const result = report({harness}, {HOME: dir, DYNAMIC_VISUAL_REPLY_CONFIG: user});
+    const result = await report({harness}, {HOME: dir, DYNAMIC_VISUAL_REPLY_CONFIG: user});
     assert.equal(result.ok, true); assert.equal(result.delivery.mode, 'embed'); assert.equal(result.harness.runtimeVerified, false);
   }
 });
@@ -364,7 +370,7 @@ test('local server handles idle connections and saves the exact feedback envelop
 
 test('explicit Codex inline overrides card-count placement but preserves payload limits', t => {
   const spec = {schemaVersion: 1, viewId: 'inline-cards', view: 'cards', title: 'Review ideas',
-    rows: ['a', 'b', 'c'].map(id => ({id, title: id, summary: 'An idea to review'}))};
+    rows: ['a', 'b', 'c', 'd', 'e'].map(id => ({id, title: id, summary: 'An idea to review'}))};
   assert.equal(page(t, spec, context('codex'), 'auto').result.handoff.type, 'serve');
   const {result, html} = page(t, spec, context('codex'), 'inline');
   assert.equal(result.harness, 'codex');

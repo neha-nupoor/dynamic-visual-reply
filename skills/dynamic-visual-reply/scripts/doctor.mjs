@@ -5,7 +5,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import * as config from './visual-config.mjs';
 
-export function report(args = {}, env = process.env) {
+export async function report(args = {}, env = process.env) {
   const context = config.resolve({harness: args.harness, theme: args.theme}, {env});
   const harness = context.harness, problems = [], notes = [], [detected, detectedReason] = config.detectHarness(env);
   const info = config.load(path.join(config.ROOT, 'assets/renderer/dist/manifest.json'));
@@ -30,11 +30,11 @@ export function report(args = {}, env = process.env) {
     userConfig: config.userConfigPath(env), availableHarnesses: Object.fromEntries(Object.entries(config.HARNESSES).map(([id, host]) => [id, host.label])),
     problems, notes};
 }
-export function main() {
+export async function main() {
   const {values: args} = config.parseCli({harness: {type: 'string'}, theme: {type: 'string'}});
   if (args.help) { console.log('Usage: node doctor.mjs [--harness <id>] [--theme <pack>]'); return; }
   try {
-    const result = report(args); console.log(JSON.stringify(result, null, 2)); process.exitCode = result.ok ? 0 : 1;
+    const result = await report(args); console.log(JSON.stringify(result, null, 2)); process.exitCode = result.ok ? 0 : 1;
   } catch (error) { console.log(JSON.stringify({ok: false, problems: [error.message]}, null, 2)); process.exitCode = 2; }
 }
 if (config.isMain(import.meta.url)) config.runCli(main);

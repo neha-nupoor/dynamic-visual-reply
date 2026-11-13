@@ -1,0 +1,24 @@
+{
+  "name": "dynamic-visual-reply",
+  "owner": {
+    "name": "Neha Nupoor",
+    "url": "https://github.com/neha-nupoor"
+  },
+  "metadata": {
+    "description": "Agent skills for choosing reply formats and rendering interactive review UIs."
+  },
+  "plugins": [
+    {
+      "name": "dynamic-visual-reply",
+      "source": "./",
+      "description": "response-design and dynamic-visual-reply skills: choose a reply format, then render tables, cards, forms, boards, or flows with feedback capture.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Neha Nupoor"
+      },
+      "homepage": "https://github.com/neha-nupoor/dynamic-visual-reply",
+      "license": "MIT",
+      "category": "productivity"
+    }
+  ]
+}

@@ -250,7 +250,7 @@ export function render(spec, out, mode = 'auto', viewportWidth, viewportHeight, 
   const limit = context.config.placement.maxSpecBytes;
   if (requested === 'auto' && decision.mode === 'inline' && limit && bytes(jsonForHtml(spec)) > limit)
     Object.assign(decision, {mode: 'standalone', reason: 'Spec exceeds ' + limit + ' bytes, the inline size limit for this harness'});
-  const info = manifest();
+  const info = manifest(), requestedHarness = context.harness.id;
   if (decision.mode === 'standalone' && ['codex', 'claude-inline'].includes(context.harness.id)) context = context.switch('browser-local');
   spec.resolvedPresentation = decision;
   spec.stateKey = createHash('sha256').update(info.draftVersion + ':' + spec.viewId + ':' + spec.view).digest('hex').slice(0, 24);
@@ -275,6 +275,9 @@ export function render(spec, out, mode = 'auto', viewportWidth, viewportHeight, 
   const output = wrap(body, kind, spec, context, appearance);
   fs.writeFileSync(out, output);
   Object.assign(result, {path: out, format: decision.mode, output: kind, handoff: handoff(context, out, kind, bytes(output))});
+  if (result.harness !== requestedHarness)
+    result.switched = {from: requestedHarness, to: result.harness, reason: decision.reason,
+      override: 'Pass --format inline to keep ' + requestedHarness + ' (payload limits still apply), or split the review.'};
   if (result.handoff.type === 'contentReference') result.contentReference = result.handoff.value;
   return result;
 }

@@ -43,5 +43,18 @@
   {"id":"explicit-custom-view","facts":{"view":"custom"},"expected":{"target":"custom-visual","readOnly":true}},
   {"id":"text-beats-custom","facts":{"format":"text","visualBenefit":true,"customLayout":true,"customReason":"Linked views"},"expected":{"target":"markdown"}},
   {"id":"requested-table-beats-automatic-custom","facts":{"view":"table","visualBenefit":true,"customLayout":true,"customReason":"Linked views"},"expected":{"target":"visual","view":"table","readOnly":true}},
-  {"id":"custom-not-decoration","facts":{"customLayout":true,"customReason":"Looks attractive"},"expected":{"target":"markdown"}}
+  {"id":"custom-not-decoration","facts":{"customLayout":true,"customReason":"Looks attractive"},"expected":{"target":"markdown"}},
+  {"id":"no-inline-density","facts":{"intent":"compare","items":10,"recordLike":true,"feedback":"overall","singleReply":true,"words":900,"tableRows":[10],"borderline":true,"inline":false},"expected":{"target":"markdown","reason":"no-inline-host","offerReview":true}},
+  {"id":"inline-density","facts":{"intent":"compare","items":10,"recordLike":true,"feedback":"overall","singleReply":true,"words":900,"tableRows":[10],"borderline":true,"inline":true},"expected":{"target":"visual","view":"table","readOnly":true,"reason":"density"}},
+  {"id":"inline-omitted-density","facts":{"intent":"compare","items":10,"recordLike":true,"feedback":"overall","singleReply":true,"words":900,"tableRows":[10],"borderline":true},"expected":{"target":"visual","view":"table","readOnly":true,"reason":"density"}},
+  {"id":"no-inline-table-density","facts":{"recordLike":true,"tableRows":[15],"inline":false},"expected":{"target":"markdown","offerReview":true}},
+  {"id":"no-inline-proactive","facts":{"intent":"compare","items":2,"recordLike":true,"visualBenefit":true,"inline":false},"expected":{"target":"markdown","offerReview":true}},
+  {"id":"no-inline-proactive-explanation","facts":{"words":700,"visualBenefit":true,"inline":false},"expected":{"target":"markdown","offerReview":true}},
+  {"id":"no-inline-review","facts":{"items":3,"recordLike":true,"feedback":"per-item","singleReply":false,"inline":false},"expected":{"target":"visual","view":"table","readOnly":false,"reason":"item-feedback"}},
+  {"id":"no-inline-dense-review","facts":{"recordLike":true,"items":10,"tableRows":[20],"feedback":"per-item","singleReply":false,"inline":false},"expected":{"target":"visual","readOnly":false}},
+  {"id":"no-inline-explicit-view","facts":{"view":"table","inline":false},"expected":{"target":"visual","view":"table","readOnly":true}},
+  {"id":"no-inline-requested-visual","facts":{"format":"visual","inline":false},"expected":{"target":"visual","readOnly":true}},
+  {"id":"no-inline-requested-report","facts":{"visualReport":true,"recordLike":true,"items":2,"inline":false},"expected":{"target":"visual","view":"table","readOnly":true}},
+  {"id":"no-inline-explicit-chart","facts":{"format":"visualization","inline":false},"expected":{"target":"visualization"}},
+  {"id":"no-inline-short-prose","facts":{"inline":false},"expected":{"target":"markdown","reason":"ordinary-answer"}}
 ]

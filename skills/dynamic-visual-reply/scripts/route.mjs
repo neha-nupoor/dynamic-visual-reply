@@ -8,7 +8,7 @@ export const LIMITS = Object.freeze({reviewItems: 3, smallAlternatives: 4, table
 const enums = {format: ['auto', 'text', 'markdown', 'document', 'visualization', 'visual', 'custom', 'other'],
   intent: ['explain', 'compare', 'questions', 'stages', 'steps', 'records'],
   feedback: ['none', 'overall', 'per-item'], view: [...VIEWS, 'custom']};
-const booleans = ['recordLike', 'singleReply', 'visualReport', 'proseComments', 'borderline', 'visualBenefit', 'customLayout'];
+const booleans = ['recordLike', 'singleReply', 'visualReport', 'proseComments', 'borderline', 'visualBenefit', 'customLayout', 'inline'];
 const counts = ['items', 'words'];
 
 export function validateFacts(facts) {
@@ -43,10 +43,12 @@ export function route(facts) {
   const review = f.recordLike === true && f.items >= LIMITS.reviewItems && f.feedback === 'per-item' && f.singleReply === false;
   const proactive = f.visualBenefit === true;
   if (!explicit && !f.visualReport && !dense && !proactive && (!review || f.borderline)) return chat('ordinary-answer', !!f.borderline && f.feedback === 'per-item');
+  const readOnly = f.feedback !== 'per-item';
+  // Automatic read-only views need an inline host; elsewhere Markdown plus a one-line offer beats opening a browser.
+  if (f.inline === false && !explicit && !f.visualReport && !review && readOnly) return chat('no-inline-host', true);
   if (f.customLayout && !f.view) return custom();
   if (!explicit && proactive && f.recordLike !== true) return {target: 'visualization', reason: 'visual-benefit'};
   if (!explicit && f.recordLike !== true) return chat('unsupported-shape');
-  const readOnly = f.feedback !== 'per-item';
   const view = f.view || (f.intent === 'questions' ? 'form' : f.intent === 'stages' ? 'kanban'
     : f.intent === 'steps' && !readOnly ? 'flow'
     : f.intent === 'compare' && f.items > 0 && f.items <= LIMITS.smallAlternatives ? 'cards' : 'table');
@@ -71,6 +73,7 @@ singleReply=one sentence can cover feedback; tableRows=planned row counts;
 format=auto|text|markdown|document|visualization|visual|custom|other; view=table|cards|form|kanban|flow|custom;
 visualReport=requested visual report; proseComments=inline prose comments; borderline=uncertain review.
 visualBenefit=visual improves understanding/action; customLayout=existing views cannot express it;
+inline=host shows widgets inline in chat (false: Claude Code, Cursor, terminal CLIs; true: Codex app, Claude widgets).
 automatic customLayout requires a nonempty customReason. Explicit custom requests need no justification.
 Missing facts default to explain/none/auto, zero counts, and no affirmative shape/feedback evidence.
 Precedence: explicit format > requested view > prose comments > requested supported report > review/density > Markdown.
@@ -80,6 +83,8 @@ Review: >=${LIMITS.reviewItems} records, per-item feedback, and singleReply=fals
 Density (recordLike=true): one table >=${LIMITS.tableRows} rows, >=2 tables totaling >=${LIMITS.multiTableRows} rows,
 or >=${LIMITS.words} words with >=${LIMITS.comparableItems} comparable items. Narrative length alone does not qualify.
 Borderline review stays in chat with an offer; definite density still applies.
+inline=false: automatic read-only routes (density, visualBenefit) become Markdown with offerReview;
+review, explicit format/view and visualReport still route. Omitted inline keeps the default routes.
 Meaningful visualBenefit can proactively route shorter records or explanatory visuals.
 Custom requests or justified customLayout route to custom-visual, outside the fixed renderer.
 Profiles: questions=form-v1; stages=kanban-v1; reviewed steps=flow-v1;

@@ -68,6 +68,9 @@ function App(){
   const inlineCompact=spec.resolvedPresentation?.mode==='inline';
   const history=useRef([]),hasEdits=useRef(false),messageRef=useRef(null),feedbackRef=useRef(null);
   const rowMap=new Map((spec.rows||[]).map(row=>[row.id,row]));
+  // Label feedback items by the most descriptive column: longest average text, ignoring columns that just repeat the row id.
+  const labelKey=(()=>{const rs=spec.rows||[];let best=null,bestLen=0;for(const c of spec.columns||[]){if(c.key==='id'||rs.some(r=>text(r[c.key])===r.id))continue;const avg=rs.reduce((n,r)=>n+text(r[c.key]).length,0)/(rs.length||1);if(avg>bestLen){best=c.key;bestLen=avg}}return best})();
+  const rowLabel=row=>row&&labelKey?text(row[labelKey]):'';
   const rows=(spec.rows||[]).map(row=>({...row,...draft.edits[row.id]}));
   const nodes=spec.nodes||[];
   const {dark,c}=resolvePalette(tokens,appearance,config.hostPalette,mount,hostAppearance.dark);
@@ -85,7 +88,7 @@ function App(){
   },[]);
   useEffect(()=>{if(!pendingDraft)return;let live=true;pendingDraft.then(saved=>{if(live&&!hasEdits.current&&saved?.key===key)setDraft(initial(saved))}).catch(()=>{});return()=>{live=false}},[]);
   useEffect(()=>{if(readOnly)return;return host.onExternalDraft?.(saved=>{if(!hasEdits.current&&saved?.key===key)setDraft(initial(saved))})},[]);
-  function values(){return {selectedIds:draft.selected,items:[...new Set([...draft.selected,...Object.keys(draft.notes).filter(id=>draft.notes[id]),...Object.keys(draft.edits),...Object.keys(draft.stages)])].filter(id=>rowMap.has(id)||nodes.some(n=>n.id===id)).map(id=>({id,label:rowMap.get(id)?.title||rowMap.get(id)?.name||nodes.find(n=>n.id===id)?.title||id,selected:draft.selected.includes(id),instruction:draft.notes[id]||'',changes:draft.edits[id]||{},...(draft.stages[id]?{stage:draft.stages[id]}:{})})),reviewedIds:draft.reviewed,fields:(spec.fields||[]).map(f=>({id:f.id,value:draft.fields[f.id]??f.value??'',...(f.options?{options:(draft.options[f.id]||f.options)}:{})})),comment:draft.comment};}
+  function values(){return {selectedIds:draft.selected,items:[...new Set([...draft.selected,...Object.keys(draft.notes).filter(id=>draft.notes[id]),...Object.keys(draft.edits),...Object.keys(draft.stages)])].filter(id=>rowMap.has(id)||nodes.some(n=>n.id===id)).map(id=>({id,label:rowMap.get(id)?.title||rowMap.get(id)?.name||rowLabel(rowMap.get(id))||nodes.find(n=>n.id===id)?.title||id,selected:draft.selected.includes(id),instruction:draft.notes[id]||'',changes:draft.edits[id]||{},...(draft.stages[id]?{stage:draft.stages[id]}:{})})),reviewedIds:draft.reviewed,fields:(spec.fields||[]).map(f=>({id:f.id,value:draft.fields[f.id]??f.value??'',...(f.options?{options:(draft.options[f.id]||f.options)}:{})})),comment:draft.comment};}
   function payload(){return {schemaVersion:1,viewId:spec.viewId,view:spec.view,revision:spec.revision||1,...values(),source:{harness:host.id||'static',theme:tokens.name,rendererHash:config.rendererHash}};}
   function message(){
     if(customMessage!=null)return customMessage;
@@ -137,7 +140,8 @@ function App(){
       const comparison=typeof av==='number'&&typeof bv==='number'?av-bv:text(av).localeCompare(text(bv),undefined,{numeric:true});
       return sort.ascending?comparison:-comparison;
     });
-    const size=spec.pageSize||20,last=Math.max(0,Math.ceil(matched.length/size)-1),current=Math.min(page,last),visible=matched.slice(current*size,(current+1)*size);
+    // Short result sets are never split: paging starts above 12 matches, whatever pageSize says.
+    const size=matched.length<=12?Math.max(1,matched.length):spec.pageSize||20,last=Math.max(0,Math.ceil(matched.length/size)-1),current=Math.min(page,last),visible=matched.slice(current*size,(current+1)*size);
     const visibleColumns=spec.columns.filter(col=>columns.includes(col.key));
     content=<>
       <div class="vr-row vr-toolbar">
@@ -160,7 +164,7 @@ function App(){
         <tbody>{visible.map(row=><tr key={row.id} class={draft.selected.includes(row.id)?'vr-selected':undefined}>
           {!readOnly&&<td><input class="vr-checkbox" type="checkbox" checked={draft.selected.includes(row.id)} aria-label={t('select')+' '+row.id} onChange={()=>toggle(row.id)}/></td>}
           {visibleColumns.map(col=><td key={col.key} class={col.type==='number'?'vr-number':undefined}>{col.editable&&!readOnly?
-            field(col.label,text(row[col.key]),value=>assign('edits',row.id,{...draft.edits[row.id],[col.key]:col.type==='number'&&value!==''?Number(value):value}),{type:col.type==='number'?'number':'text',className:'vr-edit-cell','aria-label':col.label+' for '+row.id})
+            field(col.label,text(row[col.key]),value=>assign('edits',row.id,{...draft.edits[row.id],[col.key]:col.type==='number'&&value!==''?Number(value):value}),{type:col.type==='number'?'number':'text',className:'vr-edit-cell',hideLabel:true,'aria-label':col.label+' for '+row.id})
             :text(row[col.key])}</td>)}
           {!readOnly&&<td class="vr-feedback-cell">{itemFeedback(row.id)}</td>}
         </tr>)}</tbody>

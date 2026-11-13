@@ -16,6 +16,19 @@ for (const c of cases) test('routing: ' + c.id, () => {
   assert.deepEqual(route(JSON.parse(JSON.stringify(c.facts))), actual, 'stable across serialization and repeat calls');
 });
 
+test('inline:true and omitted inline route identically; inline:false only demotes automatic read-only views', () => {
+  for (const c of cases) {
+    const {inline, ...base} = c.facts;
+    const original = route(base);
+    assert.deepEqual(route({...base, inline: true}), original, c.id + ' inline:true');
+    const offline = route({...base, inline: false});
+    if (original.target === 'markdown' || original.reason === 'requested-view' || original.reason === 'requested-report'
+      || original.reason === 'item-feedback' || original.readOnly === false || !['visual', 'visualization', 'custom-visual'].includes(original.target)
+      || c.facts.format === 'visualization' || c.facts.format === 'custom' || c.facts.view) assert.deepEqual(offline, original, c.id + ' inline:false kept');
+    else assert.deepEqual(offline, {target: 'markdown', reason: 'no-inline-host', offerReview: true}, c.id + ' inline:false demoted');
+  }
+});
+
 test('dense routes preserve feedback mode regardless of other visual triggers', () => {
   for (const feedback of ['none', 'overall', 'per-item']) for (const singleReply of [undefined, false, true])
     for (const visualBenefit of [false, true]) for (const visualReport of [false, true]) {
@@ -40,7 +53,7 @@ test('automatic comparison cards require a known positive small item count', () 
 test('invalid facts fail rather than silently changing a route', () => {
   for (const facts of [null, [], {items: true}, {items: -1}, {words: 1.5}, {recordLike: 'true'}, {tableRows: [3, '7']},
     {format: 'html'}, {view: 'chart'}, {feedback: 'yes'}, {harness: 'codex'}, {unrecognized: true},
-    {visualBenefit: 'yes'}, {customLayout: true}, {customLayout: true, customReason: ''}]) assert.throws(() => route(facts));
+    {visualBenefit: 'yes'}, {inline: 'false'}, {customLayout: true}, {customLayout: true, customReason: ''}]) assert.throws(() => route(facts));
 });
 
 test('selected profile/mode is enforced and source data is retained', () => {

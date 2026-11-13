@@ -30,7 +30,7 @@
         "heightBudget": {
           "type": "object",
           "additionalProperties": false,
-          "properties": {"maxPx": {"type": "integer", "minimum": 120}, "fraction": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}}
+          "properties": {"maxPx": {"type": "integer", "minimum": 120}, "fraction": {"type": "number", "exclusiveMinimum": 0, "maximum": 2}}
         },
         "inlineLimits": {
           "type": "object",
