@@ -1,9 +1,0 @@
-{
-  "harness": "claude-code",
-  "cases": 24,
-  "kind": "isolated-policy-comprehension",
-  "discoveryTested": false,
-  "nativeSubmissionTested": false,
-  "status": "unavailable",
-  "error": "Not logged in · Please run /login"
-}
