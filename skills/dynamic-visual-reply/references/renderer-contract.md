@@ -53,7 +53,7 @@ No additional dashboard/chart/timeline view type is implied.
 
 | View | Fields and behavior |
 | --- | --- |
-| Table | `columns:[{key,label,type?,editable?}]`, `rows:[{id,...}]`; type is `text` or `number`. Optional `filterKey` and `pageSize` (1–100, default 20). Search, sorting, column visibility, paging, selection, row instructions, reviewed flags, cell editing, shared instructions, and undo. Select visible acts on the current page; select all matches spans pages. |
+| Table | `columns:[{key,label,type?,editable?}]`, `rows:[{id,...}]`; type is `text` or `number`. Optional `filterKey` and `pageSize` (1–100, default 20; ignored when 12 or fewer rows match, which show on one page). Search, sorting, column visibility, paging, selection, row instructions, reviewed flags, cell editing, shared instructions, and undo. Select visible acts on the current page; select all matches spans pages. |
 | Cards | `rows:[{id,title,summary,details?,source?,recommended?,actionLabel?}]`; selection, expandable details, instructions, reviewed state. |
 | Kanban | `rows:[{id,title,stage}]`, optional unique `stages` (1–8 labels; default To review / In progress / Done). Stage selectors edit drafts; no drag-and-drop or external task mutation. |
 | Form | `fields:[{id,label,type?,value?,help?,options?}]`; text, textarea, number, checkbox, select, multiselect. Select values are option IDs; options use `{id,label}`. Multiselect options add `selected` and editable labels. |
