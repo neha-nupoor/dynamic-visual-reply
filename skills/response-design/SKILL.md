@@ -31,7 +31,7 @@ standalone renderer invocation. If unavailable, provide usable Markdown.
    narrative length alone does not establish records. Charts/timelines use
    `format:"visualization"`; inline prose comments use `proseComments:true`.
    Mark uncertain reviews `borderline:true`; preserve unknowns. `inline`: false in
-   Claude Code, Cursor, terminal CLIs; true in the Codex app.
+   Claude Code; true in the Codex app.
    When existing views cannot express the needed interaction, set `customLayout:true`
    and explain why in `customReason`. An explicit custom request uses `format:"custom"`.
 2. Run `node <visual-skill>/scripts/route.mjs --facts <facts.json> --out <route.json>`.

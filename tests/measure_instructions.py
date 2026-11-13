@@ -17,8 +17,8 @@ route_help = subprocess.check_output(
 host = (root / "skills/dynamic-visual-reply/references/harness/codex.md").read_text()
 entry = ("When a reply will present 3+ comparable items, records, questions or steps, or "
          "the user asks for a visual/interactive review, use response-design to choose the "
-         "format. Pass `inline:false` in Claude Code, Cursor and terminal CLIs; `inline:true` "
-         "in the Codex app and Claude widget hosts. Honor explicit user format requests.")
+         "format. Pass `inline:true` in the Codex app and `inline:false` in Claude Code. "
+         "Honor explicit user format requests.")
 paths = {"old_entrypoint": baseline, "new_router": router, "new_renderer": renderer,
          "combined_entrypoints": router + renderer, "route_help": route_help, "entry_rule": entry,
          "old_codex_path": baseline + host, "new_codex_path": router + renderer + host,

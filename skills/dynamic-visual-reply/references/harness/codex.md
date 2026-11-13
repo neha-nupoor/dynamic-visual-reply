@@ -1,10 +1,10 @@
-# Codex / ChatGPT widget host
+# Codex app
 
 Adapter: `scripts/adapters/codex.js`. The existing inline rendering and feedback bridge are preserved; standalone views use the local browser.
 
 ## Availability
 
-Use Codex inline when the current session documents the `visualize` content-reference output contract, including through an available visualize skill. Read that contract; do not require a dedicated widget tool. The app name or `CODEX_HOME` alone is insufficient. A Codex terminal without that output contract uses the browser route. Claude Code uses the browser route.
+Use inline in the Codex app, where the session provides the `visualize` content reference (in its instructions or an available visualize skill); no dedicated widget tool is needed. `CODEX_HOME` alone is insufficient. A Codex terminal without it uses the browser route. This is an internal check: do not describe it to the user.
 
 ## Render and hand off
 
