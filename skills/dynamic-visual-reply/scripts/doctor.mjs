@@ -22,27 +22,17 @@ export async function report(args = {}, env = process.env) {
     'claude-code': 'serve.mjs saves <view>.feedback.json; ask the agent to read it.',
     static: 'Copy or export feedback and paste it into chat.',
   };
-  const url = harness.id === 'claude-inline' && context.config.rendererSource?.mode === 'cdn' && context.config.rendererSource.url
-    ? context.config.rendererSource.url.replaceAll('{hash12}', info.sha256.slice(0, 12)).replaceAll('{sha256}', info.sha256) : null;
-  let urlCheck = null;
-  if (url && args['check-url']) {
-    try {
-      const body = Buffer.from(await (await fetch(url)).arrayBuffer());
-      urlCheck = createHash('sha256').update(body).digest('hex') === info.sha256 ? 'match' : 'mismatch';
-    } catch (error) { urlCheck = 'unreachable: ' + error.message; }
-    if (urlCheck !== 'match') problems.push('Renderer URL ' + urlCheck + ': ' + url + '. Publish the renderer tag, or set rendererSource.mode to "embed".');
-  }
   notes.push('These checks verify files and settings, not the host rendering or submission APIs. Test those in the rendered view.');
   return {ok: !problems.length,
     harness: {id: harness.id, label: harness.label, reason: context.harnessReason, detected, detectedReason, runtimeVerified: false, feedback: submit[harness.id]},
     theme: {name: context.theme.name, source: context.themeSource, appearance: context.appearance, contrastOk: !contrast.length},
-    delivery: {mode: url ? 'url' : 'embed', url, urlCheck, bundleHash: info.sha256, bundleBytes: info.bytes}, configLayers: context.layers,
+    delivery: {mode: 'embed', bundleHash: info.sha256, bundleBytes: info.bytes}, configLayers: context.layers,
     userConfig: config.userConfigPath(env), availableHarnesses: Object.fromEntries(Object.entries(config.HARNESSES).map(([id, host]) => [id, host.label])),
     problems, notes};
 }
 export async function main() {
-  const {values: args} = config.parseCli({harness: {type: 'string'}, theme: {type: 'string'}, 'check-url': {type: 'boolean'}});
-  if (args.help) { console.log('Usage: node doctor.mjs [--harness <id>] [--theme <pack>] [--check-url]'); return; }
+  const {values: args} = config.parseCli({harness: {type: 'string'}, theme: {type: 'string'}});
+  if (args.help) { console.log('Usage: node doctor.mjs [--harness <id>] [--theme <pack>]'); return; }
   try {
     const result = await report(args); console.log(JSON.stringify(result, null, 2)); process.exitCode = result.ok ? 0 : 1;
   } catch (error) { console.log(JSON.stringify({ok: false, problems: [error.message]}, null, 2)); process.exitCode = 2; }

@@ -20,7 +20,6 @@ export const HARNESSES = {
 export const CLAUDE_CONFIG = {
   appearance: 'host',
   placement: {viewport: {width: 680, height: 900}, maxSpecBytes: 24000},
-  rendererSource: {mode: 'cdn'},
   feedback: {messageFormat: 'summary'},
   copy: {submit: {message: 'Add to chat'}, feedbackSubmit: {message: 'Add feedback to chat'},
     status: {submitted: 'Added to your message box. Press Enter to send it.'}},
@@ -195,7 +194,7 @@ export function loadHarness(id) {
   return {id, ...HARNESSES[id]};
 }
 export function detectHarness(env = process.env) {
-  if (env.CLAUDECODE === '1') return ['claude-code', 'Claude Code uses the local browser; choose claude-inline only when show_widget is available'];
+  if (env.CLAUDECODE === '1') return ['claude-code', 'Claude Code uses the local browser'];
   if (Object.keys(env).some(key => key.startsWith('CURSOR_'))) return ['browser-local', 'Cursor environment marker; browser route (marker unverified on live Cursor)'];
   const id = ['CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED', 'CODEX_HOME'].some(key => Object.hasOwn(env, key)) ? 'codex' : 'static';
   return [id, id === 'static' ? 'No harness markers found; choose --harness explicitly when needed' : 'Suggested by environment markers; runtime bridge not verified'];

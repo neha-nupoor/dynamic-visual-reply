@@ -18,7 +18,7 @@ Add this short opt-in rule to the host's existing instructions:
 > When a reply will present 3+ comparable items, records, questions or steps, or
 > the user asks for a visual/interactive review, use response-design to choose the
 > format. Pass `inline:false` in Claude Code, Cursor and terminal CLIs; `inline:true`
-> in the Codex app and Claude widget hosts. Honor explicit user format requests.
+> in the Codex app. Honor explicit user format requests.
 
 Other replies skip the router entirely. `inline:false` keeps automatic read-only
 views in Markdown with a one-line offer instead of opening a browser tab.

@@ -4,7 +4,7 @@ Adapter: `scripts/adapters/codex.js`. The existing inline rendering and feedback
 
 ## Availability
 
-Use Codex inline when the current session documents the `visualize` content-reference output contract, including through an available visualize skill. Read that contract; do not require a dedicated widget tool. The app name or `CODEX_HOME` alone is insufficient. A Codex terminal without that output contract uses the browser route. Claude Code also uses the browser route; it is distinct from the Claude inline widget host.
+Use Codex inline when the current session documents the `visualize` content-reference output contract, including through an available visualize skill. Read that contract; do not require a dedicated widget tool. The app name or `CODEX_HOME` alone is insufficient. A Codex terminal without that output contract uses the browser route. Claude Code uses the browser route.
 
 ## Render and hand off
 

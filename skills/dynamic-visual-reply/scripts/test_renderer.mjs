@@ -179,13 +179,6 @@ test('all appearances and hosts embed the identical runtime and keep draft keys 
     assert.equal(block(html, 'spec').stateKey, expectedKey);
     assert.equal(block(html, 'config').appearance, appearance);
     assert.equal(block(html, 'config').rendererHash, render.manifest().sha256);
-    if (harness === 'claude-inline') {
-      const info = render.manifest();
-      assert.equal(result.delivery, 'url'); assert.ok(Buffer.byteLength(html) < 6000);
-      assert.ok(html.includes('@renderer-' + info.sha256.slice(0, 12) + '/') && html.includes('integrity="' + info.sri + '"'));
-      assert.ok(!html.includes('<script data-dynamic-visual-reply-runtime>'));
-      continue;
-    }
     assert.equal(result.delivery, 'embed'); assert.ok(!html.includes('<script src='));
     assert.equal(html.split('<script data-dynamic-visual-reply-runtime>\n')[1].split('\n</script>')[0], fs.readFileSync(render.BUNDLE, 'utf8'));
   }
@@ -198,15 +191,6 @@ test('Codex and Claude handoffs preserve native adapters and different submissio
     if (harness === 'codex') assert.match(result.contentReference, /^visualize\{"path":.*\}$/);
     else assert.equal(block(html, 'config').copy.submit.message, 'Add to chat');
   }
-});
-test('Claude inline can opt back into the embedded bundle; standalone pages always embed', t => {
-  const embedded = page(t, example('flow'), context('claude-inline', {rendererSource: {mode: 'embed'}}));
-  assert.equal(embedded.result.delivery, 'embed'); assert.ok(embedded.html.includes('<script data-dynamic-visual-reply-runtime>'));
-  const standalone = page(t, example('flow'), context('claude-inline'), 'standalone');
-  assert.equal(standalone.result.delivery, 'embed'); assert.ok(!standalone.html.includes('<script src='));
-  const custom = page(t, example('flow'), context('claude-inline', {rendererSource: {url: 'https://cdn.jsdelivr.net/gh/a/b@{sha256}/r.js'}}));
-  assert.ok(custom.html.includes('@' + render.manifest().sha256 + '/r.js'));
-  assert.throws(() => context('claude-inline', {rendererSource: {url: 'http://insecure.example/r.js'}}), /does not match/);
 });
 test('large inline views and byte limits route to the same browser feedback path', t => {
   const big = example('table'); big.rows = Array.from({length: 9}, (_, index) => ({id: 'r' + index, name: 'Row ' + index}));
@@ -325,8 +309,7 @@ test('doctor checks every harness locally without implying native bridge verific
   const dir = temporary(t), user = path.join(dir, 'settings.json'); write(user, {});
   for (const harness of config.harnessIds()) {
     const result = await report({harness}, {HOME: dir, DYNAMIC_VISUAL_REPLY_CONFIG: user});
-    assert.equal(result.ok, true); assert.equal(result.delivery.mode, harness === 'claude-inline' ? 'url' : 'embed');
-    assert.equal(result.delivery.urlCheck, null); assert.equal(result.harness.runtimeVerified, false);
+    assert.equal(result.ok, true); assert.equal(result.delivery.mode, 'embed'); assert.equal(result.harness.runtimeVerified, false);
   }
 });
 test('packaged helper runs with no npm install and no Python executable on PATH', t => {

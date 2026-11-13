@@ -28,13 +28,12 @@ Paths are relative to this skill. Keep the bundle unchanged during use.
    | Surface | Harness | Guide |
    | --- | --- | --- |
    | Documented visualize content-reference contract; no dedicated tool needed | `codex` | [Codex](references/harness/codex.md) |
-   | Actual HTML/JavaScript widget tool and adequate payload limit | `claude-inline` | [Claude inline](references/harness/claude-inline.md) |
    | Commands and browser; includes Cursor, Windsurf, Gemini CLI, Copilot | `browser-local`, `claude-code` | [Browser](references/harness/browser-local.md) |
    | Offline HTML with copy/export | `static` | [Static](references/harness/static.md) |
 
    Without inline support, use an available browser when useful, otherwise Markdown.
    For uncertain setup, run `node scripts/doctor.mjs --harness <id>` once; it checks
-   files/settings, not a live bridge. Claude Code differs from Claude inline.
+   files/settings, not a live bridge. Claude Code uses the browser route.
 2. Write `schemaVersion:1`, stable `viewId`, selected `view`, and `title`:
 
    | View | Data |
@@ -54,9 +53,8 @@ Paths are relative to this skill. Keep the bundle unchanged during use.
    The route enforces view/mode and prefers Codex inline for dense answers.
    Spec-only calls remain supported. For requested inline, use `--format inline`
    when supported; payload limits remain. Follow the handoff: emit the complete
-   Codex `contentReference` on its own final-response line, pass the complete Claude
-   fragment (a few KB; it loads the bundle by URL + SRI) unchanged to its widget tool,
-   or run the server command. Large views use the browser and set `switched`; never
+   Codex `contentReference` on its own final-response line, or run the server
+   command. Large views use the browser and set `switched`; never
    shorten content to force inline.
 
 Cards stack full-width review items by default; read-only cards use a grid. Use `layout: "grid"` for short alternatives that benefit from comparison, or `layout: "stack"` for longer read-only items. Layout is independent of inline versus standalone placement. Keep titles and summaries short and put supporting evidence in `details`.
@@ -70,7 +68,7 @@ Markdown; HTML belongs inside the widget.
 
 Review supports batch submission, drafts, preview, copy/export and undo. UI edits
 remain drafts; selection/instructions survive paging. Acknowledge only received
-feedback. Claude Add to chat fills the composer; users press Enter. Browser
+feedback. Browser
 submission saves a file, read when the user resumes, without starting a turn.
 Read-only loads/subscribes/saves no drafts or feedback; sorting, filtering, paging,
 columns, details and flow navigation are local browsing only.
@@ -81,8 +79,7 @@ columns, details and flow navigation are local browsing only.
   [renderer contract](references/renderer-contract.md). Prefer `dataFile` and
   `--patch` over regenerating data. `--catalog` lists examples in `assets/examples/`.
 - Appearance: preserve the configured theme/product design. Explicit spec/flag/
-  project/user choices precede defaults (`host` for Claude inline, `system`
-  elsewhere, OS fallback). Omit redundant appearance flags. Settings:
+  project/user choices precede defaults (`system`, OS fallback). Omit redundant appearance flags. Settings:
   `~/.config/dynamic-visual-reply/config.json` or `$DYNAMIC_VISUAL_REPLY_CONFIG`,
   and project `.dynamic-visual-reply.json`. Delivery stays in code.
 - Requested Report Blue styling: [Report Blue kit](references/report-kit.md),

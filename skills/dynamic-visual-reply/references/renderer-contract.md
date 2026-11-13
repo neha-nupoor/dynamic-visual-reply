@@ -11,7 +11,7 @@ node <skill-dir>/scripts/render.mjs --spec <input.json> --route <route.json> --o
 node <skill-dir>/scripts/render.mjs --spec <previous.spec.json> --patch <changes.json> --out <view.html> --harness codex
 node <skill-dir>/scripts/render.mjs --print-config --harness codex
 node <skill-dir>/scripts/render.mjs --theme-css <theme.css>
-node <skill-dir>/scripts/doctor.mjs --harness claude-inline
+node <skill-dir>/scripts/doctor.mjs --harness codex
 ```
 
 The result JSON reports output `path`, resolved `spec` snapshot, `format`, `placement`, `harness`, `theme`, bundle/spec byte counts, and `handoff`. Byte counts are not model token counts.
@@ -29,7 +29,7 @@ use different display surfaces and truthful submission wording; they do not
 change the profile. See the sibling response-design skill's setup guide for the
 short persistent rule and host integration.
 
-Every output embeds the same Oat/Preact bundle and CSS. Codex inline returns the existing `contentReference`; Claude inline returns a generated fragment for `show_widget`, with no external script or public URL. Claude's string-based handoff includes the full bundle and uses model context. For Codex, verify the session documents the `visualize` content-reference output contract; a dedicated widget tool is not required. For tool-based inline hosts, check the actual native tool, its current HTML/JavaScript support, and payload limits before selecting inline delivery. Display support does not imply a working chat submission bridge. Environment detection is only a suggestion. Larger views use `serve.mjs` and save feedback locally. Cursor, Windsurf, Gemini CLI, and other terminal/IDE agents use `browser-local`; Claude Code uses `claude-code`; `static` produces an offline HTML file with copy/export. If rendering is unavailable or fails, provide the intended content in normal Markdown. Use the browser route when interaction remains useful and that route is available; do not add a second HTML renderer as a fallback. Host routing is fixed.
+Every output embeds the same Oat/Preact bundle and CSS. Codex inline returns the existing `contentReference`, so the bundle never enters model context. Supported hosts are Codex and Claude Code; the Claude chat widget (`show_widget`) is not supported in this release. For Codex, verify the session documents the `visualize` content-reference output contract; a dedicated widget tool is not required. Display support does not imply a working chat submission bridge. Environment detection is only a suggestion. Larger views use `serve.mjs` and save feedback locally. Cursor, Windsurf, Gemini CLI, and other terminal/IDE agents use `browser-local`; Claude Code uses `claude-code`; `static` produces an offline HTML file with copy/export. If rendering is unavailable or fails, provide the intended content in normal Markdown. Use the browser route when interaction remains useful and that route is available; do not add a second HTML renderer as a fallback. Host routing is fixed.
 
 Other flags: `--format auto|inline|standalone`, `--theme`, `--appearance light|dark|system|host`, `--viewport-width`, `--viewport-height`, and `--catalog`.
 

@@ -43,10 +43,6 @@
     "maxInlineBytes": 1000000,
     "maxSpecBytes": null
   },
-  "rendererSource": {
-    "mode": "embed",
-    "url": "https://cdn.jsdelivr.net/gh/neha-nupoor/dynamic-visual-reply@renderer-{hash12}/skills/dynamic-visual-reply/assets/renderer/dist/renderer.js"
-  },
   "feedback": {
     "defaultPrompt": "Review my batch feedback and continue the task.",
     "formPrompt": "Use my form answers and continue the task.",

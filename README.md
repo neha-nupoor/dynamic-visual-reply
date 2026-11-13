@@ -7,7 +7,7 @@ When your agent proposes ten things — titles, fixes, tasks, options — you us
 ![Reviewing steps and sending one batch of feedback in Codex](docs/media/codex-inline-demo.gif)
 
 - **Small for the model.** The agent writes a ~100–200 token JSON spec; a prebuilt renderer (Preact + [Oat](https://github.com/knadh/oat), ~85 KB) draws the UI. No API keys, no telemetry, no build step.
-- **Works across agents.** Inline in Codex and Claude widget hosts; a local browser tab with a loopback server in Claude Code, Cursor and other CLIs.
+- **Works across agents.** Inline in the Codex app; a local browser tab with a loopback server in Claude Code, Cursor and other CLIs.
 - **Stays out of the way.** It only activates for 3+ comparable items or when you ask for a visual review. Short answers stay in chat.
 
 ## Install
@@ -27,7 +27,7 @@ npx skills add neha-nupoor/dynamic-visual-reply --skill response-design --skill 
 
 Then add one rule to your agent's instructions (`AGENTS.md`, `CLAUDE.md`, or a Cursor rule with `alwaysApply: true`):
 
-> When a reply will present 3+ comparable items, records, questions or steps, or the user asks for a visual/interactive review, use response-design to choose the format. Pass `inline:false` in Claude Code, Cursor and terminal CLIs; `inline:true` in the Codex app and Claude widget hosts. Honor explicit user format requests.
+> When a reply will present 3+ comparable items, records, questions or steps, or the user asks for a visual/interactive review, use response-design to choose the format. Pass `inline:false` in Claude Code, Cursor and terminal CLIs; `inline:true` in the Codex app. Honor explicit user format requests.
 
 Requires Node.js 22.20+ where the agent runs commands. See the [setup guide](skills/response-design/references/setup.md) for per-host details.
 
@@ -40,7 +40,6 @@ Requires Node.js 22.20+ where the agent runs commands. See the [setup guide](ski
 | Host | Display | Feedback returns by | Verified |
 | --- | --- | --- | --- |
 | Codex app | Inline widget (file reference, bundle never enters model context) | **Send to chat** starts the next turn | Live |
-| Claude widget hosts (`show_widget`) | Inline; a ~3 KB fragment loads the identical bundle from jsDelivr with an SRI hash | **Add to chat** fills your message box | Pending live check |
 | Claude Code (desktop or terminal) | Local browser tab via a loopback server | Submit; with `serve.mjs --once` in the background the agent wakes automatically | Live |
 | Cursor | Local browser tab | Submit, then tell the agent to continue | Not yet (detection added; live run pending) |
 | Anything else | Offline HTML | Copy or export JSON into chat | Fixtures |
@@ -140,7 +139,7 @@ Open the local URL printed by the server. Keep it running while reviewing, submi
 
 ## Appearance
 
-Desktop views use compact spacing: 14 px body text, 32 px controls, and an 18 px inline title. Free-text form answers start compact and can be resized vertically with the bottom-right handle. Touch controls retain larger targets. Codex and Claude share this preset; native host density is not detected automatically. Existing theme settings can override the sizes.
+Desktop views use compact spacing: 14 px body text, 32 px controls, and an 18 px inline title. Free-text form answers start compact and can be resized vertically with the bottom-right handle. Touch controls retain larger targets. Codex and the browser page share this preset; native host density is not detected automatically. Existing theme settings can override the sizes.
 
 Appearance follows the host where supported, with OS preference as a fallback. Explicit choices take priority:
 
