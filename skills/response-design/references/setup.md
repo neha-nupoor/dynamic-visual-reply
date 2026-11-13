@@ -17,13 +17,13 @@ Add this short opt-in rule to the host's existing instructions:
 
 > When a reply will present 3+ comparable items, records, questions or steps, or
 > the user asks for a visual/interactive review, use response-design to choose the
-> format. Pass `inline:true` in the Codex app and `inline:false` in Claude Code.
+> format. Pass `inline:true` in the Codex app and `inline:false` in the Codex terminal.
 > Honor explicit user format requests.
 
 Other replies skip the router entirely. `inline:false` keeps automatic read-only
 views in Markdown with a one-line offer instead of opening a browser tab.
 
-Codex: user/project `AGENTS.md`. Claude Code: user/project `CLAUDE.md`.
+Add it to your user or project `AGENTS.md`.
 Other agents are not supported; there the skill answers in Markdown. Verify the
 rule is loaded on the actual host; discovery of SKILL.md alone is not guaranteed
 activation.
@@ -78,13 +78,13 @@ across all adapter IDs at desktop/mobile widths in both modes. Host bridges are
 simulated. Test native submission separately; browser fixtures cannot prove it.
 
 Optional bounded language-to-facts checks use `tests/live_routing_eval.mjs` with
-`--harness codex|claude-code --out <report.json>` and the installed authenticated
+`--harness codex --out <report.json>` and the installed authenticated
 CLI. They isolate policy comprehension; they do not prove automatic discovery or
 live UI submission. Unavailable hosts are untested, never inferred from adapters.
 Do not run these paid/subscription checks on ordinary replies.
 
 For token measurement, count both entrypoints and every reference loaded on that
 path (including route help if read). Template assets and executed scripts do not
-enter model context unless read. Claude inline's full generated HTML still does.
+enter model context unless read.
 Loaded instructions may remain in later context. Keep counters/reports in tests,
 not the user-facing reply, and recheck after changes.

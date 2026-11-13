@@ -10,7 +10,7 @@
     "theme": {"description": "Theme pack name, a path to a theme.json or pack folder, or an inline theme object.", "type": ["string", "object"]},
     "themeFallback": {"type": "string"},
     "appearance": {"enum": ["light", "dark", "system", "host", null]},
-    "harness": {"enum": ["auto", "codex", "claude-inline", "claude-code", "browser-local", "static"]},
+    "harness": {"enum": ["auto", "codex", "browser-local", "static"]},
     "views": {
       "type": "object",
       "additionalProperties": false,

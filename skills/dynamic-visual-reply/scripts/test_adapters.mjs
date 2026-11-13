@@ -9,7 +9,7 @@ import vm from 'node:vm';
 // Objects made inside the vm sandbox have foreign prototypes, so compare their JSON form.
 const same=(actual,expected,message)=>assert.deepEqual(JSON.parse(JSON.stringify(actual)),JSON.parse(JSON.stringify(expected)),message);
 const adapters=join(dirname(fileURLToPath(import.meta.url)),'adapters');
-const adapterIds={'codex.js':'codex','claude.js':'claude-inline','browser.js':'browser-local'};
+const adapterIds={'codex.js':'codex','browser.js':'browser-local'};
 
 function load(file,extra={}){
   const store=new Map();
@@ -55,15 +55,6 @@ test('codex adapter without a host uses local storage and cannot submit',()=>{
   host.saveDraft('k1',draft,{modelContent:{}});
   assert.ok(store.has('dynamic-visual-reply:k1'));
   same(host.loadDraft('k1'),draft);
-});
-
-test('claude-inline adapter sends through sendPrompt',async()=>{
-  const sent=[];
-  const {host}=load('claude.js',{sendPrompt:m=>sent.push(m)});
-  assert.equal(host.capabilities.submit,'message');
-  await host.submit(message);
-  same(sent,[message.message]);
-  assert.equal(load('claude.js').host.capabilities.submit,'none');
 });
 
 test('browser-local adapter posts to serve.mjs only on loopback',async()=>{

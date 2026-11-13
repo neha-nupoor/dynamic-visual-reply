@@ -10,7 +10,6 @@ if(fixtureSpec.rows?.[0])legacy.notes[fixtureSpec.rows[0].id]='Legacy instructio
 const query=new URLSearchParams(location.search);
 if(query.has('legacy')){
   if(fixtureConfig.adapter==='codex'&&!read(fixtureKey))localStorage.setItem(fixtureKey,JSON.stringify({privateContent:{draft:legacy}}));
-  if(fixtureConfig.adapter==='claude-inline'&&!read(storageKey))localStorage.setItem(storageKey,JSON.stringify(legacy));
 }
 function receive(message){
   let envelope;

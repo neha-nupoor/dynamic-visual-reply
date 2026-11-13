@@ -31,7 +31,7 @@ feedback. Different tokenizers and content change the counts. No total-token
 savings or usability comparison was measured. Read-only mode removes feedback
 controls and draft calls; it still embeds the same renderer bundle.
 
-Running the Node renderer uses **zero model tokens**. Codex and local browser routes use generated files directly. Claude's inline route also passes the complete generated HTML through model context, so the spec counts alone do not describe that route's cost. No token-counting package is required to install or use the skill.
+Running the Node renderer uses **zero model tokens**. Codex and local browser routes use generated files directly. No token-counting package is required to install or use the skill.
 
 ## Size of read-only and Report Blue additions
 
@@ -71,7 +71,7 @@ Recorded in a real Codex chat: enter instructions for individual steps and use *
 
 ![Native Codex widget interaction](media/codex-inline-demo.gif)
 
-The demo agent received instructions for `onboarding`, `shortcuts`, and `export` with their IDs intact. This verifies the Codex route; Claude's native route remains unverified.
+The demo agent received instructions for `onboarding`, `shortcuts`, and `export` with their IDs intact. This verifies the Codex route.
 
 ### Read-only Report Blue
 

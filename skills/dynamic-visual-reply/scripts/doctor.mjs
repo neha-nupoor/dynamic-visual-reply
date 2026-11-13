@@ -17,9 +17,7 @@ export async function report(args = {}, env = process.env) {
     notes.push('Theme ' + JSON.stringify(context.config.theme) + ' was not found; using fallback ' + JSON.stringify(context.theme.name) + '. Install that theme pack beside this skill or point theme at its folder.');
   const submit = {
     codex: 'Inline uses window.openai.sendFollowUpMessage; larger views save feedback through serve.mjs.',
-    'claude-inline': 'Inline adds feedback to the message box; press Enter to send. Larger views use serve.mjs.',
     'browser-local': 'serve.mjs saves <view>.feedback.json; ask the agent to read it.',
-    'claude-code': 'serve.mjs saves <view>.feedback.json; ask the agent to read it.',
     static: 'Copy or export feedback and paste it into chat.',
   };
   notes.push('These checks verify files and settings, not the host rendering or submission APIs. Test those in the rendered view.');

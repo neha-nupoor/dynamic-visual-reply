@@ -7,7 +7,6 @@ import './renderer.css';
 import {copy as defaultCopy,feedback as defaultFeedback} from '../../../config/defaults.json';
 // Built-in adapters register themselves by id. Some hosts don't run a page's inline scripts, so they can't rely on injection.
 import '../../../scripts/adapters/codex.js';
-import '../../../scripts/adapters/claude.js';
 import '../../../scripts/adapters/browser.js';
 
 const mount=document.querySelector('[data-dynamic-visual-reply-root]');

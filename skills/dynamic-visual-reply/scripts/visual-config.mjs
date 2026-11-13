@@ -12,23 +12,8 @@ export const THEME_FILE = path.join(CONFIG_DIR, 'theme.json');
 export const PROJECT_FILE = '.dynamic-visual-reply.json';
 export const HARNESSES = {
   codex: {label: 'Codex app', adapter: 'codex'},
-  'claude-inline': {label: 'Claude inline widget', adapter: 'claude-inline'},
-  'claude-code': {label: 'Claude Code terminal', adapter: 'browser-local'},
-  'browser-local': {label: 'Local browser', adapter: 'browser-local'},
+  'browser-local': {label: 'Local browser page (Codex fallback)', adapter: 'browser-local'},
   static: {label: 'Static HTML', adapter: null},
-};
-export const CLAUDE_CONFIG = {
-  appearance: 'host',
-  placement: {viewport: {width: 680, height: 900}, maxSpecBytes: 24000},
-  feedback: {messageFormat: 'summary'},
-  copy: {submit: {message: 'Add to chat'}, feedbackSubmit: {message: 'Add feedback to chat'},
-    status: {submitted: 'Added to your message box. Press Enter to send it.'}},
-};
-export const HOST_PALETTE = {
-  canvas: '--surface-0', surface: '--surface-2', text: '--text-primary',
-  muted: '--text-secondary', divider: '--border', controlBorder: '--border-strong',
-  accent: '--fill-accent', onAccent: '--on-accent', selected: '--bg-accent',
-  hover: '--surface-1', success: '--text-success', warning: '--text-warning', error: '--text-danger',
 };
 export const load = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 export const requireValue = (condition, message) => { if (!condition) throw new Error(message); };
@@ -124,7 +109,7 @@ export function checkSchema(instance, name, label) {
 export function skillDirs(env = process.env) {
   const home = env.HOME || env.USERPROFILE || os.homedir();
   const extra = (env.DYNAMIC_VISUAL_REPLY_THEME_PATH || env.VISUAL_RESPONSE_THEME_PATH || '').split(path.delimiter).filter(Boolean);
-  return [...extra, path.dirname(ROOT), ...['.agents', '.claude', '.codex', '.cursor'].map(name => path.join(home, name, 'skills'))];
+  return [...extra, path.dirname(ROOT), ...['.agents', '.codex'].map(name => path.join(home, name, 'skills'))];
 }
 const themeFile = folder => [path.join(folder, 'theme.json'), path.join(folder, 'assets/theme.json')].find(existsFile);
 export function findTheme(reference, env = process.env, baseDir) {
@@ -194,7 +179,6 @@ export function loadHarness(id) {
   return {id, ...HARNESSES[id]};
 }
 export function detectHarness(env = process.env) {
-  if (env.CLAUDECODE === '1') return ['claude-code', 'Claude Code uses the local browser'];
   const id = ['CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED', 'CODEX_HOME'].some(key => Object.hasOwn(env, key)) ? 'codex' : 'static';
   return [id, id === 'static' ? 'No harness markers found; choose --harness explicitly when needed' : 'Suggested by environment markers; runtime bridge not verified'];
 }
@@ -216,7 +200,7 @@ export function projectConfigPath(start) {
 export class Context {
   constructor(values) { Object.assign(this, values); }
   switch(harness) { return resolve(this.inputs.cli, {...this.inputs, harness}); }
-  get appearance() { return this.config.appearance || (this.harness.id === 'claude-inline' ? 'host' : 'system'); }
+  get appearance() { return this.config.appearance || 'system'; }
 }
 export function resolve(cli = {}, {harness, cwd, env = process.env, isolated = false} = {}) {
   cli = Object.fromEntries(Object.entries(cli).filter(([, value]) => value !== null && value !== undefined));
@@ -233,7 +217,6 @@ export function resolve(cli = {}, {harness, cwd, env = process.env, isolated = f
   if (!chosen || chosen === 'auto') [chosen, reason] = isolated ? ['codex', 'Isolated default'] : detectHarness(env);
   else reason = harness || cli.harness ? 'Requested explicitly' : 'Set in configuration';
   const host = loadHarness(chosen);
-  if (chosen === 'claude-inline') layers.splice(1, 0, ['host:claude-inline', 'built-in host defaults', CLAUDE_CONFIG]);
   let config = {}; const sources = {};
   for (const [name, , data] of layers) {
     config = merge(config, data);

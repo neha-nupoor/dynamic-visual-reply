@@ -19,7 +19,7 @@ export function generate(out) {
     });
     else if (view === 'cards') { base.rows = base.rows.slice(0, 2); base.rows[0].details = 'Literal text: <script>example</script> & quotes "stay text".'; }
     else if (view === 'form') base.fields.push({id: 'limit', label: 'Batch limit', type: 'number', value: 0, help: 'Zero is a valid answer.'});
-    for (const harness of ['codex', 'claude-inline']) for (const appearance of ['light', 'dark', 'system', 'host']) {
+    for (const harness of ['codex']) for (const appearance of ['light', 'dark', 'system', 'host']) {
       const file = path.join(out, harness + '-' + view + '-' + appearance + '.html');
       render(structuredClone(base), file, 'inline', undefined, undefined, {context: resolve({appearance}, {harness, isolated: true})});
       let html = fs.readFileSync(file, 'utf8');

@@ -73,7 +73,7 @@ singleReply=one sentence can cover feedback; tableRows=planned row counts;
 format=auto|text|markdown|document|visualization|visual|custom|other; view=table|cards|form|kanban|flow|custom;
 visualReport=requested visual report; proseComments=inline prose comments; borderline=uncertain review.
 visualBenefit=visual improves understanding/action; customLayout=existing views cannot express it;
-inline=host shows widgets inline in chat (true: Codex app; false: Claude Code).
+inline=host shows widgets inline in chat (true: Codex app; false: Codex terminal).
 automatic customLayout requires a nonempty customReason. Explicit custom requests need no justification.
 Missing facts default to explain/none/auto, zero counts, and no affirmative shape/feedback evidence.
 Precedence: explicit format > requested view > prose comments > requested supported report > review/density > Markdown.

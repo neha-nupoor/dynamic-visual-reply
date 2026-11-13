@@ -33,7 +33,7 @@ test('all five samples satisfy the schema and cross-record contract', () => {
 test('read-only is opt-in, boolean, and retained in every view and host', t => {
   for (const view of render.VIEWS) {
     assert.equal(example(view).readOnly, undefined);
-    for (const harness of ['codex', 'claude-inline', 'browser-local', 'static']) {
+    for (const harness of ['codex', 'browser-local', 'static']) {
       const spec = {...example(view), readOnly: true};
       assert.equal(render.validate(spec).readOnly, true);
       assert.equal(block(page(t, spec, context(harness)).html, 'spec').readOnly, true);
@@ -183,33 +183,30 @@ test('all appearances and hosts embed the identical runtime and keep draft keys 
     assert.equal(html.split('<script data-dynamic-visual-reply-runtime>\n')[1].split('\n</script>')[0], fs.readFileSync(render.BUNDLE, 'utf8'));
   }
 });
-test('Codex and Claude handoffs preserve native adapters and different submission copy', t => {
-  for (const harness of ['codex', 'claude-inline']) {
-    const {result, html} = page(t, example('flow'), context(harness));
-    assert.equal(result.handoff.type, harness === 'codex' ? 'contentReference' : 'show_widget');
-    assert.equal(block(html, 'config').adapter, harness);
-    if (harness === 'codex') assert.match(result.contentReference, /^visualize\{"path":.*\}$/);
-    else assert.equal(block(html, 'config').copy.submit.message, 'Add to chat');
-  }
+test('Codex handoff preserves the native adapter and content reference', t => {
+  const {result, html} = page(t, example('flow'), context('codex'));
+  assert.equal(result.handoff.type, 'contentReference');
+  assert.equal(block(html, 'config').adapter, 'codex');
+  assert.match(result.contentReference, /^visualize\{"path":.*\}$/);
 });
 test('large inline views and byte limits route to the same browser feedback path', t => {
   const big = example('table'); big.rows = Array.from({length: 9}, (_, index) => ({id: 'r' + index, name: 'Row ' + index}));
-  for (const harness of ['codex', 'claude-inline']) {
+  for (const harness of ['codex']) {
     const {result, html} = page(t, structuredClone(big), context(harness), 'auto');
     assert.equal(result.harness, 'browser-local'); assert.equal(result.handoff.type, 'serve');
     assert.deepEqual([result.switched.from, result.switched.to], [harness, 'browser-local']);
     assert.match(result.handoff.command, /^node ".*serve\.mjs"/); assert.ok(html.startsWith('<!doctype html>'));
     assert.equal(block(html, 'config').adapter, 'browser-local');
   }
-  const limited = context('claude-inline', {placement: {maxInlineBytes: 1000}});
+  const limited = context('codex', {placement: {maxInlineBytes: 1000}});
   assert.equal(page(t, example('flow'), limited, 'auto').result.handoff.type, 'serve');
   assert.throws(() => page(t, example('flow'), limited, 'inline'), /exceeds/);
 });
 test('host detection is a suggestion and explicit harness selection wins', () => {
-  assert.equal(config.detectHarness({CLAUDECODE: '1', CODEX_HOME: '/tmp'})[0], 'claude-code');
+  assert.equal(config.detectHarness({CLAUDECODE: '1'})[0], 'static');
   assert.equal(config.detectHarness({CODEX_HOME: '/tmp'})[0], 'codex');
   assert.equal(config.detectHarness({})[0], 'static');
-  assert.equal(config.resolve({}, {harness: 'browser-local', env: {CLAUDECODE: '1'}, isolated: true}).harness.id, 'browser-local');
+  assert.equal(config.resolve({}, {harness: 'browser-local', env: {CODEX_HOME: '/tmp'}, isolated: true}).harness.id, 'browser-local');
 });
 test('Report Blue uses the existing theme path and exports accessible light/dark roles', t => {
   const themePath = path.join(config.ROOT, 'assets/report-kit/theme.json');
@@ -271,7 +268,7 @@ test('config layers, appearance overrides, and browser switches preserve user ch
   write(user, {appearance: 'dark', copy: {badge: 'From user'}}); fs.mkdirSync(path.join(project, '.git'), {recursive: true});
   write(path.join(project, '.dynamic-visual-reply.json'), {appearance: 'light'});
   const env = {HOME: dir, DYNAMIC_VISUAL_REPLY_CONFIG: user};
-  const resolved = config.resolve({appearance: 'system'}, {cwd: project, env, harness: 'claude-inline'});
+  const resolved = config.resolve({appearance: 'system'}, {cwd: project, env, harness: 'codex'});
   assert.equal(resolved.appearance, 'system'); assert.equal(resolved.sources.appearance, 'command line');
   assert.equal(resolved.sources['copy.badge'], 'user'); assert.equal(resolved.switch('browser-local').config.copy.badge, 'From user');
   const spec = example('flow'); spec.appearance = 'light';
@@ -280,7 +277,7 @@ test('config layers, appearance overrides, and browser switches preserve user ch
 });
 test('harness appearance defaults and explicit fixed modes are preserved', () => {
   for (const harness of config.harnessIds()) {
-    assert.equal(context(harness).appearance, harness === 'claude-inline' ? 'host' : 'system');
+    assert.equal(context(harness).appearance, 'system');
     for (const appearance of ['light', 'dark']) assert.equal(context(harness, {appearance}).appearance, appearance);
   }
 });

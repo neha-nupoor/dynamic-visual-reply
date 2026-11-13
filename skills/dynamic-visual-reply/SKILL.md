@@ -21,16 +21,15 @@ Author JSON specs; Node.js 22.20+ assembles the prebuilt Oat/Preact bundle with
 native controls and scoped CSS. No package installation or public URL is needed.
 Paths are relative to this skill. Keep the bundle unchanged during use.
 
-1. Pick the host. This skill supports two, and reads only that host's guide:
+1. This skill is for Codex. Read only the guide you need:
 
-   | Host | Harness | Guide |
+   | Where | Harness | Guide |
    | --- | --- | --- |
    | Codex app: inline widget in chat | `codex` | [Codex](references/harness/codex.md) |
-   | Claude Code, desktop or terminal: local browser page | `claude-code` | [Browser](references/harness/browser-local.md) |
+   | Codex views too large for inline, or a Codex terminal: local browser page | `browser-local` | [Browser](references/harness/browser-local.md) |
 
-   Codex views too large for inline also open as a browser page. In any other
-   agent, answer in Markdown and add one line: "Interactive review views work in
-   the Codex app and Claude Code." Keep routing internals out of replies: never
+   In any other agent, answer in Markdown and add one line: "Interactive review
+   views work in the Codex app." Keep routing internals out of replies: never
    mention harnesses, content references, output contracts or missing tools. If a
    view opens in the browser, give the link; otherwise just answer. For uncertain
    setup, run `node scripts/doctor.mjs --harness <id>` once.

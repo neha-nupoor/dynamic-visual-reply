@@ -1,6 +1,6 @@
 # Renderer contract
 
-Use Node.js built-ins to hydrate the prebuilt bundle. Author specs rather than regenerating the bundle. Codex and browser delivery use the generated file directly; Claude's widget tool requires passing its complete HTML fragment as a string.
+Use Node.js built-ins to hydrate the prebuilt bundle. Author specs rather than regenerating the bundle. Codex inline and browser delivery use the generated file directly.
 
 ## Commands and delivery
 
@@ -29,7 +29,7 @@ use different display surfaces and truthful submission wording; they do not
 change the profile. See the sibling response-design skill's setup guide for the
 short persistent rule and host integration.
 
-Every output embeds the same Oat/Preact bundle and CSS. Codex inline returns the existing `contentReference`, so the bundle never enters model context. Supported hosts are Codex and Claude Code; the Claude chat widget (`show_widget`) is not supported in this release. For Codex, verify the session documents the `visualize` content-reference output contract; a dedicated widget tool is not required. Display support does not imply a working chat submission bridge. Environment detection is only a suggestion. Larger views use `serve.mjs` and save feedback locally. Claude Code uses `claude-code`; `browser-local` serves Codex views too large for inline; `static` produces an offline HTML file with copy/export. Other agents are not supported and answer in Markdown. If rendering is unavailable or fails, provide the intended content in normal Markdown. Use the browser route when interaction remains useful and that route is available; do not add a second HTML renderer as a fallback. Host routing is fixed.
+Every output embeds the same Oat/Preact bundle and CSS. Codex inline returns the existing `contentReference`, so the bundle never enters model context. Codex is the only supported host. For Codex, verify the session documents the `visualize` content-reference output contract; a dedicated widget tool is not required. Display support does not imply a working chat submission bridge. Environment detection is only a suggestion. Larger views use `serve.mjs` and save feedback locally. `browser-local` serves Codex views too large for inline and the Codex terminal; `static` produces an offline HTML file with copy/export. Other agents are not supported and answer in Markdown. If rendering is unavailable or fails, provide the intended content in normal Markdown. Use the browser route when interaction remains useful and that route is available; do not add a second HTML renderer as a fallback. Host routing is fixed.
 
 Other flags: `--format auto|inline|standalone`, `--theme`, `--appearance light|dark|system|host`, `--viewport-width`, `--viewport-height`, and `--catalog`.
 
@@ -67,28 +67,27 @@ Each render writes `<output-stem>.spec.json`. Patches support `upsert` (merge ro
 
 ## Settings and themes
 
-Settings merge: shipped defaults → small built-in host defaults → user config → project config → flags. The spec can override appearance. Appearance defaults to `host` for Claude inline and `system` elsewhere; an explicit fixed mode at a higher-priority layer wins. A null config appearance resets to the harness default, rather than the theme pack's fixed mode. Agents should omit appearance flags unless the user requests an override. User config is `$DYNAMIC_VISUAL_REPLY_CONFIG`, otherwise `$XDG_CONFIG_HOME/dynamic-visual-reply/config.json` or `~/.config/dynamic-visual-reply/config.json`. Project config is `.dynamic-visual-reply.json`, searched up to the repository root. `--print-config` shows the effective values and their sources.
+Settings merge: shipped defaults → small built-in host defaults → user config → project config → flags. The spec can override appearance. Appearance defaults to `system`; an explicit fixed mode at a higher-priority layer wins. A null config appearance resets to the harness default, rather than the theme pack's fixed mode. Agents should omit appearance flags unless the user requests an override. User config is `$DYNAMIC_VISUAL_REPLY_CONFIG`, otherwise `$XDG_CONFIG_HOME/dynamic-visual-reply/config.json` or `~/.config/dynamic-visual-reply/config.json`. Project config is `.dynamic-visual-reply.json`, searched up to the repository root. `--print-config` shows the effective values and their sources.
 
-Settings cover theme/fallback, appearance, harness, enabled views, placement, feedback prompts/message format, and copy. `feedback.messageFormat` is `json`, `compact`, or `summary` (a readable line followed by JSON). `copy` can override selected labels/status messages. Claude's default button is **Add to chat**, with a status asking the user to press Enter.
+Settings cover theme/fallback, appearance, harness, enabled views, placement, feedback prompts/message format, and copy. `feedback.messageFormat` is `json`, `compact`, or `summary` (a readable line followed by JSON). `copy` can override selected labels/status messages.
 
 The default bundled theme is `config/theme.json`, named `generic`. It provides the approved spacious neutral appearance: monochrome actions, soft light backgrounds, visible borders, square content surfaces, 2 px controls, and labels above fields. Oat/native controls use the same tokens in both appearances. See [theme.md](theme.md).
 
 Custom themes can still be a JSON path, a folder containing `theme.json` or `assets/theme.json`, an inline object, or an installed pack name. Names are searched beside the skill, in `$DYNAMIC_VISUAL_REPLY_THEME_PATH`, and in common skill directories. Missing optional tokens inherit generic values. Legacy `base-web` and `neutral` names are aliases for `generic`; the compact duplicate has been removed. Old motion tokens are ignored. The split accent roles and `--vr-` CSS variables remain supported.
 
-`appearance: host` reads available Claude CSS variables, with theme fallbacks. `system` follows the host's `data-theme`/`data-mode` or OS preference. Explicit light/dark settings stay fixed.
+`system` (and the legacy `host` value) follows the host's `data-theme`/`data-mode` or OS preference. Explicit light/dark settings stay fixed.
 
-Automatic placement estimates width/height from theme sizes. Default eligibility limits: 3 table rows/3 data columns, 2 cards, 3 form control units (textarea counts as 2), 4 flow nodes, 6 board cards. A view must also fit the screen budget; pagination does not make a large dataset inline. `presentation` overrides the estimate. These are estimates rather than measured host dimensions.
+Automatic placement estimates width/height from theme sizes. Default eligibility limits: 8 table rows/4 data columns, 4 cards, 8 form control units (textarea counts as 2), 6 flow nodes, 6 board cards, and about 1,100 px of height. A view must also fit the screen budget; pagination does not make a large dataset inline. `presentation` overrides the estimate. These are estimates rather than measured host dimensions.
 
 ## Feedback and drafts
 
 The schemaVersion 1 feedback envelope retains `viewId`, view, revision, selected/reviewed IDs, item instructions/edits, form answers/options, and general comment. Optional metadata is now `source:{harness,theme,rendererHash}`, where `rendererHash` is the manifest's SHA-256. Older feedback with `source.rendererVersion` remains readable. Selected items and items with edits/comments are submitted across all pages. Preview, editable generated message, copy, text selection, export, and undo stay available.
 
-The bundle includes three thin adapters under `scripts/adapters/`: `codex.js`, `claude.js`, and `browser.js`. Their registry IDs remain `codex`, `claude-inline`, and `browser-local`, independent of filenames. The renderer selects one by the page's `config.adapter`:
+The bundle includes two thin adapters under `scripts/adapters/`: `codex.js` (`codex`) and `browser.js` (`browser-local`). The renderer selects one by the page's `config.adapter`:
 
 | Adapter | Feedback | Drafts |
 | --- | --- | --- |
 | Codex | `window.openai.sendFollowUpMessage({prompt,title})` | `setWidgetState`, `widgetState`, `openai:set_globals`; localStorage without a host bridge |
-| Claude inline | `sendPrompt(message)` fills the message box; user sends | localStorage when allowed |
 | Local browser | POST to `serve.mjs` `/api/feedback` | localStorage |
 
 Without a bridge, copy/export remains available. Codex snapshots above approximately 15 KB produce a warning instead of silently truncating. Restored drafts must match the key and cannot overwrite newer local edits. The key uses `draftVersion` + viewId + view, so appearance and bundle changes preserve drafts.

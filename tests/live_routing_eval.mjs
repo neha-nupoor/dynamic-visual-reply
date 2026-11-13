@@ -9,7 +9,7 @@ import {parseCli, requireValue, runCli} from '../skills/dynamic-visual-reply/scr
 
 runCli(() => {
   const {values: args} = parseCli({harness: {type: 'string'}, out: {type: 'string'}});
-  requireValue(['codex', 'claude-code'].includes(args.harness) && args.out, '--harness codex|claude-code --out <report.json> required');
+  requireValue(args.harness === 'codex' && args.out, '--harness codex --out <report.json> required');
   const cases = JSON.parse(fs.readFileSync(new URL('./live_routing_cases.json', import.meta.url)));
   const skill = fs.readFileSync(new URL('../skills/response-design/SKILL.md', import.meta.url), 'utf8');
   const prompt = 'This is an isolated response-policy comprehension test. Do not perform the tasks or call tools.\n' + skill + '\n' + help() +
@@ -18,22 +18,16 @@ runCli(() => {
   const out = path.resolve(args.out), scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'response-design-live-'));
   fs.mkdirSync(path.dirname(out), {recursive: true});
   try {
-    const schema = {type: 'object', properties: {cases: {type: 'array', items: {type: 'object', properties: {id: {type: 'string'}, facts: {type: 'object'}}, required: ['id', 'facts'], additionalProperties: false}}}, required: ['cases'], additionalProperties: false};
     const last = path.join(scratch, 'last.json');
-    const command = args.harness === 'codex' ? 'codex' : 'claude';
-    const flags = args.harness === 'codex'
-      ? ['exec', '--ephemeral', '--ignore-user-config', '--skip-git-repo-check', '--sandbox', 'read-only', '-c', 'project_doc_max_bytes=0', '-C', scratch, '--output-last-message', last, '-']
-      : ['--print', '--no-session-persistence', '--tools', '', '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}', '--setting-sources', '', '--max-budget-usd', '0.50', '--output-format', 'json', '--json-schema', JSON.stringify(schema)];
-    const result = spawnSync(command, flags, {cwd: scratch, input: prompt, encoding: 'utf8', timeout: 180000, maxBuffer: 2 * 1024 * 1024});
+    const flags = ['exec', '--ephemeral', '--ignore-user-config', '--skip-git-repo-check', '--sandbox', 'read-only', '-c', 'project_doc_max_bytes=0', '-C', scratch, '--output-last-message', last, '-'];
+    const result = spawnSync('codex', flags, {cwd: scratch, input: prompt, encoding: 'utf8', timeout: 180000, maxBuffer: 2 * 1024 * 1024});
     const report = {harness: args.harness, cases: cases.length, kind: 'isolated-policy-comprehension', discoveryTested: false, nativeSubmissionTested: false};
     if (result.status !== 0 || result.error) {
       let detail = result.error?.message || (result.stderr || result.stdout).slice(-1500);
       try { detail = JSON.parse(result.stdout).result || detail; } catch {}
       Object.assign(report, {status: 'unavailable', error: detail});
     } else {
-      const raw = args.harness === 'codex' ? fs.readFileSync(last, 'utf8') : result.stdout;
-      const response = JSON.parse(raw);
-      const data = args.harness === 'claude-code' ? response.structured_output || JSON.parse(response.result) : response;
+      const data = JSON.parse(fs.readFileSync(last, 'utf8'));
       requireValue(Array.isArray(data.cases), 'Missing cases in model response');
       const results = cases.map(c => {
         const candidates = data.cases.filter(row => row.id === c.id);

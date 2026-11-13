@@ -1,8 +1,8 @@
 {
   "draftVersion": "1.0.0",
-  "sha256": "f1e40936b5bea1b9d10f0e064077c470c3e929e955d552bd2502b3da404f0656",
-  "sri": "sha384-i9c9H1ZaIdW+VuQHZ/2jN13Q2QDSe5vk1qEpw8bKDfej/cktzEanViTOFvqHyoTA",
-  "bytes": 84909,
+  "sha256": "7333eca8e6c1949c073639684b7abd8c944b0be2b3a79598930e0add124ab61b",
+  "sri": "sha384-oPgw5yRH6l5Ar1V4fFWrnYtY7rw81m4ExMIVMhUTL2/QP/24qoY/FeyQvUXdtfr/",
+  "bytes": 84169,
   "views": [
     "table",
     "cards",
@@ -12,7 +12,6 @@
   ],
   "adapters": [
     "codex",
-    "claude-inline",
     "browser-local"
   ]
 }

@@ -203,7 +203,6 @@ export function runtimeConfig(context, appearance, rendererHash) {
     const override = config.diff(context.config[key] || {}, defaults[key]);
     if (Object.keys(override).length) result[key] = override;
   }
-  if (appearance === 'host' && context.harness.id === 'claude-inline') result.hostPalette = config.HOST_PALETTE;
   return result;
 }
 export function fragment(spec, context, appearance, info) {
@@ -232,8 +231,7 @@ export function wrap(body, kind, spec, context, appearance) {
 export function handoff(context, out, kind, size) {
   const id = context.harness.id;
   if (id === 'codex' && kind === 'fragment') return {type: 'contentReference', value: 'visualize' + JSON.stringify({path: out}) + ''};
-  if (id === 'claude-inline') return {type: 'show_widget', file: out, bytes: size, instruction: 'Read this file and pass its full contents unchanged as show_widget widget_code.'};
-  if (['browser-local', 'claude-code'].includes(id)) return {type: 'serve', command: 'node "' + path.join(ROOT, 'scripts/serve.mjs') + '" "' + out + '" --port 0'};
+  if (id === 'browser-local') return {type: 'serve', command: 'node "' + path.join(ROOT, 'scripts/serve.mjs') + '" "' + out + '" --port 0'};
   return {type: 'file', path: out};
 }
 export function render(spec, out, mode = 'auto', viewportWidth, viewportHeight, {context = defaultContext(), route} = {}) {
@@ -251,7 +249,7 @@ export function render(spec, out, mode = 'auto', viewportWidth, viewportHeight, 
   if (requested === 'auto' && decision.mode === 'inline' && limit && bytes(jsonForHtml(spec)) > limit)
     Object.assign(decision, {mode: 'standalone', reason: 'Spec exceeds ' + limit + ' bytes, the inline size limit for this harness'});
   const info = manifest(), requestedHarness = context.harness.id;
-  if (decision.mode === 'standalone' && ['codex', 'claude-inline'].includes(context.harness.id)) context = context.switch('browser-local');
+  if (decision.mode === 'standalone' && context.harness.id === 'codex') context = context.switch('browser-local');
   spec.resolvedPresentation = decision;
   spec.stateKey = createHash('sha256').update(info.draftVersion + ':' + spec.viewId + ':' + spec.view).digest('hex').slice(0, 24);
   const appearance = spec.appearance || context.appearance;
@@ -261,13 +259,13 @@ export function render(spec, out, mode = 'auto', viewportWidth, viewportHeight, 
   const data = jsonForHtml(spec);
   const result = {harness: context.harness.id, theme: context.theme.name, view: spec.view, rendererHash: info.sha256,
     specBytes: bytes(data), rendererBytes: info.bytes, delivery: 'embed', spec: snapshot, placement: decision};
-  let kind = decision.mode === 'inline' && ['codex', 'claude-inline'].includes(context.harness.id) ? 'fragment' : 'document';
+  let kind = decision.mode === 'inline' && context.harness.id === 'codex' ? 'fragment' : 'document';
   let body = fragment(spec, context, appearance, info);
   const sizeLimit = context.config.placement.maxInlineBytes;
   if (decision.mode === 'inline' && bytes(body) >= sizeLimit) {
     requireValue(requested === 'auto' || routedInline, 'Inline UI exceeds ' + sizeLimit + ' bytes; reduce the dataset or use standalone');
     Object.assign(decision, {mode: 'standalone', reason: 'Payload exceeds the inline file-size limit'});
-    if (['codex', 'claude-inline'].includes(context.harness.id)) {
+    if (context.harness.id === 'codex') {
       context = context.switch('browser-local'); Object.assign(result, {harness: 'browser-local', delivery: 'embed'});
     }
     kind = 'document'; body = fragment(spec, context, appearance, info);

@@ -7,29 +7,22 @@ When your agent proposes ten things — titles, fixes, tasks, options — you us
 ![Reviewing steps and sending one batch of feedback in Codex](docs/media/codex-inline-demo.gif)
 
 - **Small for the model.** The agent writes a ~100–200 token JSON spec; a prebuilt renderer (Preact + [Oat](https://github.com/knadh/oat), ~85 KB) draws the UI. No API keys, no telemetry, no build step.
-- **Built for the Codex app and Claude Code.** Inline widgets in Codex; a local browser page in Claude Code (desktop or terminal). Other agents get a normal Markdown answer.
+- **Built for the Codex app.** Views show inline in chat; views too large for inline open as a local browser page. Other agents get a normal Markdown answer.
 - **Stays out of the way.** It only activates for 3+ comparable items or when you ask for a visual review. Short answers stay in chat.
 
 ## Install
 
-**Claude Code** (plugin):
-
-```text
-/plugin marketplace add neha-nupoor/dynamic-visual-reply
-/plugin install dynamic-visual-reply@dynamic-visual-reply
-```
-
-**Codex or Claude Code** ([skills CLI](https://github.com/vercel-labs/skills)):
+With the [skills CLI](https://github.com/vercel-labs/skills):
 
 ```sh
-npx skills add neha-nupoor/dynamic-visual-reply --skill response-design --skill dynamic-visual-reply
+npx skills add neha-nupoor/dynamic-visual-reply -g -s '*' -a codex -y
 ```
 
-Then add one rule to your agent's instructions (`AGENTS.md` for Codex, `CLAUDE.md` for Claude Code):
+Then add one rule to your `AGENTS.md`:
 
-> When a reply will present 3+ comparable items, records, questions or steps, or the user asks for a visual/interactive review, use response-design to choose the format. Pass `inline:true` in the Codex app and `inline:false` in Claude Code. Honor explicit user format requests.
+> When a reply will present 3+ comparable items, records, questions or steps, or the user asks for a visual/interactive review, use response-design to choose the format. Pass `inline:true` in the Codex app and `inline:false` in the Codex terminal. Honor explicit user format requests.
 
-Requires Node.js 22.20+ where the agent runs commands. See the [setup guide](skills/response-design/references/setup.md) for per-host details.
+Requires Node.js 22.20+ where the agent runs commands. See the [setup guide](skills/response-design/references/setup.md) for details.
 
 ## Try it
 
@@ -40,7 +33,7 @@ Requires Node.js 22.20+ where the agent runs commands. See the [setup guide](ski
 | Host | Display | Feedback returns by | Verified |
 | --- | --- | --- | --- |
 | Codex app | Inline widget (file reference, bundle never enters model context) | **Send to chat** starts the next turn | Live |
-| Claude Code (desktop or terminal) | Local browser tab via a loopback server | Submit; with `serve.mjs --once` in the background the agent wakes automatically | Live |
+| Codex, large views or terminal | Local browser page via a loopback server | Submit saves a feedback file; the agent reads it when you continue | Live |
 | Other agents | Not supported: the agent answers in Markdown | — | — |
 
 Large views (more than ~4 cards, 8 table rows, or ~1,100 px tall) open in the browser instead of inline, and the renderer says so (`switched`).
