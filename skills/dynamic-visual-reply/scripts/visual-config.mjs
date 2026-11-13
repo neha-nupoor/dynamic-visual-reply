@@ -195,7 +195,7 @@ export function loadHarness(id) {
 }
 export function detectHarness(env = process.env) {
   if (env.CLAUDECODE === '1') return ['claude-code', 'Claude Code uses the local browser'];
-  if (Object.keys(env).some(key => key.startsWith('CURSOR_'))) return ['browser-local', 'Cursor environment marker; browser route (marker unverified on live Cursor)'];
+  if (Object.keys(env).some(key => key.startsWith('CURSOR_'))) return ['browser-local', 'Cursor environment marker (cursor-agent sets CURSOR_AGENT); browser route'];
   const id = ['CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED', 'CODEX_HOME'].some(key => Object.hasOwn(env, key)) ? 'codex' : 'static';
   return [id, id === 'static' ? 'No harness markers found; choose --harness explicitly when needed' : 'Suggested by environment markers; runtime bridge not verified'];
 }

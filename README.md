@@ -41,7 +41,7 @@ Requires Node.js 22.20+ where the agent runs commands. See the [setup guide](ski
 | --- | --- | --- | --- |
 | Codex app | Inline widget (file reference, bundle never enters model context) | **Send to chat** starts the next turn | Live |
 | Claude Code (desktop or terminal) | Local browser tab via a loopback server | Submit; with `serve.mjs --once` in the background the agent wakes automatically | Live |
-| Cursor | Local browser tab | Submit, then tell the agent to continue | Not yet (detection added; live run pending) |
+| Cursor | Local browser tab | Submit; with `serve.mjs --once` the agent wakes automatically | Live in the `cursor-agent` CLI; IDE agent chat untested |
 | Anything else | Offline HTML | Copy or export JSON into chat | Fixtures |
 
 Large views (more than ~4 cards, 8 table rows, or ~1,100 px tall) open in the browser instead of inline, and the renderer says so (`switched`).
