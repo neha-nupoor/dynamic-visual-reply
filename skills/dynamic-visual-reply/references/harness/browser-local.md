@@ -15,3 +15,7 @@ Run the returned `handoff.command`. It starts `serve.mjs` on `127.0.0.1` with a 
 ## Feedback
 
 **Submit instructions** posts to `serve.mjs`, which atomically writes `<view>.feedback.json`. Saving does not start an agent turn. When the user asks you to continue, read that file and acknowledge what it contains. Opened as a plain `file://` page, the view falls back to Prepare message, Copy and Export JSON.
+
+## Wake on submit
+
+If the host notifies you when a background command exits (Claude Code `run_in_background`, or the equivalent in other agents), append `--once` to `handoff.command` and run it in the background. After the first saved submission it prints `{"event":"submitted","feedback":"<path>"}` and exits 0; that exit wakes you, so read the feedback file and continue without waiting for the user. Optional `--timeout <seconds>` exits 3 with `{"event":"timeout",...}` if nothing arrives. Without such notification, use the flow above.
