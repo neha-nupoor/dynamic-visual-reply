@@ -137,7 +137,8 @@ function App(){
       const comparison=typeof av==='number'&&typeof bv==='number'?av-bv:text(av).localeCompare(text(bv),undefined,{numeric:true});
       return sort.ascending?comparison:-comparison;
     });
-    const size=spec.pageSize||20,last=Math.max(0,Math.ceil(matched.length/size)-1),current=Math.min(page,last),visible=matched.slice(current*size,(current+1)*size);
+    // Short result sets are never split: paging starts above 12 matches, whatever pageSize says.
+    const size=matched.length<=12?Math.max(1,matched.length):spec.pageSize||20,last=Math.max(0,Math.ceil(matched.length/size)-1),current=Math.min(page,last),visible=matched.slice(current*size,(current+1)*size);
     const visibleColumns=spec.columns.filter(col=>columns.includes(col.key));
     content=<>
       <div class="vr-row vr-toolbar">
@@ -160,7 +161,7 @@ function App(){
         <tbody>{visible.map(row=><tr key={row.id} class={draft.selected.includes(row.id)?'vr-selected':undefined}>
           {!readOnly&&<td><input class="vr-checkbox" type="checkbox" checked={draft.selected.includes(row.id)} aria-label={t('select')+' '+row.id} onChange={()=>toggle(row.id)}/></td>}
           {visibleColumns.map(col=><td key={col.key} class={col.type==='number'?'vr-number':undefined}>{col.editable&&!readOnly?
-            field(col.label,text(row[col.key]),value=>assign('edits',row.id,{...draft.edits[row.id],[col.key]:col.type==='number'&&value!==''?Number(value):value}),{type:col.type==='number'?'number':'text',className:'vr-edit-cell','aria-label':col.label+' for '+row.id})
+            field(col.label,text(row[col.key]),value=>assign('edits',row.id,{...draft.edits[row.id],[col.key]:col.type==='number'&&value!==''?Number(value):value}),{type:col.type==='number'?'number':'text',className:'vr-edit-cell',hideLabel:true,'aria-label':col.label+' for '+row.id})
             :text(row[col.key])}</td>)}
           {!readOnly&&<td class="vr-feedback-cell">{itemFeedback(row.id)}</td>}
         </tr>)}</tbody>
