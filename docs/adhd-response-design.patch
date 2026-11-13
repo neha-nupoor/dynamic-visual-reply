@@ -1,8 +1,0 @@
---- a/i-have-adhd/SKILL.md
-+++ b/i-have-adhd/SKILL.md
-@@ -147 +147 @@
--When several items need separate approvals, edits, choices, or instructions, consult the installed `dynamic-visual-reply` skill and follow its rendering criteria. An explicit request for an interactive view also reaches that skill. The single-input clarification workflow above uses a native in-chat input instead. Load rendering instructions only when the review branch applies; that skill owns rendering, host selection, and feedback delivery.
-+Use the installed `response-design` skill to choose the response format, including proactive visuals and agent-designed layouts when useful. Load `dynamic-visual-reply` for its selected layouts or existing visual feedback; it owns their rendering, host selection, and feedback delivery. Keep the single-input clarification workflow above in native chat.
-@@ -149 +149 @@
--Keep ordinary explanations and overall feedback in chat. Use a Markdown table for a simple comparison without per-item feedback. Keep the recommendation and enough context in chat that the reader can answer without opening a view. If the skill or rendering is unavailable, provide the intended answer in Markdown.
-+Let `response-design` decide when a visual helps an explanation or comparison. Keep the recommendation and enough context in chat that the reader can answer without opening a view. If the skill or rendering is unavailable, provide the intended answer in Markdown.
